@@ -255,6 +255,7 @@ void find_seeds(InputImage::Pointer input,
    collect_seed_regions(beaten_bitmap, outSeedRegions);
 }
 
+#if defined(TESTING_LOCAL_MAXIMA)
 
 int main(int argc, char** argv)
 {
@@ -279,3 +280,5 @@ int main(int argc, char** argv)
    cout << "snuffed: " << g_n_explored << endl;
    cout << "components: " << g_n_components << endl;
 }
+
+#endif // TESTING_LOCAL_MAXIMA

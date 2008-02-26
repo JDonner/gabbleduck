@@ -31,13 +31,37 @@ public:
       return static_cast<ExternalType>( input[m_EigenIdx] );
     }
 
-  void SetEigenIdx( unsigned int i )
+  void SetEigenIdx( unsigned i )
     {
     this->m_EigenIdx = i;
     }
 
 private:
-  unsigned int m_EigenIdx;
+  unsigned m_EigenIdx;
+};
+
+
+// Eigenvalue pixel accessor to access vector of eigenvalue pixels
+// as individual images
+template< class TPixel >
+class EigenvectorAccessor
+{
+public:
+  typedef TPixel                     InternalType;
+  typedef float                      ExternalType;
+
+  inline ExternalType Get( const InternalType & input ) const
+    {
+      return static_cast<ExternalType>( input[m_EigenIdx] );
+    }
+
+  void SetEigenIdx( unsigned i )
+    {
+    this->m_EigenIdx = i;
+    }
+
+private:
+  unsigned m_EigenIdx;
 };
 
 
