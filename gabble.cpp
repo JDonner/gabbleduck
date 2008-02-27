@@ -22,65 +22,8 @@ BetaFinder::BetaFinder()
    // Eigen stuff
    ////////////////////////////////////////////////////////////////////
 
-   // Compute eigenvalues.. order them in ascending order
-   m_TotalEigenFilter = EigenAnalysisFilterType::New();
-   m_TotalEigenFilter->SetDimension( HessianPixelType::Dimension );
-   m_TotalEigenFilter->SetInput( m_Hessian->GetOutput() );
-   m_TotalEigenFilter->OrderEigenValuesBy(
-      EigenAnalysisFilterType::JgdCalculatorType::OrderByValue);
 
-   // Create an adaptor and plug the output to the parametric space
-   m_EigenAdaptor1 = EValueImageAdaptorType::New();
-   EigenValueAccessor< EigenValueArrayType > accessor1;
-   accessor1.SetEigenIdx( 0 );
-   m_EigenAdaptor1->SetImage( m_TotalEigenFilter->GetEigenValuesImage() );
-   m_EigenAdaptor1->SetPixelAccessor( accessor1 );
-
-   m_EigenAdaptor2 = EValueImageAdaptorType::New();
-   EigenValueAccessor< EigenValueArrayType > accessor2;
-   accessor2.SetEigenIdx( 1 );
-   m_EigenAdaptor2->SetImage( m_TotalEigenFilter->GetEigenValuesImage() );
-   m_EigenAdaptor2->SetPixelAccessor( accessor2 );
-
-   m_EigenAdaptor3 = EValueImageAdaptorType::New();
-   EigenValueAccessor< EigenValueArrayType > accessor3;
-   accessor3.SetEigenIdx( 2 );
-   m_EigenAdaptor3->SetImage( m_TotalEigenFilter->GetEigenValuesImage() );
-   m_EigenAdaptor3->SetPixelAccessor( accessor3 );
-
-   // m_EigenCastfilter1 will give the eigenvalues with the maximum
-   // eigenvalue. m_EigenCastfilter3 will give the eigenvalues with
-   // the minimum eigenvalue.
-   m_EigenCastfilter1 = EValueCastImageFilterType::New();
-   m_EigenCastfilter1->SetInput( m_EigenAdaptor3 );
-   m_EigenCastfilter2 = EValueCastImageFilterType::New();
-   m_EigenCastfilter2->SetInput( m_EigenAdaptor2 );
-   m_EigenCastfilter3 = EValueCastImageFilterType::New();
-   m_EigenCastfilter3->SetInput( m_EigenAdaptor1 );
-
-   // I think this parametric stuff is just, about having to use 3-valued
-   // points.
-
-   m_ParametricSpace = ParametricSpaceFilterType::New();
-   // maximum, to minimum eigenvalue
-
-   // "The mesh contains one point for every pixel on the images. The
-   // coordinate of the point being equal to the gray level of the
-   // associated input pixels.  This class is intended to produce the
-   // population of points that represent samples in a parametric space. In
-   // this particular case the parameters are the gray levels of the input
-   // images. The dimension of the mesh points should be equal to the number
-   // of input images to this filter."
-   // So, the grey level at each point in the 3 images, is one component of
-   // a vector of parameters for that point.
-
-   // 3 images -> a mesh
-   m_ParametricSpace->SetInput( 0, m_EigenCastfilter1->GetOutput() );
-   m_ParametricSpace->SetInput( 1, m_EigenCastfilter2->GetOutput() );
-   m_ParametricSpace->SetInput( 2, m_EigenCastfilter3->GetOutput() );
-
-   BOOST_MPL_ASSERT((boost::is_same<ImageSpaceMeshType, MeshType>));
-
+   BetaFinder::HookUpEigenStuff();
 
 #if defined(NEW_STOFF)
    // Wait. We don't care /which direction/ the greatest eigenvalues are in,
@@ -93,7 +36,6 @@ BetaFinder::BetaFinder()
 #endif
 
 
-
    // SphereSpatialFunction
    // function that returns 0 for points inside or on the surface of a sphere,
    // 1 for points outside the sphere
@@ -102,7 +44,7 @@ BetaFinder::BetaFinder()
    // SpatialFunction here applies to a mesh,
    // and writes to a mesh
    m_SpatialFunctionFilter = SpatialFunctionFilterType::New();
-   m_SpatialFunctionFilter->SetInput(m_ParametricSpace->GetOutput());
+   m_SpatialFunctionFilter->SetInput(m_ParametricEigenvalueSpace->GetOutput());
 
    //   m_SpatialFunctionControl = SpatialFunctionControlType::New();
    //   m_SpatialFunctionControl->SetSpatialFunction(
@@ -169,8 +111,95 @@ BetaFinder::BetaFinder()
    m_OverlayWriter->SetFileName( "PostThreshold.vtk");
 
 #if defined(INTERMEDIATE_OUTPUTS)
-   m_EigenValueWriter = EigenValueWriterType::New();
+   m_EValueWriter = EigenValueWriterType::New();
 #endif
+}
+
+void BetaFinder::HookUpEigenStuff()
+{
+   // Compute eigenvalues.. order them in ascending order
+   m_TotalEigenFilter = EigenAnalysisFilterType::New();
+   m_TotalEigenFilter->SetDimension( HessianPixelType::Dimension );
+   m_TotalEigenFilter->SetInput( m_Hessian->GetOutput() );
+   m_TotalEigenFilter->OrderEigenValuesBy(
+      EigenAnalysisFilterType::JgdCalculatorType::OrderByValue);
+
+
+   // Create an adaptor and plug the output to the parametric space
+   m_EValueAdaptor1 = EValueImageAdaptorType::New();
+   EigenvalueAccessor< EigenValueArrayType > accessor1;
+   accessor1.SetEigenIdx( 0 );
+   m_EValueAdaptor1->SetImage( m_TotalEigenFilter->GetEigenValuesImage() );
+   m_EValueAdaptor1->SetPixelAccessor( accessor1 );
+
+   m_EValueAdaptor2 = EValueImageAdaptorType::New();
+   EigenvalueAccessor< EigenValueArrayType > accessor2;
+   accessor2.SetEigenIdx( 1 );
+   m_EValueAdaptor2->SetImage( m_TotalEigenFilter->GetEigenValuesImage() );
+   m_EValueAdaptor2->SetPixelAccessor( accessor2 );
+
+   m_EValueAdaptor3 = EValueImageAdaptorType::New();
+   EigenvalueAccessor< EigenValueArrayType > accessor3;
+   accessor3.SetEigenIdx( 2 );
+   m_EValueAdaptor3->SetImage( m_TotalEigenFilter->GetEigenValuesImage() );
+   m_EValueAdaptor3->SetPixelAccessor( accessor3 );
+
+
+
+
+   // Create an adaptor and plug the output to the parametric space
+   m_EVectorAdaptor1 = EVectorImageAdaptorType::New();
+   EigenvectorAccessor< EVectorMatrixType > vecAccessor1;
+   accessor1.SetEigenIdx( 0 );
+   m_EVectorAdaptor1->SetImage( m_TotalEigenFilter->GetEigenVectorsImage() );
+   m_EVectorAdaptor1->SetPixelAccessor( vecAccessor1 );
+
+   m_EVectorAdaptor2 = EVectorImageAdaptorType::New();
+   EigenvectorAccessor< EVectorMatrixType > vecAccessor2;
+   accessor2.SetEigenIdx( 1 );
+   m_EVectorAdaptor2->SetImage( m_TotalEigenFilter->GetEigenVectorsImage() );
+   m_EVectorAdaptor2->SetPixelAccessor( vecAccessor2 );
+
+   m_EVectorAdaptor3 = EVectorImageAdaptorType::New();
+   EigenvectorAccessor< EVectorMatrixType > vecAccessor3;
+   accessor3.SetEigenIdx( 2 );
+   m_EVectorAdaptor3->SetImage( m_TotalEigenFilter->GetEigenVectorsImage() );
+   m_EVectorAdaptor3->SetPixelAccessor( vecAccessor3 );
+
+
+
+   // m_EValueCastfilter1 will give the eigenvalues with the maximum
+   // eigenvalue. m_EValueCastfilter3 will give the eigenvalues with
+   // the minimum eigenvalue.
+   m_EValueCastfilter1 = EValueCastImageFilterType::New();
+   m_EValueCastfilter1->SetInput( m_EValueAdaptor3 );
+   m_EValueCastfilter2 = EValueCastImageFilterType::New();
+   m_EValueCastfilter2->SetInput( m_EValueAdaptor2 );
+   m_EValueCastfilter3 = EValueCastImageFilterType::New();
+   m_EValueCastfilter3->SetInput( m_EValueAdaptor1 );
+
+   // I think this parametric stuff is just, about having to use 3-valued
+   // points.
+
+   m_ParametricEigenvalueSpace = ParametricEigenvalueSpaceFilterType::New();
+   // maximum, to minimum eigenvalue
+
+   // "The mesh contains one point for every pixel on the images. The
+   // coordinate of the point being equal to the gray level of the
+   // associated input pixels.  This class is intended to produce the
+   // population of points that represent samples in a parametric space. In
+   // this particular case the parameters are the gray levels of the input
+   // images. The dimension of the mesh points should be equal to the number
+   // of input images to this filter."
+   // So, the grey level at each point in the 3 images, is one component of
+   // a vector of parameters for that point.
+
+   // 3 images -> a mesh
+   m_ParametricEigenvalueSpace->SetInput( 0, m_EValueCastfilter1->GetOutput() );
+   m_ParametricEigenvalueSpace->SetInput( 1, m_EValueCastfilter2->GetOutput() );
+   m_ParametricEigenvalueSpace->SetInput( 2, m_EValueCastfilter3->GetOutput() );
+
+   BOOST_MPL_ASSERT((boost::is_same<ImageSpaceMeshType, MeshType>));
 }
 
 
@@ -285,22 +314,22 @@ void BetaFinder::Execute()
    m_TotalEigenFilter->UpdateLargestPossibleRegion();
 
 #if defined(INTERMEDIATE_OUTPUTS)
-   m_EigenValueWriter->SetInput( m_EigenCastfilter1->GetOutput() );
-   m_EigenValueWriter->SetFileName( "EigenValueImage1.vtk");
-   m_EigenValueWriter->Update();
-   m_EigenValueWriter->SetInput( m_EigenCastfilter2->GetOutput() );
-   m_EigenValueWriter->SetFileName( "EigenValueImage2.vtk");
-   m_EigenValueWriter->Update();
-   m_EigenValueWriter->SetInput( m_EigenCastfilter3->GetOutput() );
-   m_EigenValueWriter->SetFileName( "EigenValueImage3.vtk");
-   m_EigenValueWriter->Update();
+   m_EValueWriter->SetInput( m_EValueCastfilter1->GetOutput() );
+   m_EValueWriter->SetFileName( "EigenValueImage1.vtk");
+   m_EValueWriter->Update();
+   m_EValueWriter->SetInput( m_EValueCastfilter2->GetOutput() );
+   m_EValueWriter->SetFileName( "EigenValueImage2.vtk");
+   m_EValueWriter->Update();
+   m_EValueWriter->SetInput( m_EValueCastfilter3->GetOutput() );
+   m_EValueWriter->SetFileName( "EigenValueImage3.vtk");
+   m_EValueWriter->Update();
 #endif
 
    BetaImageType::Pointer beta = this->extract_beta(
       m_inputImage,
-      m_EigenCastfilter1->GetOutput(),
-      m_EigenCastfilter2->GetOutput(),
-      m_EigenCastfilter3->GetOutput(),
+      m_EValueCastfilter1->GetOutput(),
+      m_EValueCastfilter2->GetOutput(),
+      m_EValueCastfilter3->GetOutput(),
       5.0);
    typedef itk::ImageFileWriter< BetaImageType > BetaWriterType;
    BetaWriterType::Pointer betaWriter = BetaWriterType::New();

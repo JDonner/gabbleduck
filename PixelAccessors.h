@@ -20,48 +20,48 @@
 // Eigenvalue pixel accessor to access vector of eigenvalue pixels
 // as individual images
 template< class TPixel >
-class EigenValueAccessor
+   class EigenvalueAccessor
 {
 public:
-  typedef TPixel                     InternalType;
-  typedef float                      ExternalType;
+   typedef TPixel                     InternalType;
+   typedef float                      ExternalType;
 
-  inline ExternalType Get( const InternalType & input ) const
-    {
+   inline ExternalType Get( const InternalType & input ) const
+   {
       return static_cast<ExternalType>( input[m_EigenIdx] );
-    }
+   }
 
-  void SetEigenIdx( unsigned i )
-    {
-    this->m_EigenIdx = i;
-    }
+   void SetEigenIdx( unsigned i )
+   {
+      this->m_EigenIdx = i;
+   }
 
 private:
-  unsigned m_EigenIdx;
+   unsigned m_EigenIdx;
 };
 
 
 // Eigenvalue pixel accessor to access vector of eigenvalue pixels
 // as individual images
 template< class TPixel >
-class EigenvectorAccessor
+   class EigenvectorAccessor
 {
 public:
-  typedef TPixel                     InternalType;
-  typedef float                      ExternalType;
+   typedef TPixel                     InternalType;
+   typedef float                      ExternalType;
 
-  inline ExternalType Get( const InternalType & input ) const
-    {
+   inline ExternalType Get( const InternalType & input ) const
+   {
       return static_cast<ExternalType>( input[m_EigenIdx] );
-    }
+   }
 
-  void SetEigenIdx( unsigned i )
-    {
-    this->m_EigenIdx = i;
-    }
+   void SetEigenIdx( unsigned i )
+   {
+      this->m_EigenIdx = i;
+   }
 
 private:
-  unsigned m_EigenIdx;
+   unsigned m_EigenIdx;
 };
 
 
@@ -69,17 +69,17 @@ private:
 namespace Functor {
 
 template< typename TInput, typename TOutput >
-class HessianToLaplacianFunction
+   class HessianToLaplacianFunction
 {
 public:
-  typedef typename TInput::RealValueType  RealValueType;
-  HessianToLaplacianFunction() {}
- ~HessianToLaplacianFunction() {}
+   typedef typename TInput::RealValueType  RealValueType;
+   HessianToLaplacianFunction() {}
+   ~HessianToLaplacianFunction() {}
 
-  inline TOutput operator()( const TInput & x ) const
-    {
-    return static_cast< TOutput >( x(0,0) + x(1,1) + x(2,2) );
-    }
+   inline TOutput operator()( const TInput & x ) const
+   {
+      return static_cast< TOutput >( x(0,0) + x(1,1) + x(2,2) );
+   }
 };
 
 }

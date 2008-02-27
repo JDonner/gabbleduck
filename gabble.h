@@ -117,19 +117,19 @@ public:
    typedef   itk::FixedArray<double, HessianPixelType::Dimension>
                                                            EigenValueArrayType;
 
-   typedef   itk::Matrix< double,
-                          HessianPixelType::Dimension,
-                          HessianPixelType::Dimension >    EigenvectorMatrixType;
+   typedef   itk::Matrix<double,
+                         HessianPixelType::Dimension,
+                         HessianPixelType::Dimension>    EVectorMatrixType;
 
    // 3, of 3
    typedef   itk::Image<EigenValueArrayType,
-                         HessianImageType::ImageDimension> EigenValueImageType;
-   typedef   itk::Image<EigenvectorMatrixType,
-                         HessianImageType::ImageDimension> EigenvectorImageType;
+                        HessianImageType::ImageDimension> EigenValueImageType;
+   typedef   itk::Image<EVectorMatrixType,
+                        HessianImageType::ImageDimension> EVectorImageType;
 
 #define WANT_EIGENVECTOR
 #if defined(WANT_EIGENVECTOR)
-   typedef   itk::TotalEigenImageFilter<HessianImageType, EigenValueImageType, EigenvectorImageType>
+   typedef   itk::TotalEigenImageFilter<HessianImageType, EigenValueImageType, EVectorImageType>
 #else
    typedef   itk::SymmetricEigenAnalysisImageFilter<HessianImageType, EigenValueImageType>
 #endif // WANT_EIGENVECTOR
@@ -146,7 +146,7 @@ public:
 
    // Reads off the eigenvalues
    typedef   itk::ImageAdaptor<EigenValueImageType,
-                               EigenValueAccessor<EigenValueArrayType> > EValueImageAdaptorType;
+                               EigenvalueAccessor<EigenValueArrayType> > EValueImageAdaptorType;
 
    // Each eigenvalue is a 3D mesh? We have 3 of these, one each per eigenvalue
    // (which you'd never guess by the name).
@@ -163,33 +163,38 @@ public:
 
 
    ///////////////////////////////////////////////////////////////////
-   // Eigenvector
+   // EVector
    ///////////////////////////////////////////////////////////////////
 
    // Reads off the eigenvalues
-   typedef   itk::ImageAdaptor<EigenvectorImageType,
-                               EigenvectorAccessor<EigenvectorMatrixType> > EVectorImageAdaptorType;
+   typedef   itk::ImageAdaptor<EVectorImageType,
+                               EigenvectorAccessor<EVectorMatrixType> > EVectorImageAdaptorType;
 
    // Each eigenvalue is a 3D mesh? We have 3 of these, one each per eigenvalue
    // (which you'd never guess by the name).
    // -- yeah, it ends up being just a 3D array of float.
    typedef   itk::Image< MeshPointDataType::ValueType,
                          MeshPointDataType::PointDimension >
-      EachEigenvectorImageType;
+      EachEVectorImageType;
 
    // extracts eigenvalues - need to make it extract eigenvectors, too
    typedef   itk::CastImageFilter<
-      EVectorImageAdaptorType, EachEigenvectorImageType>  EVectorCastImageFilterType;
+      EVectorImageAdaptorType, EachEVectorImageType>  EVectorCastImageFilterType;
 
 
 
    typedef   itk::ImageFileWriter<EValueCastImageFilterType::OutputImageType> WriterType;
 
    typedef   itk::ImageFileWriter<EValueCastImageFilterType::OutputImageType> EigenValueWriterType;
+   typedef   itk::ImageFileWriter<EVectorCastImageFilterType::OutputImageType> EVectorWriterType;
 
    // MeshType is 3 points, each 3D
    typedef   itk::ImageToParametricSpaceFilter<
-      EachEigenValueImageType, MeshType> ParametricSpaceFilterType;
+      EachEigenValueImageType, MeshType> ParametricEigenvalueSpaceFilterType;
+
+   // MeshType is 3 points, each 3D
+   typedef   itk::ImageToParametricSpaceFilter<
+      EachEVectorImageType, MeshType> ParametricEVectorSpaceFilterType;
 
    typedef   itk::RescaleIntensityImageFilter<
       ImageType, ImageType> RescaleIntensityFilterType;
@@ -269,7 +274,8 @@ public:
 public:
    BetaFinder();
    virtual ~BetaFinder() {/* shut compiler up */}
-   virtual void Load(const char * filename);
+   void HookUpEigenStuff();
+   virtual void Load(const char* filename);
    //   virtual void ShowProgress(float);
    //   virtual void ShowStatus(const char * text);
    //   virtual void ShowSpatialFunctionControl( void );
@@ -297,23 +303,33 @@ protected:
    VolumeReaderType::Pointer               m_Reader;
    InputImageType::ConstPointer            m_inputImage;
 
-   //  GradientMagnitudeFilterType::Pointer    m_GradientMagnitude;
+//  GradientMagnitudeFilterType::Pointer    m_GradientMagnitude;
 
    HessianFilterType::Pointer              m_Hessian;
 
    EigenAnalysisFilterType::Pointer        m_TotalEigenFilter;
 
-   EValueImageAdaptorType::Pointer         m_EigenAdaptor1;
-   EValueImageAdaptorType::Pointer         m_EigenAdaptor2;
-   EValueImageAdaptorType::Pointer         m_EigenAdaptor3;
+   EValueImageAdaptorType::Pointer         m_EValueAdaptor1;
+   EValueImageAdaptorType::Pointer         m_EValueAdaptor2;
+   EValueImageAdaptorType::Pointer         m_EValueAdaptor3;
 
-   EValueCastImageFilterType::Pointer      m_EigenCastfilter1;
-   EValueCastImageFilterType::Pointer      m_EigenCastfilter2;
-   EValueCastImageFilterType::Pointer      m_EigenCastfilter3;
+   EVectorImageAdaptorType::Pointer        m_EVectorAdaptor1;
+   EVectorImageAdaptorType::Pointer        m_EVectorAdaptor2;
+   EVectorImageAdaptorType::Pointer        m_EVectorAdaptor3;
+
+
+   EValueCastImageFilterType::Pointer      m_EValueCastfilter1;
+   EValueCastImageFilterType::Pointer      m_EValueCastfilter2;
+   EValueCastImageFilterType::Pointer      m_EValueCastfilter3;
+
+   EVectorCastImageFilterType::Pointer     m_EVectorCastfilter1;
+   EVectorCastImageFilterType::Pointer     m_EVectorCastfilter2;
+   EVectorCastImageFilterType::Pointer     m_EVectorCastfilter3;
+
 
    HessianToLaplacianImageFilter::Pointer  m_Laplacian;
 
-   ParametricSpaceFilterType::Pointer      m_ParametricSpace;
+   ParametricEigenvalueSpaceFilterType::Pointer m_ParametricEigenvalueSpace;
 
    SpatialFunctionFilterType::Pointer      m_SpatialFunctionFilter;
 
@@ -329,7 +345,8 @@ protected:
 
    WriterType::Pointer                     m_Writer;
 
-   EigenValueWriterType::Pointer           m_EigenValueWriter;
+   EigenValueWriterType::Pointer           m_EValueWriter;
+   EVectorWriterType::Pointer          m_EVectorWriter;
 
    MergedWriterType::Pointer               m_MergedWriter;
 
