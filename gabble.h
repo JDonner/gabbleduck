@@ -78,7 +78,7 @@ public:
    typedef   InputPixelType                                BetaPixelType;
    typedef   double                                        PixelType;
    typedef   unsigned char                                 OverlayPixelType;
-   typedef   float                                         MeshPixelType;
+   typedef   double                                        MeshPixelType;
    typedef   MeshPixelType                                 EigenPixelType;
 
    itkStaticConstMacro(Dimension, unsigned int, 3);
@@ -115,11 +115,11 @@ public:
 
    // Set of 3 eigenvalues
    typedef   itk::FixedArray<double, HessianPixelType::Dimension>
-                                                           EigenValueArrayType;
+                                                          EigenValueArrayType;
 
    typedef   itk::Matrix<double,
                          HessianPixelType::Dimension,
-                         HessianPixelType::Dimension>    EVectorMatrixType;
+                         HessianPixelType::Dimension>     EVectorMatrixType;
 
    // 3, of 3
    typedef   itk::Image<EigenValueArrayType,
@@ -194,7 +194,7 @@ public:
 
    // MeshType is 3 points, each 3D
    typedef   itk::ImageToParametricSpaceFilter<
-      EachEVectorImageType, MeshType> ParametricEVectorSpaceFilterType;
+      EachEVectorImageType, MeshType> ParametricEigenvectorSpaceFilterType;
 
    typedef   itk::RescaleIntensityImageFilter<
       ImageType, ImageType> RescaleIntensityFilterType;
@@ -330,6 +330,7 @@ protected:
    HessianToLaplacianImageFilter::Pointer  m_Laplacian;
 
    ParametricEigenvalueSpaceFilterType::Pointer m_ParametricEigenvalueSpace;
+   ParametricEigenvectorSpaceFilterType::Pointer m_ParametricEigenvectorSpace;
 
    SpatialFunctionFilterType::Pointer      m_SpatialFunctionFilter;
 

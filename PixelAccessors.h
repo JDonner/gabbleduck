@@ -24,7 +24,7 @@ template< class TPixel >
 {
 public:
    typedef TPixel                     InternalType;
-   typedef float                      ExternalType;
+   typedef typename TPixel::ValueType ExternalType;
 
    inline ExternalType Get( const InternalType & input ) const
    {
@@ -48,7 +48,8 @@ template< class TPixel >
 {
 public:
    typedef TPixel                     InternalType;
-   typedef float                      ExternalType;
+   // ValueType* is the row type, for which there is no nice typedef
+   typedef typename TPixel::ValueType* ExternalType;
 
    inline ExternalType Get( const InternalType & input ) const
    {

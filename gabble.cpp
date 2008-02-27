@@ -124,7 +124,7 @@ void BetaFinder::HookUpEigenStuff()
    m_TotalEigenFilter->OrderEigenValuesBy(
       EigenAnalysisFilterType::JgdCalculatorType::OrderByValue);
 
-
+   // Eigenvalue
    // Create an adaptor and plug the output to the parametric space
    m_EValueAdaptor1 = EValueImageAdaptorType::New();
    EigenvalueAccessor< EigenValueArrayType > accessor1;
@@ -145,8 +145,7 @@ void BetaFinder::HookUpEigenStuff()
    m_EValueAdaptor3->SetPixelAccessor( accessor3 );
 
 
-
-
+   // Eigenvector
    // Create an adaptor and plug the output to the parametric space
    m_EVectorAdaptor1 = EVectorImageAdaptorType::New();
    EigenvectorAccessor< EVectorMatrixType > vecAccessor1;
@@ -178,10 +177,25 @@ void BetaFinder::HookUpEigenStuff()
    m_EValueCastfilter3 = EValueCastImageFilterType::New();
    m_EValueCastfilter3->SetInput( m_EValueAdaptor1 );
 
+   // Shoot shoot shoot - I want the matching eigenvector with each value;
+   // have to figure out how to keep track of that.
+   // - heh - I think it's ok as-is!
+
+   m_EVectorCastfilter1 = EVectorCastImageFilterType::New();
+   m_EVectorCastfilter1->SetInput( m_EVectorAdaptor3 );
+   m_EVectorCastfilter2 = EVectorCastImageFilterType::New();
+   m_EVectorCastfilter2->SetInput( m_EVectorAdaptor2 );
+   m_EVectorCastfilter3 = EVectorCastImageFilterType::New();
+   m_EVectorCastfilter3->SetInput( m_EVectorAdaptor1 );
+
+
+
    // I think this parametric stuff is just, about having to use 3-valued
    // points.
 
    m_ParametricEigenvalueSpace = ParametricEigenvalueSpaceFilterType::New();
+   m_ParametricEigenvectorSpace = ParametricEigenvectorSpaceFilterType::New();
+
    // maximum, to minimum eigenvalue
 
    // "The mesh contains one point for every pixel on the images. The
@@ -198,6 +212,10 @@ void BetaFinder::HookUpEigenStuff()
    m_ParametricEigenvalueSpace->SetInput( 0, m_EValueCastfilter1->GetOutput() );
    m_ParametricEigenvalueSpace->SetInput( 1, m_EValueCastfilter2->GetOutput() );
    m_ParametricEigenvalueSpace->SetInput( 2, m_EValueCastfilter3->GetOutput() );
+
+   m_ParametricEigenvectorSpace->SetInput( 0, m_EVectorCastfilter1->GetOutput() );
+   m_ParametricEigenvectorSpace->SetInput( 1, m_EVectorCastfilter2->GetOutput() );
+   m_ParametricEigenvectorSpace->SetInput( 2, m_EVectorCastfilter3->GetOutput() );
 
    BOOST_MPL_ASSERT((boost::is_same<ImageSpaceMeshType, MeshType>));
 }
