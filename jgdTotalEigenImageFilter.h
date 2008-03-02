@@ -68,7 +68,7 @@ namespace itk
 * \sa MorphologyImageFilter
 * \ingroup ImageEnhancement MathematicalMorphologyImageFilters
 */
-
+// jgd - Indeed, seems to be a matrix type. TEVectorsImage == Image<Matrix..>
 template <class TInputImage, class TEValuesImage, class TEVectorsImage>
 class TotalEigenImageFilter :
     public ImageToImageFilter<TInputImage, TEValuesImage>

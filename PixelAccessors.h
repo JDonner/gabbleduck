@@ -49,10 +49,16 @@ template< class TPixel >
 public:
    typedef TPixel                     InternalType;
    // ValueType* is the row type, for which there is no nice typedef
+   // (Do I know that it's valid?)
    typedef typename TPixel::ValueType* ExternalType;
 
    inline ExternalType Get( const InternalType & input ) const
    {
+      // I believe this is a row, as would be correct. At least,
+      // operator[] of <Matrix> returns a row in the form of T*, so
+      // it looks completely correct (yay!).
+      // ultimately, the type is a vnl_matrix_fixed, a T m_matrix[numrows][numcols],
+      // so a pointer is all there is.
       return static_cast<ExternalType>( input[m_EigenIdx] );
    }
 
@@ -65,23 +71,24 @@ private:
    unsigned m_EigenIdx;
 };
 
+#if 0
+// // Functor to get trace of the hessian matrix (laplacian of the image )
+// namespace Functor {
 
-// Functor to get trace of the hessian matrix (laplacian of the image )
-namespace Functor {
+// template< typename TInput, typename TOutput >
+//    class HessianToLaplacianFunction
+// {
+// public:
+//    typedef typename TInput::RealValueType  RealValueType;
+//    HessianToLaplacianFunction() {}
+//    ~HessianToLaplacianFunction() {}
 
-template< typename TInput, typename TOutput >
-   class HessianToLaplacianFunction
-{
-public:
-   typedef typename TInput::RealValueType  RealValueType;
-   HessianToLaplacianFunction() {}
-   ~HessianToLaplacianFunction() {}
-
-   inline TOutput operator()( const TInput & x ) const
-   {
-      return static_cast< TOutput >( x(0,0) + x(1,1) + x(2,2) );
-   }
-};
+//    inline TOutput operator()( const TInput & x ) const
+//    {
+//       return static_cast< TOutput >( x(0,0) + x(1,1) + x(2,2) );
+//    }
+// };
+#endif // 0
 
 }
 

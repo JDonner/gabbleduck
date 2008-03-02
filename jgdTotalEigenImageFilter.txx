@@ -48,12 +48,11 @@ template <class TInputImage,class TEValuesImage, class TEVectorsImage>
  */
 template <class TInputImage,class TEValuesImage, class TEVectorsImage>
    typename TotalEigenImageFilter<
-   TInputImage,TEValuesImage, TEVectorsImage>::EValuesImageType *
+   TInputImage, TEValuesImage, TEVectorsImage>::EValuesImageType*
    TotalEigenImageFilter<TInputImage,TEValuesImage, TEVectorsImage>
    ::GetEigenValuesImage()
 {
-   return  dynamic_cast< EValuesImageType * >(
-                                              this->ProcessObject::GetOutput(0) );
+   return dynamic_cast<EValuesImageType*>(this->ProcessObject::GetOutput(0));
 }
 
 
@@ -61,13 +60,12 @@ template <class TInputImage,class TEValuesImage, class TEVectorsImage>
  *  Return the thinning Image pointer
  */
 template <class TInputImage, class TEValuesImage, class TEVectorsImage>
-   typename TotalEigenImageFilter<
-   TInputImage, TEValuesImage, TEVectorsImage>::EVectorsImageType *
-   TotalEigenImageFilter<TInputImage, TEValuesImage, TEVectorsImage>
+   typename TotalEigenImageFilter<TInputImage, TEValuesImage, TEVectorsImage>::
+   EVectorsImageType* TotalEigenImageFilter<TInputImage, TEValuesImage, TEVectorsImage>
    ::GetEigenVectorsImage()
 {
-   return dynamic_cast< EVectorsImageType * >(
-                                              this->ProcessObject::GetOutput(1) );
+   return dynamic_cast<EVectorsImageType*>
+      (this->ProcessObject::GetOutput(1));
 }
 
 /**
@@ -151,7 +149,7 @@ template <class TInputImage,class TEValuesImage, class TEVectorsImage>
    otVal.GoToBegin();
    otVec.GoToBegin();
 
-   while( !it.IsAtEnd() )
+   while (!it.IsAtEnd())
    {
       // &&& Look to speed up, by passing a direct reference if possible.
       EValuesPixelType evals = otVal.Value();

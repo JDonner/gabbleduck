@@ -18,23 +18,7 @@ BetaFinder::BetaFinder()
    m_Hessian = HessianFilterType::New();
    m_Hessian->SetInput( m_Reader->GetOutput() );
 
-   ////////////////////////////////////////////////////////////////////
-   // Eigen stuff
-   ////////////////////////////////////////////////////////////////////
-
-
    BetaFinder::HookUpEigenStuff();
-
-#if defined(NEW_STOFF)
-   // Wait. We don't care /which direction/ the greatest eigenvalues are in,
-   // somehow - we only want those pixels that are tube-like (in /some/
-   // direction) and flat-like (in some direction). For these we don't
-   // mind losing the orientations of the eigenvalues.
-
-   // Make image
-
-#endif
-
 
    // SphereSpatialFunction
    // function that returns 0 for points inside or on the surface of a sphere,
@@ -50,22 +34,6 @@ BetaFinder::BetaFinder()
    //   m_SpatialFunctionControl->SetSpatialFunction(
    //                   m_SpatialFunctionFilter->GetSpatialFunction() );
 
-#ifdef FRUSTUM_FUNCTION
-   //   // We must choose samples in the parametric space
-   //   //  such that lambda_2 =~ lambda_3   and  lambda_1 =~ 0
-   //   m_SpatialFunctionControl->SetAngleZ( -45.0f );
-   //   m_SpatialFunctionControl->SetApertureAngleX( 14.0f );
-   //   m_SpatialFunctionControl->SetApertureAngleY(  19.0f );
-   //   m_SpatialFunctionControl->SetTopPlane( 53.0f );
-   //   m_SpatialFunctionControl->SetBottomPlane( 6.0f );
-   //   m_SpatialFunctionControl->SetApex( 0.0f, 0.0f, 0.0f );
-   //   m_SpatialFunctionControl->SetRotationPlane(
-   //           SpatialFunctionControlType::RotateInYZPlane );
-#endif
-
-#if defined(SPHERE_FUNCTION)
-   //   m_SpatialFunctionControl->SetRadius( 1.0f );
-#endif
 
    // I think this conversion is needless (mmm, maybe).
    m_InverseParametricFilter = InverseParametricFilterType::New();
@@ -80,11 +48,9 @@ BetaFinder::BetaFinder()
    m_PointSetToImageFilter->SetInput(
       m_InverseParametricFilter->GetOutput() );
 
-
    m_MergedWriter = MergedWriterType::New();
    m_MergedWriter->SetFileName( "Remerged.vtk");
    m_MergedWriter->SetInput(m_PointSetToImageFilter->GetOutput());
-
 
    m_OverlayResampleFilter = OverlayImageResampleFilterType::New();
    m_OverlayResampleFilter->SetInput( m_PointSetToImageFilter->GetOutput() );
@@ -348,10 +314,10 @@ void BetaFinder::Execute()
 
    BetaImageType::Pointer beta = this->extract_beta(
       m_inputImage,
-      m_EValueCastfilter1->GetOutput(),
-      m_EValueCastfilter2->GetOutput(),
-      m_EValueCastfilter3->GetOutput(),
-      5.0);
+       m_EValueCastfilter1->GetOutput(),
+       m_EValueCastfilter2->GetOutput(),
+       m_EValueCastfilter3->GetOutput(),
+       5.0);
    typedef itk::ImageFileWriter< BetaImageType > BetaWriterType;
    BetaWriterType::Pointer betaWriter = BetaWriterType::New();
    ostringstream oss;

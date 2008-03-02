@@ -139,9 +139,9 @@ public:
 #endif // WANT_EIGENVECTOR
       EigenAnalysisFilterType;
 
-   typedef   itk::UnaryFunctorImageFilter< HessianImageType, ImageType,
-                                           Functor::HessianToLaplacianFunction< HessianPixelType, PixelType > >
-      HessianToLaplacianImageFilter;
+   // typedef   itk::UnaryFunctorImageFilter< HessianImageType, ImageType,
+   //                                         Functor::HessianToLaplacianFunction< HessianPixelType, PixelType > >
+   //    HessianToLaplacianImageFilter;
 
 
    ///////////////////////////////////////////////////////////////////
@@ -160,7 +160,7 @@ public:
       EachEigenValueImageType;
 
 
-   // extracts eigenvalues - need to make it extract eigenvectors, too
+   // extracts eigenvalues
    typedef   itk::CastImageFilter<
       EValueImageAdaptorType, EachEigenValueImageType>  EValueCastImageFilterType;
 
@@ -170,28 +170,29 @@ public:
    // EVector
    ///////////////////////////////////////////////////////////////////
 
-   // Reads off the eigenvalues
+   // Reads off the eigenvectors
    typedef   itk::ImageAdaptor<EVectorImageType,
                                EigenvectorAccessor<EVectorMatrixType> > EVectorImageAdaptorType;
 
-   // Each eigenvalue is a 3D mesh? We have 3 of these, one each per eigenvalue
+   // Each eigenvector is a 3D mesh? We have 3 of these, one each per eigenvector
    // (which you'd never guess by the name).
    // -- yeah, it ends up being just a 3D array of float.
    // &&& HEY HERE'S THE SOURCE OF MUCH TROUBLE
+   // &&& Why are we going to 'mesh' in the first place? Why not just
+   // an image of a vector row? Let's go fix adaptors.
    typedef   itk::Image< EValueMeshPointDataType::ValueType,
                          EValueMeshPointDataType::PointDimension >
       EachEVectorImageType;
 
-   // extracts eigenvalues - need to make it extract eigenvectors, too
+   // extracts eigenvectors
    typedef   itk::CastImageFilter<
       EVectorImageAdaptorType, EachEVectorImageType>  EVectorCastImageFilterType;
-
 
 
    typedef   itk::ImageFileWriter<EValueCastImageFilterType::OutputImageType> WriterType;
 
    typedef   itk::ImageFileWriter<EValueCastImageFilterType::OutputImageType> EigenValueWriterType;
-//   typedef   itk::ImageFileWriter<EVectorCastImageFilterType::OutputImageType> EVectorWriterType;
+   typedef   itk::ImageFileWriter<EVectorCastImageFilterType::OutputImageType> EVectorWriterType;
 
    // MeshType is 3 points, each 3D
    typedef   itk::ImageToParametricSpaceFilter<EachEigenValueImageType, MeshType>
@@ -333,7 +334,7 @@ protected:
    EVectorCastImageFilterType::Pointer     m_EVectorCastfilter3;
 
 
-   HessianToLaplacianImageFilter::Pointer  m_Laplacian;
+//   HessianToLaplacianImageFilter::Pointer  m_Laplacian;
 
    ParametricEigenvalueSpaceFilterType::Pointer m_ParametricEigenvalueSpace;
    ParametricEigenvectorSpaceFilterType::Pointer m_ParametricEigenvectorSpace;
