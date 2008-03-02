@@ -78,10 +78,9 @@ public:
    typedef   InputPixelType                                BetaPixelType;
    typedef   double                                        PixelType;
    typedef   unsigned char                                 OverlayPixelType;
-   typedef   double                                        MeshPixelType;
-   typedef   MeshPixelType                                 EigenPixelType;
+   typedef   double                                        MeshPixelComponentType;
 
-   itkStaticConstMacro(Dimension, unsigned int, 3);
+   itkStaticConstMacro(Dimension, unsigned, 3);
 
    typedef   itk::Vector< PixelType, Dimension >           VectorType;
 
@@ -93,16 +92,21 @@ public:
    typedef   itk::Image< VectorType, Dimension >           VectorImageType;
    typedef   itk::Image< CovariantVectorType, Dimension >  CovariantVectorImageType;
 
-   // So the mesh is indeed, of points. 3 floats? MeshPixelType == float
-   typedef   itk::Point< MeshPixelType, Dimension>         MeshPointDataType;
+   // So the mesh is indeed, of points. 3 floats? MeshPixelComponentType == float
+   // &&& urg, why point instead of FixedArray?
+   typedef   itk::Point<MeshPixelComponentType, Dimension> EValueMeshPointDataType;
 
    // 3D 'sparse' array of float[3]
-   typedef   itk::Mesh< MeshPointDataType, 3 >             MeshType;
+   // Why not FixedArray type, I wonder?
+   typedef   itk::Mesh< EValueMeshPointDataType, 3 >       MeshType;
+
+
 
    typedef   itk::ImageFileReader< InputImageType >        VolumeReaderType;
 
    // hmmm. Looks the same as <MeshType>; ie, 3D 'sparse' array of 3D points
-   typedef   itk::Mesh< MeshType::PointType, Dimension >   ImageSpaceMeshType;
+   typedef   itk::Mesh< EValueMeshPointDataType //MeshType::PointType
+                        , Dimension >   ImageSpaceMeshType;
 
    // typedef   itk::GradientMagnitudeRecursiveGaussianImageFilter<
    //                           InputImageType,
@@ -151,8 +155,8 @@ public:
    // Each eigenvalue is a 3D mesh? We have 3 of these, one each per eigenvalue
    // (which you'd never guess by the name).
    // -- yeah, it ends up being just a 3D array of float.
-   typedef   itk::Image< MeshPointDataType::ValueType,
-                         MeshPointDataType::PointDimension >
+   typedef   itk::Image< EValueMeshPointDataType::ValueType,
+                         EValueMeshPointDataType::PointDimension >
       EachEigenValueImageType;
 
 
@@ -173,8 +177,9 @@ public:
    // Each eigenvalue is a 3D mesh? We have 3 of these, one each per eigenvalue
    // (which you'd never guess by the name).
    // -- yeah, it ends up being just a 3D array of float.
-   typedef   itk::Image< MeshPointDataType::ValueType,
-                         MeshPointDataType::PointDimension >
+   // &&& HEY HERE'S THE SOURCE OF MUCH TROUBLE
+   typedef   itk::Image< EValueMeshPointDataType::ValueType,
+                         EValueMeshPointDataType::PointDimension >
       EachEVectorImageType;
 
    // extracts eigenvalues - need to make it extract eigenvectors, too
@@ -186,23 +191,23 @@ public:
    typedef   itk::ImageFileWriter<EValueCastImageFilterType::OutputImageType> WriterType;
 
    typedef   itk::ImageFileWriter<EValueCastImageFilterType::OutputImageType> EigenValueWriterType;
-   typedef   itk::ImageFileWriter<EVectorCastImageFilterType::OutputImageType> EVectorWriterType;
+//   typedef   itk::ImageFileWriter<EVectorCastImageFilterType::OutputImageType> EVectorWriterType;
 
    // MeshType is 3 points, each 3D
-   typedef   itk::ImageToParametricSpaceFilter<
-      EachEigenValueImageType, MeshType> ParametricEigenvalueSpaceFilterType;
+   typedef   itk::ImageToParametricSpaceFilter<EachEigenValueImageType, MeshType>
+                                                               ParametricEigenvalueSpaceFilterType;
 
    // MeshType is 3 points, each 3D
-   typedef   itk::ImageToParametricSpaceFilter<
-      EachEVectorImageType, MeshType> ParametricEigenvectorSpaceFilterType;
+   typedef   itk::ImageToParametricSpaceFilter<EachEVectorImageType, MeshType>
+                                                               ParametricEigenvectorSpaceFilterType;
 
-   typedef   itk::RescaleIntensityImageFilter<
-      ImageType, ImageType> RescaleIntensityFilterType;
+   typedef   itk::RescaleIntensityImageFilter<ImageType, ImageType>
+                                                               RescaleIntensityFilterType;
 
 #if defined(SPHERE_FUNCTION)
    typedef   itk::SphereSpatialFunction<
       MeshType::PointDimension,
-      MeshType::PointType >  SphereSpatialFunctionType;
+      MeshType::PointType >                                    SphereSpatialFunctionType;
 #endif
 
 #if defined(FRUSTUM_FUNCTION)
@@ -322,6 +327,7 @@ protected:
    EValueCastImageFilterType::Pointer      m_EValueCastfilter2;
    EValueCastImageFilterType::Pointer      m_EValueCastfilter3;
 
+   // problematic
    EVectorCastImageFilterType::Pointer     m_EVectorCastfilter1;
    EVectorCastImageFilterType::Pointer     m_EVectorCastfilter2;
    EVectorCastImageFilterType::Pointer     m_EVectorCastfilter3;
@@ -347,7 +353,7 @@ protected:
    WriterType::Pointer                     m_Writer;
 
    EigenValueWriterType::Pointer           m_EValueWriter;
-   EVectorWriterType::Pointer          m_EVectorWriter;
+//   EVectorWriterType::Pointer              m_EVectorWriter;
 
    MergedWriterType::Pointer               m_MergedWriter;
 

@@ -205,8 +205,9 @@ void BetaFinder::HookUpEigenStuff()
    // this particular case the parameters are the gray levels of the input
    // images. The dimension of the mesh points should be equal to the number
    // of input images to this filter."
+   //
    // So, the grey level at each point in the 3 images, is one component of
-   // a vector of parameters for that point.
+   // a vector of parameters for that point. A sort of Muxer / demuxer.
 
    // 3 images -> a mesh
    m_ParametricEigenvalueSpace->SetInput( 0, m_EValueCastfilter1->GetOutput() );
@@ -219,6 +220,8 @@ void BetaFinder::HookUpEigenStuff()
 
    BOOST_MPL_ASSERT((boost::is_same<ImageSpaceMeshType, MeshType>));
 }
+
+
 
 
 void BetaFinder::Load(char const* basename)
