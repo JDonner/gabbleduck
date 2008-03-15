@@ -124,7 +124,63 @@ bool IsBeta(double sheetMin, double sheetMax,
    return isBeta;
 }
 
+
+#if 0
+
+void MakePolygon(vector v, Box box, Triangles& outTriangles)
+{
+   intersect with edges;
+
+   outTriangles.push_back(triangle);
+}
+
+// This makes no sense - how can thickness deal with flatness?
+// I think the eigenVALUE stuff was, 'how it's been done before,
+// but is not relevant to now'.
+// This eigenVECTOR stuff is all there is!
+// Do we take the main
+void TraceFlatness(seeds,
+                   EValueImage::ConstPointer l1Image,
+                   EValueImage::ConstPointer l2Image,
+                   EValueImage::ConstPointer l3Image)
+                   EVectorImage::ConstPointer v1Image,
+                   EVectorImage::ConstPointer v2Image,
+                   EVectorImage::ConstPointer v3Image)
+{
+   TriangleList triangles;
+   // bottom right of page 9:
+   // for each maximal (critical) seed point:
+   // - the vector corresponding to the maximum
+   // eigenVALUE - ie, eigenvector_0
+
+   for (seeds::const_iterator itSeed = seeds.begin(), endSeed = seeds.end();
+        itSeed != endSeed; ++itSeed) {
+      Index idx = summat;
+      double t1 = magnitude(v1Image[idx]);
+      double t2 = magnitude(v2Image[idx]);
+      double t3 = magnitude(v2Image[idx]);
+      if (IsBeta(sheetMin, sheetMax, t1, t2, t3)) {
+         Box box;
+         MakePolygon(v1, box, triangles);
+      }
+   }
+
+   // so now I have my starter triangles....
+
+   // we find the edges that need continuing,
+   // and continue.
+   //
+   // The stopping point I think, is when the 'checked point' doesn't
+   // meet the eigenVALUE criterion for flatness (but you'd think
+   // it would be, meets IsBeta.... - it is (whew) )
+
+}
+
+#endif
+
+
 // betaimage == inputimage, ie scalar
+// Finds spots of supposed flatness, by eigenvalue
 BetaFinder::BetaImageType::Pointer
    BetaFinder::extract_beta(InputImageType::ConstPointer density,
                             EachEigenValueImageType::Pointer e0,
@@ -140,9 +196,9 @@ BetaFinder::BetaImageType::Pointer
    m_Reader->Update();
    dupper->Update();
 
-   BetaImageType::Pointer beta = dupper->GetOutput();
+   BetaImageType::Pointer betaImage = dupper->GetOutput();
    //    output_image->Print(cout);
-   beta->FillBuffer(BetaPixelType(0));
+   betaImage->FillBuffer(BetaPixelType(0));
 
    // Do I need to initialize this?
 
@@ -156,7 +212,7 @@ BetaFinder::BetaImageType::Pointer
    InputConstIterType itDensity ( density, density->GetRequestedRegion() );
 
    typedef itk::ImageRegionIterator< BetaImageType > BetaOutIteratorType;
-   BetaOutIteratorType itBeta( beta, beta->GetRequestedRegion() );
+   BetaOutIteratorType itBeta( betaImage, betaImage->GetRequestedRegion() );
 
 
    BetaPixelType max_flatness = -1.0;
@@ -184,6 +240,7 @@ BetaFinder::BetaImageType::Pointer
       sum_v0 += v0;
       sum_v1 += v1;
 
+      // Where's this from?
       if (5.0 <= v0 / (v1 + 1.0e-20) && 0.8 <= flatness) {
          itBeta.Set(flatness);
          ++num_beta_pixels;
@@ -197,12 +254,13 @@ BetaFinder::BetaImageType::Pointer
    }
 
    BetaPixelType avg_v0 = sum_v0 / num_pixels, avg_v1 = sum_v1 / num_pixels;
-   cout << "avg v0: " << avg_v0 << "avg v1: " << avg_v1 << endl;
-   cout << "min v0: " << min_v0 << "min v1: " << min_v1 << endl;
-   cout << "max v0: " << max_v0 << "max v1: " << max_v1 << endl;
-   cout << "max flatness: " << max_flatness << "; " << num_beta_pixels << endl;
+   cout << "avg v0: " << avg_v0 << "avg v1: " << avg_v1 << endl
+        << "min v0: " << min_v0 << "min v1: " << min_v1 << endl
+        << "max v0: " << max_v0 << "max v1: " << max_v1 << endl
+        << "max flatness: " << max_flatness << "; " << num_beta_pixels
+        << endl;
 
-   return beta;
+   return betaImage;
 }
 
 
