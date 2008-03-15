@@ -52,7 +52,8 @@ template <class TInputImage,class TEValuesImage, class TEVectorsImage>
    TotalEigenImageFilter<TInputImage,TEValuesImage, TEVectorsImage>
    ::GetEigenValuesImage()
 {
-   return dynamic_cast<EValuesImageType*>(this->ProcessObject::GetOutput(0));
+   return dynamic_cast<EValuesImageType*>
+      (this->ProcessObject::GetOutput(0));
 }
 
 
@@ -78,7 +79,6 @@ template <class TInputImage, class TEValuesImage, class TEVectorsImage>
    TotalEigenImageFilter<TInputImage, TEValuesImage, TEVectorsImage>
    ::PrepareData()
 {
-
    itkDebugMacro(<< "PrepareData Start");
    typename TEValuesImage::Pointer evalImage = GetEigenValuesImage();
    typename TEVectorsImage::Pointer evecImage = GetEigenVectorsImage();

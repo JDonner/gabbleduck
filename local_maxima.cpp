@@ -23,8 +23,7 @@ typedef itk::BinaryThresholdImageFilter< InputImage, BeatenImage > ThresholdFilt
 
 
 typedef itk::ConstantBoundaryCondition<BeatenImage> BeatenConstantBoundaryCondition;
-typedef itk::NeighborhoodIterator<
-   BeatenImage, BeatenConstantBoundaryCondition> BeatenNit;
+typedef itk::NeighborhoodIterator<BeatenImage, BeatenConstantBoundaryCondition> BeatenNit;
 
 typedef itk::ConstantBoundaryCondition<InputImage> InputConstantBoundaryCondition;
 // The boundary condition here shouldn't matter (image becomes 0
@@ -35,7 +34,9 @@ typedef itk::ConstNeighborhoodIterator<
 
 typedef std::queue<BeatenNit::IndexType> PosQueue;
 
-typedef std::set<BeatenNit::IndexType, itk::Functor::IndexLexicographicCompare<Dimension> > PointSet;
+//typedef std::set<BeatenNit::IndexType,
+typedef std::set<BeatenImage::IndexType,
+                 itk::Functor::IndexLexicographicCompare<Dimension> > PointSet;
 // Called 'region' because occasionally there will be a plateau of
 // equal seeds.
 // Pointer because it's too much of a pain to define a '<' operator
@@ -256,6 +257,20 @@ void find_seeds(InputImage::Pointer input,
 }
 
 #if defined(TESTING_LOCAL_MAXIMA)
+
+
+void make_seeds_image()
+{
+   medianFilter->Update();
+   ImageType::Pointer image = medianFilter->GetOutput();
+   typedef ImageDuplicator< ImageType > DuplicatorType;
+   DuplicatorType::Pointer duplicator = DuplicatorType::New();
+   duplicator->SetInput();
+   duplicator->Update();
+   // also has: duplicator->CreateAnother()
+   ImageType::Pointer clonedImage = duplicator->GetOutput();
+   CastImageFilter<InputImageType, OutputImageType> cast_filter;
+}
 
 int main(int argc, char** argv)
 {
