@@ -12,72 +12,10 @@ BetaFinder::BetaFinder()
 
    m_Reader      = VolumeReaderType::New();
 
-   //  || Gradient( Image ) ||
-   //  m_GradientMagnitude = GradientMagnitudeFilterType::New();
-   //  m_GradientMagnitude->SetInput( m_Reader->GetOutput() );
-
    m_Hessian = HessianFilterType::New();
    m_Hessian->SetInput( m_Reader->GetOutput() );
 
    BetaFinder::HookUpEigenStuff();
-
-   // SphereSpatialFunction
-   // function that returns 0 for points inside or on the surface of a sphere,
-   // 1 for points outside the sphere
-   // What the heck this is for, I couldn't say.
-   // Maybe to trim out regions that are too small?
-   // SpatialFunction here applies to a mesh,
-   // and writes to a mesh
-
-   // m_SpatialFunctionFilter = SpatialFunctionFilterType::New();
-   // m_SpatialFunctionFilter->SetInput(m_ParametricEigenvalueSpace->GetOutput());
-
-   //   m_SpatialFunctionControl = SpatialFunctionControlType::New();
-   //   m_SpatialFunctionControl->SetSpatialFunction(
-   //                   m_SpatialFunctionFilter->GetSpatialFunction() );
-
-
-   // I think this conversion is needless (mmm, maybe).
-   // m_InverseParametricFilter = InverseParametricFilterType::New();
-   // m_InverseParametricFilter->SetInput(
-   //    m_SpatialFunctionFilter->GetOutput() );
-
-   // Here's where it comes back to image, after getting some spatial thing.
-   // Might learn how to translate the point set to image filter, from it.
-   //
-   // Generate an image from the extracted points for an overlay display
-
-   // m_PointSetToImageFilter = PointSetToImageFilterType::New();
-   // m_PointSetToImageFilter->SetInput(
-   //    m_InverseParametricFilter->GetOutput() );
-
-   // m_MergedWriter = MergedWriterType::New();
-   // m_MergedWriter->SetFileName( "Remerged.vtk");
-   // m_MergedWriter->SetInput(m_PointSetToImageFilter->GetOutput());
-
-   // m_OverlayResampleFilter = OverlayImageResampleFilterType::New();
-   // m_OverlayResampleFilter->SetInput( m_PointSetToImageFilter->GetOutput() );
-
-   // m_ResampleWriter = ResampleWriterType::New();
-   // m_ResampleWriter->SetFileName( "Resampled.vtk");
-   // m_ResampleWriter->SetInput(m_OverlayResampleFilter->GetOutput());
-
-   // Output of the ThresholdImageFilter will be used as the
-   // overlay image of extracted points
-   // m_ThresholdImageFilter     = ThresholdImageFilterType::New();
-   // //  m_ThresholdImageFilter->SetLowerThreshold( 0.1 ); // crank it up a bit.
-   // m_ThresholdImageFilter->SetLowerThreshold( 0.0001 ); // Get all non-zero pixels
-   // m_ThresholdImageFilter->SetUpperThreshold( itk::NumericTraits<
-   //                                            ThresholdImageFilterType::OutputPixelType >::max() );
-   // // The either/or chosen output values for those pixels in the
-   // // input image that fall between lower & upper.
-   // m_ThresholdImageFilter->SetOutsideValue( 0 );
-   // m_ThresholdImageFilter->SetInsideValue( 255 );
-   // m_ThresholdImageFilter->SetInput( m_OverlayResampleFilter->GetOutput() );
-
-   // m_OverlayWriter = OverlayWriterType::New();
-   // m_OverlayWriter->SetInput( m_ThresholdImageFilter->GetOutput() );
-   // m_OverlayWriter->SetFileName( "PostThreshold.vtk");
 
 #if defined(INTERMEDIATE_OUTPUTS)
    m_EValueWriter = EigenValueWriterType::New();
@@ -155,38 +93,6 @@ void BetaFinder::HookUpEigenStuff()
    m_EVectorCastfilter2->SetInput( m_EVectorAdaptor2 );
    m_EVectorCastfilter3 = EVectorCastImageFilterType::New();
    m_EVectorCastfilter3->SetInput( m_EVectorAdaptor1 );
-
-
-
-   // I think this parametric stuff is just, about having to use 3-valued
-   // points.
-
-   // m_ParametricEigenvalueSpace = ParametricEigenvalueSpaceFilterType::New();
-   // m_ParametricEigenvectorSpace = ParametricEigenvectorSpaceFilterType::New();
-
-   // maximum, to minimum eigenvalue
-
-   // "The mesh contains one point for every pixel on the images. The
-   // coordinate of the point being equal to the gray level of the
-   // associated input pixels.  This class is intended to produce the
-   // population of points that represent samples in a parametric space. In
-   // this particular case the parameters are the gray levels of the input
-   // images. The dimension of the mesh points should be equal to the number
-   // of input images to this filter."
-   //
-   // So, the grey level at each point in the 3 images, is one component of
-   // a vector of parameters for that point. A sort of Muxer / demuxer.
-
-   // 3 images -> a mesh
-   // m_ParametricEigenvalueSpace->SetInput( 0, m_EValueCastfilter1->GetOutput() );
-   // m_ParametricEigenvalueSpace->SetInput( 1, m_EValueCastfilter2->GetOutput() );
-   // m_ParametricEigenvalueSpace->SetInput( 2, m_EValueCastfilter3->GetOutput() );
-
-   // m_ParametricEigenvectorSpace->SetInput( 0, m_EVectorCastfilter1->GetOutput() );
-   // m_ParametricEigenvectorSpace->SetInput( 1, m_EVectorCastfilter2->GetOutput() );
-   // m_ParametricEigenvectorSpace->SetInput( 2, m_EVectorCastfilter3->GetOutput() );
-
-   // BOOST_MPL_ASSERT((boost::is_same<ImageSpaceMeshType, MeshType>));
 }
 
 
@@ -324,10 +230,11 @@ void BetaFinder::Execute()
 
    BetaImageType::Pointer beta = this->extract_beta(
       m_inputImage,
-       m_EValueCastfilter1->GetOutput(),
-       m_EValueCastfilter2->GetOutput(),
-       m_EValueCastfilter3->GetOutput(),
-       5.0);
+      m_EValueCastfilter1->GetOutput(),
+      m_EValueCastfilter2->GetOutput(),
+      m_EValueCastfilter3->GetOutput(),
+      5.0);
+
    typedef itk::ImageFileWriter< BetaImageType > BetaWriterType;
    BetaWriterType::Pointer betaWriter = BetaWriterType::New();
    ostringstream oss;
@@ -335,10 +242,4 @@ void BetaFinder::Execute()
    betaWriter->SetFileName( oss.str().c_str() );
    betaWriter->SetInput(beta);
    betaWriter->Update();
-
-   // m_MergedWriter->Update();
-
-   // m_ResampleWriter->Update();
-
-   // m_OverlayWriter->Update();
 }

@@ -24,12 +24,9 @@
 #include <itkImage.h>
 #include <itkHessianRecursiveGaussianImageFilter.h>
 #include <itkImageToParametricSpaceFilter.h>
-//#include <itkMesh.h>
 #include <itkVertexCell.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
-//#include <itkInteriorExteriorMeshFilter.h>
-//#include <itkParametricSpaceToImageSpaceMeshFilter.h>
 #include <itkRescaleIntensityImageFilter.h>
 #include <itkSymmetricSecondRankTensor.h>
 #include <itkSymmetricEigenAnalysisImageFilter.h>
@@ -43,27 +40,12 @@
 #include <itkImageDuplicator.h>
 #include "PixelAccessors.h"
 #include "jgdTotalEigenImageFilter.h"
-//#include "EVector.h"
 
 #include <boost/mpl/assert.hpp>
 #include <boost/type_traits/is_same.hpp>
 
 #include <string>
 
-
-// Define which type of spatial function to use
-// Only one of the following lines should be uncommented.
-// #define SPHERE_FUNCTION
-
-// #define FRUSTUM_FUNCTION
-
-// #if defined(SPHERE_FUNCTION)
-// #   include <itkSphereSpatialFunction.h>
-// #endif
-
-// #if defined(FRUSTUM_FUNCTION)
-// #   include <itkFrustumSpatialFunction.h>
-// #endif
 
 
 // Write intermediate images for debug purposes
@@ -104,23 +86,7 @@ public:
    typedef   itk::Image< VectorType, Dimension >           VectorImageType;
    typedef   itk::Image< CovariantVectorType, Dimension >  CovariantVectorImageType;
 
-   // So the mesh is indeed, of points. 3 floats? MeshPixelComponentType == float
-   // &&& urg, why point instead of FixedArray?
-//   typedef   itk::Point<EigenComponentType, Dimension> EValueMeshPointDataType;
-
-   // 3D 'sparse' array of float[3]
-   // Why not FixedArray type, I wonder?
-//   typedef   itk::Mesh< EValueMeshPointDataType, 3 >       MeshType;
-
    typedef   itk::ImageFileReader< InputImageType >        VolumeReaderType;
-
-   // hmmm. Looks the same as <MeshType>; ie, 3D 'sparse' array of 3D points
-//   typedef   itk::Mesh< EValueMeshPointDataType //MeshType::PointType
-//                        , Dimension >   ImageSpaceMeshType;
-
-   // typedef   itk::GradientMagnitudeRecursiveGaussianImageFilter<
-   //                           InputImageType,
-   //                           ImageType        > GradientMagnitudeFilterType;
 
    typedef   itk::HessianRecursiveGaussianImageFilter<InputImageType>
                                                            HessianFilterType;
@@ -148,10 +114,6 @@ public:
    typedef   itk::SymmetricEigenAnalysisImageFilter<HessianImageType, EigenValueImageType>
 #endif // WANT_EIGENVECTOR
       EigenAnalysisFilterType;
-
-   // typedef   itk::UnaryFunctorImageFilter< HessianImageType, ImageType,
-   //                                         Functor::HessianToLaplacianFunction< HessianPixelType, PixelType > >
-   //    HessianToLaplacianImageFilter;
 
 
    ///////////////////////////////////////////////////////////////////
@@ -202,85 +164,9 @@ public:
    typedef   itk::ImageFileWriter<EValueCastImageFilterType::OutputImageType> EigenValueWriterType;
    typedef   itk::ImageFileWriter<EVectorCastImageFilterType::OutputImageType> EVectorWriterType;
 
-   // MeshType is 3 points, each 3D
-   // typedef   itk::ImageToParametricSpaceFilter<EachEigenValueImageType, MeshType>
-   //                                                             ParametricEigenvalueSpaceFilterType;
-
-   // // MeshType is 3 points, each 3D
-   // typedef   itk::ImageToParametricSpaceFilter<EachEVectorImageType, MeshType>
-   //                                                             ParametricEigenvectorSpaceFilterType;
-
-   // typedef   itk::RescaleIntensityImageFilter<ImageType, ImageType>
-   //                                                             RescaleIntensityFilterType;
-
-// #if defined(SPHERE_FUNCTION)
-//    typedef   itk::SphereSpatialFunction<
-//       MeshType::PointDimension,
-//       MeshType::PointType >                                    SphereSpatialFunctionType;
-// #endif
-
-// #if defined(FRUSTUM_FUNCTION)
-//    typedef   itk::FrustumSpatialFunction<
-//       MeshType::PointDimension,
-//       MeshType::PointType >  FrustumSpatialFunctionType;
-// #endif
-
-
-
-   //   typedef fltk::SphereFunctionControl<
-   //                                   SphereSpatialFunctionType >
-   //                                             SphereSpatialFunctionControlType;
-
-   //   typedef fltk::FrustumFunctionControl<
-   //                                   FrustumSpatialFunctionType >
-   //                                             FrustumSpatialFunctionControlType;
-
-   // These typedefs select the particular SpatialFunction
-// #ifdef SPHERE_FUNCTION
-//    typedef  SphereSpatialFunctionType          SpatialFunctionType;
-//    //    typedef  SphereSpatialFunctionControlType   SpatialFunctionControlType;
-// #endif
-
-// #ifdef FRUSTUM_FUNCTION
-//    typedef  FrustumSpatialFunctionType         SpatialFunctionType;
-//    //    typedef  FrustumSpatialFunctionControlType  SpatialFunctionControlType;
-// #endif
-
-
-   // typedef   itk::InteriorExteriorMeshFilter<
-   //    MeshType,
-   //    MeshType,
-   //    SpatialFunctionType  >
-   //    SpatialFunctionFilterType;
-
-   // // I was thinking <MeshType> == <ImageSpaceMeshType> but, not sure.
-   // typedef   itk::ParametricSpaceToImageSpaceMeshFilter<
-   //    // /These are provably the same type!/
-   //    // BOOST_MPL_ASSERT((boost::is_same<ImageSpaceMeshType, MeshType>));
-   //    MeshType,
-   //    ImageSpaceMeshType
-   //    >         InverseParametricFilterType;
-
-   // typedef   itk::PointSetToImageFilter< MeshType, ImageType >
-   //    PointSetToImageFilterType;
-
-   // typedef   PointSetToImageFilterType::OutputImageType   PointSetImageType;
-
-   // typedef   itk::ImageFileWriter< PointSetImageType >    MergedWriterType;
-
    typedef   itk::Image< OverlayPixelType, Dimension > OverlayImageType;
    typedef   itk::ImageFileWriter< OverlayImageType > OverlayWriterType;
 
-   // typedef   itk::ResampleImageFilter< PointSetImageType, PointSetImageType >
-   //    OverlayImageResampleFilterType;
-
-   // typedef   itk::ImageFileWriter< OverlayImageResampleFilterType::OutputImageType >
-   //    ResampleWriterType;
-
-//   typedef   itk::BinaryThresholdImageFilter<
-//       PointSetImageType, OverlayImageType >  ThresholdImageFilterType;
-
-   //  typedef   GradientMagnitudeFilterType::RealType     RealType;
    typedef   HessianFilterType::RealType     RealType;
 
 public:
@@ -316,8 +202,6 @@ protected:
    VolumeReaderType::Pointer               m_Reader;
    InputImageType::ConstPointer            m_inputImage;
 
-//  GradientMagnitudeFilterType::Pointer    m_GradientMagnitude;
-
    HessianFilterType::Pointer              m_Hessian;
 
    EigenAnalysisFilterType::Pointer        m_TotalEigenFilter;
@@ -341,33 +225,10 @@ protected:
    EVectorCastImageFilterType::Pointer     m_EVectorCastfilter3;
 
 
-//   HessianToLaplacianImageFilter::Pointer  m_Laplacian;
-
-   // ParametricEigenvalueSpaceFilterType::Pointer m_ParametricEigenvalueSpace;
-   // ParametricEigenvectorSpaceFilterType::Pointer m_ParametricEigenvectorSpace;
-
-   // SpatialFunctionFilterType::Pointer      m_SpatialFunctionFilter;
-
-
-   //   SpatialFunctionControlType::Pointer     m_SpatialFunctionControl;
-
-   // InverseParametricFilterType::Pointer    m_InverseParametricFilter;
-
-   // PointSetToImageFilterType::Pointer      m_PointSetToImageFilter;
-
-   // OverlayImageResampleFilterType::Pointer m_OverlayResampleFilter;
-
-   // ThresholdImageFilterType::Pointer       m_ThresholdImageFilter;
-
    WriterType::Pointer                     m_Writer;
 
    EigenValueWriterType::Pointer           m_EValueWriter;
 //   EVectorWriterType::Pointer              m_EVectorWriter;
-
-   // MergedWriterType::Pointer               m_MergedWriter;
-
-   // ResampleWriterType::Pointer             m_ResampleWriter;
-   // OverlayWriterType::Pointer              m_OverlayWriter;
 
    bool                                    m_ImageLoaded;
 };
