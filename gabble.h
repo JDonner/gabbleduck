@@ -47,6 +47,46 @@
 #include <string>
 
 
+// surface-tracing thoughts:
+
+// For interpolation, this looks like the thing - you specify
+// only the arbitrary points you're interested in. We'll probably
+// call it over and over again.
+// <InterpolateImagePointsFilter>
+// /big/common/software/insight/InsightToolkit-3.4.0/
+//    Testing/Code/BasicFilters/itkInterpolateImagePointsFilterTest.cxx
+
+// &&& no! We need to feed it to other filters, so we can't just specify
+// a few points, we have to have it be able to get them on demand.
+// Fuck it fuck it fuck it.
+//
+// This doesn't kill us though. We can re-base an interpolated image,
+// and wastefully resample the whole thing, though we'll use just a small region.
+// ResampleImageFilter
+//
+// It seems to be ok-ish for 3-dimensional transforms, spline at any rate
+// advertises itself as being N-dimensional.
+
+// The points are at the center of their cube
+// we need to be able to take a normal of two
+//
+// There won't be a /tree/ of transforms, but a single platform...
+// No, not so, when one peters out - yes, so - we'll backtrack, but
+// the transformation for each step will be the same.
+// so, triangles,
+
+//
+// -- mesh TriangleCell
+// Should look up triangulating polygons
+
+// Screw triangles, for now.
+// How to make a convex polygon, though?
+// Take the plane normal, pick a point. Go counter-clockwise, by taking
+// centroid, & dot products...?
+
+// No - use marching cubes tables to get the edges, and make triangles
+// from those (we know which edges our plane intersects).
+
 
 // Write intermediate images for debug purposes
 //    image of eigenvalues.
@@ -59,8 +99,8 @@ class BetaFinder
 {
 public:
    typedef   double                                        InputPixelType;
-   typedef   InputPixelType                                BetaPixelType;
-   typedef   double                                        PixelType;
+   typedef   InputPixelType                                PixelType;
+   typedef   PixelType                                     BetaPixelType;
    typedef   unsigned char                                 OverlayPixelType;
    typedef   double                                        EigenComponentType;
 
@@ -72,7 +112,7 @@ public:
 //   typedef   EigenComponentType HardEVector[Dimension];
 
    typedef   itk::FixedArray<EigenComponentType, Dimension> FixedVectorType;
-   typedef   itk::Vector< PixelType, Dimension >            VectorType;
+   typedef   itk::Vector<PixelType, Dimension>              VectorType;
 
    typedef   VectorType                                     EVector;
 
@@ -81,8 +121,8 @@ public:
    typedef   itk::CovariantVector< PixelType, Dimension >  CovariantVectorType;
 
    typedef   itk::Image< InputPixelType, Dimension >       InputImageType;
+   typedef   InputImageType                                ImageType;
    typedef   InputImageType                                BetaImageType;
-   typedef   itk::Image< PixelType, Dimension >            ImageType;
    typedef   itk::Image< VectorType, Dimension >           VectorImageType;
    typedef   itk::Image< CovariantVectorType, Dimension >  CovariantVectorImageType;
 
@@ -95,7 +135,7 @@ public:
 
    // Set of 3 eigenvalues
    typedef   itk::FixedArray<double, HessianPixelType::Dimension>
-                                                          EigenValueArrayType;
+                                                           EigenValueArrayType;
 
    typedef   itk::Matrix<double,
                          HessianPixelType::Dimension,
@@ -134,6 +174,8 @@ public:
    typedef   itk::CastImageFilter<
       EValueImageAdaptorType, EachEigenValueImageType>  EValueCastImageFilterType;
 
+   typedef itk::ResampleImageFilter<InputImageType, InputImageType, double>
+                                                                    ResampleFilterType;
 
    ///////////////////////////////////////////////////////////////////
    // EVector

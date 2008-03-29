@@ -96,6 +96,81 @@ void BetaFinder::HookUpEigenStuff()
 }
 
 
+void BetaFinder::SetUpPipeline(ImageType::ConstPointer image)
+{
+   // Compute eigenvalues.. order them in ascending order
+   m_TotalEigenFilter = EigenAnalysisFilterType::New();
+   m_TotalEigenFilter->SetDimension( HessianPixelType::Dimension );
+   m_TotalEigenFilter->SetInput( m_Hessian->GetOutput() );
+   m_TotalEigenFilter->OrderEigenValuesBy(
+      EigenAnalysisFilterType::JgdCalculatorType::OrderByValue);
+
+   // Eigenvalue
+   // Create an adaptor and plug the output to the parametric space
+   m_EValueAdaptor1 = EValueImageAdaptorType::New();
+   EigenvalueAccessor< EigenValueArrayType > accessor1;
+   accessor1.SetEigenIdx( 0 );
+   m_EValueAdaptor1->SetImage( m_TotalEigenFilter->GetEigenValuesImage() );
+   m_EValueAdaptor1->SetPixelAccessor( accessor1 );
+
+   m_EValueAdaptor2 = EValueImageAdaptorType::New();
+   EigenvalueAccessor< EigenValueArrayType > accessor2;
+   accessor2.SetEigenIdx( 1 );
+   m_EValueAdaptor2->SetImage( m_TotalEigenFilter->GetEigenValuesImage() );
+   m_EValueAdaptor2->SetPixelAccessor( accessor2 );
+
+   m_EValueAdaptor3 = EValueImageAdaptorType::New();
+   EigenvalueAccessor< EigenValueArrayType > accessor3;
+   accessor3.SetEigenIdx( 2 );
+   m_EValueAdaptor3->SetImage( m_TotalEigenFilter->GetEigenValuesImage() );
+   m_EValueAdaptor3->SetPixelAccessor( accessor3 );
+
+
+   // Eigenvector
+   // Create an adaptor and plug the output to the parametric space
+   m_EVectorAdaptor1 = EVectorImageAdaptorType::New();
+   EigenvectorAccessor< EVectorMatrixType, EVector > vecAccessor1;
+   accessor1.SetEigenIdx( 0 );
+   m_EVectorAdaptor1->SetImage( m_TotalEigenFilter->GetEigenVectorsImage() );
+   m_EVectorAdaptor1->SetPixelAccessor( vecAccessor1 );
+
+   m_EVectorAdaptor2 = EVectorImageAdaptorType::New();
+   EigenvectorAccessor< EVectorMatrixType, EVector > vecAccessor2;
+   accessor2.SetEigenIdx( 1 );
+   m_EVectorAdaptor2->SetImage( m_TotalEigenFilter->GetEigenVectorsImage() );
+   m_EVectorAdaptor2->SetPixelAccessor( vecAccessor2 );
+
+   m_EVectorAdaptor3 = EVectorImageAdaptorType::New();
+   EigenvectorAccessor< EVectorMatrixType, EVector > vecAccessor3;
+   accessor3.SetEigenIdx( 2 );
+   m_EVectorAdaptor3->SetImage( m_TotalEigenFilter->GetEigenVectorsImage() );
+   m_EVectorAdaptor3->SetPixelAccessor( vecAccessor3 );
+
+
+   // m_EValueCastfilter1 will give the eigenvalues with the maximum
+   // eigenvalue. m_EValueCastfilter3 will give the eigenvalues with
+   // the minimum eigenvalue.
+   m_EValueCastfilter1 = EValueCastImageFilterType::New();
+   m_EValueCastfilter1->SetInput( m_EValueAdaptor3 );
+   m_EValueCastfilter2 = EValueCastImageFilterType::New();
+   m_EValueCastfilter2->SetInput( m_EValueAdaptor2 );
+   m_EValueCastfilter3 = EValueCastImageFilterType::New();
+   m_EValueCastfilter3->SetInput( m_EValueAdaptor1 );
+
+   // Shoot shoot shoot - I want the matching eigenvector with each value;
+   // have to figure out how to keep track of that.
+   // - heh - I think it's ok as-is!
+
+   m_EVectorCastfilter1 = EVectorCastImageFilterType::New();
+   m_EVectorCastfilter1->SetInput( m_EVectorAdaptor3 );
+   m_EVectorCastfilter2 = EVectorCastImageFilterType::New();
+   m_EVectorCastfilter2->SetInput( m_EVectorAdaptor2 );
+   m_EVectorCastfilter3 = EVectorCastImageFilterType::New();
+   m_EVectorCastfilter3->SetInput( m_EVectorAdaptor1 );
+}
+
+
+
 void BetaFinder::Load(char const* basename)
 {
    if( !basename ) {
@@ -124,59 +199,6 @@ bool IsBeta(double sheetMin, double sheetMax,
    return isBeta;
 }
 
-
-#if 0
-
-void MakePolygon(vector v, Box box, Triangles& outTriangles)
-{
-   intersect with edges;
-
-   outTriangles.push_back(triangle);
-}
-
-// This makes no sense - how can thickness deal with flatness?
-// I think the eigenVALUE stuff was, 'how it's been done before,
-// but is not relevant to now'.
-// This eigenVECTOR stuff is all there is!
-// Do we take the main
-void TraceFlatness(seeds,
-                   EValueImage::ConstPointer l1Image,
-                   EValueImage::ConstPointer l2Image,
-                   EValueImage::ConstPointer l3Image)
-                   EVectorImage::ConstPointer v1Image,
-                   EVectorImage::ConstPointer v2Image,
-                   EVectorImage::ConstPointer v3Image)
-{
-   TriangleList triangles;
-   // bottom right of page 9:
-   // for each maximal (critical) seed point:
-   // - the vector corresponding to the maximum
-   // eigenVALUE - ie, eigenvector_0
-
-   for (seeds::const_iterator itSeed = seeds.begin(), endSeed = seeds.end();
-        itSeed != endSeed; ++itSeed) {
-      Index idx = summat;
-      double t1 = magnitude(v1Image[idx]);
-      double t2 = magnitude(v2Image[idx]);
-      double t3 = magnitude(v2Image[idx]);
-      if (IsBeta(sheetMin, sheetMax, t1, t2, t3)) {
-         Box box;
-         MakePolygon(v1, box, triangles);
-      }
-   }
-
-   // so now I have my starter triangles....
-
-   // we find the edges that need continuing,
-   // and continue.
-   //
-   // The stopping point I think, is when the 'checked point' doesn't
-   // meet the eigenVALUE criterion for flatness (but you'd think
-   // it would be, meets IsBeta.... - it is (whew) )
-
-}
-
-#endif
 
 
 // betaimage == inputimage, ie scalar
@@ -248,7 +270,7 @@ BetaFinder::BetaImageType::Pointer
             cout << "beta pixel " << flatness << "; v0: " << v0 << "; v1: " << v1 << endl;
          }
       }
-      if (max_flatness < flatness ) {
+      if (max_flatness < flatness) {
          max_flatness = flatness;
       }
    }
