@@ -39,7 +39,7 @@ typedef std::set<BeatenImage::IndexType,
                  itk::Functor::IndexLexicographicCompare<Dimension> > PointSet;
 // Called 'region' because occasionally there will be a plateau of
 // equal seeds.
-// Pointer because it's too much of a pain to define a '<' operator
+// By PointSet* because it's too much of a pain to define a '<' operator
 // for a pointset.
 typedef std::set<PointSet*> SeedRegionSet;
 
@@ -63,14 +63,14 @@ unsigned g_n_snuffed = 0;
 // 2008-02-05 - three passes:
 // * threshold phase,
 // full-exploration phase -
-//   clear-beaten, enqueue new losers (but after enqueuing, mark them as pixmap-beaten)
-//   if I'm beaten, nothing special, no need to enqueue me, I'm done. Just finish nbrs.
-//   Ah but there's that 2nd condition which may change, now I can deal out 'tie' deaths.
-// - if they're pix-mapped 'beaten', then they're already enqueued or dealt with.
-// propagating beating phase.
-// -- the queue should indeed be a queue, traversing all the pixels at most, once.
-// So, ok.
-
+//   clear-beaten, enqueue new losers (but after enqueuing, mark them
+//   as pixmap-beaten) if I'm beaten, nothing special, no need to
+//   enqueue me, I'm done. Just finish nbrs.  Ah but there's that 2nd
+//   condition which may change, now I can deal out 'tie' deaths.
+// - if they're pix-mapped 'beaten', then they're already enqueued or
+// dealt with.  propagating beating phase.
+// -- the queue should indeed be a queue, traversing all the pixels at
+// most, once.  So, ok.
 
 BeatenImage::Pointer
    threshhold_phase(InputImage::Pointer input, double threshhold)

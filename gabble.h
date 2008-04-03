@@ -23,16 +23,16 @@
 
 #include <itkImage.h>
 #include <itkHessianRecursiveGaussianImageFilter.h>
-#include <itkImageToParametricSpaceFilter.h>
-#include <itkVertexCell.h>
+//#include <itkImageToParametricSpaceFilter.h>
+//#include <itkVertexCell.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
-#include <itkRescaleIntensityImageFilter.h>
+//#include <itkRescaleIntensityImageFilter.h>
 #include <itkSymmetricSecondRankTensor.h>
 #include <itkSymmetricEigenAnalysisImageFilter.h>
 #include <itkImageAdaptor.h>
 #include <itkCastImageFilter.h>
-#include <itkPointSetToImageFilter.h>
+//#include <itkPointSetToImageFilter.h>
 #include <itkResampleImageFilter.h>
 #include <itkBinaryThresholdImageFilter.h>
 #include <itkJoinImageFilter.h>

@@ -10,23 +10,30 @@ struct XForm {
    double xoff, yoff, zoff;
 };
 
-
-// We should always apply the /frame/ to the original image, to base the
-// resampling and so on, from. And the filter too, right?
-// original -> xform(point) -> resample. SetRequestedRegion(resampled)
-// set up pipeline on resampled, and Bob's your uncle.
-struct tranformation_frame {
-   XForm m_xform;
-   // should be a bunch of images, right?
-   // And we own them. Once one it explored, we should toss it, right?
-   list of intersections;
+// probably continuous index
+struct PointPos
+{
+   offset from prev;
+   position in original coords;
 };
 
-void all() {
-   for (each seed) {
-      per-cube();
-   }
-}
+struct BetaPoint
+{
+   PointPos pos;
+   // (or triangle list)
+   Polygon polygon;
+   Explore();
+};
+
+// don't come nearer than some distance from any other known point...
+struct BetaTree
+{
+   // polygon, position, etc.
+   BetaPoint beta-point;
+
+   vector<BetaTree*> children;
+};
+
 
 void per-cube()
 {
@@ -54,12 +61,6 @@ void per-cube()
    }
 }
 
-void per-checked-point()
-{
-   per-cube();
-}
-
-N^ vector
 
 Polygon MakePolygon(v normal, points planar-points)
 {

@@ -96,79 +96,6 @@ void BetaFinder::HookUpEigenStuff()
 }
 
 
-void BetaFinder::SetUpPipeline(ImageType::ConstPointer image)
-{
-   // Compute eigenvalues.. order them in ascending order
-   m_TotalEigenFilter = EigenAnalysisFilterType::New();
-   m_TotalEigenFilter->SetDimension( HessianPixelType::Dimension );
-   m_TotalEigenFilter->SetInput( m_Hessian->GetOutput() );
-   m_TotalEigenFilter->OrderEigenValuesBy(
-      EigenAnalysisFilterType::JgdCalculatorType::OrderByValue);
-
-   // Eigenvalue
-   // Create an adaptor and plug the output to the parametric space
-   m_EValueAdaptor1 = EValueImageAdaptorType::New();
-   EigenvalueAccessor< EigenValueArrayType > accessor1;
-   accessor1.SetEigenIdx( 0 );
-   m_EValueAdaptor1->SetImage( m_TotalEigenFilter->GetEigenValuesImage() );
-   m_EValueAdaptor1->SetPixelAccessor( accessor1 );
-
-   m_EValueAdaptor2 = EValueImageAdaptorType::New();
-   EigenvalueAccessor< EigenValueArrayType > accessor2;
-   accessor2.SetEigenIdx( 1 );
-   m_EValueAdaptor2->SetImage( m_TotalEigenFilter->GetEigenValuesImage() );
-   m_EValueAdaptor2->SetPixelAccessor( accessor2 );
-
-   m_EValueAdaptor3 = EValueImageAdaptorType::New();
-   EigenvalueAccessor< EigenValueArrayType > accessor3;
-   accessor3.SetEigenIdx( 2 );
-   m_EValueAdaptor3->SetImage( m_TotalEigenFilter->GetEigenValuesImage() );
-   m_EValueAdaptor3->SetPixelAccessor( accessor3 );
-
-
-   // Eigenvector
-   // Create an adaptor and plug the output to the parametric space
-   m_EVectorAdaptor1 = EVectorImageAdaptorType::New();
-   EigenvectorAccessor< EVectorMatrixType, EVector > vecAccessor1;
-   accessor1.SetEigenIdx( 0 );
-   m_EVectorAdaptor1->SetImage( m_TotalEigenFilter->GetEigenVectorsImage() );
-   m_EVectorAdaptor1->SetPixelAccessor( vecAccessor1 );
-
-   m_EVectorAdaptor2 = EVectorImageAdaptorType::New();
-   EigenvectorAccessor< EVectorMatrixType, EVector > vecAccessor2;
-   accessor2.SetEigenIdx( 1 );
-   m_EVectorAdaptor2->SetImage( m_TotalEigenFilter->GetEigenVectorsImage() );
-   m_EVectorAdaptor2->SetPixelAccessor( vecAccessor2 );
-
-   m_EVectorAdaptor3 = EVectorImageAdaptorType::New();
-   EigenvectorAccessor< EVectorMatrixType, EVector > vecAccessor3;
-   accessor3.SetEigenIdx( 2 );
-   m_EVectorAdaptor3->SetImage( m_TotalEigenFilter->GetEigenVectorsImage() );
-   m_EVectorAdaptor3->SetPixelAccessor( vecAccessor3 );
-
-
-   // m_EValueCastfilter1 will give the eigenvalues with the maximum
-   // eigenvalue. m_EValueCastfilter3 will give the eigenvalues with
-   // the minimum eigenvalue.
-   m_EValueCastfilter1 = EValueCastImageFilterType::New();
-   m_EValueCastfilter1->SetInput( m_EValueAdaptor3 );
-   m_EValueCastfilter2 = EValueCastImageFilterType::New();
-   m_EValueCastfilter2->SetInput( m_EValueAdaptor2 );
-   m_EValueCastfilter3 = EValueCastImageFilterType::New();
-   m_EValueCastfilter3->SetInput( m_EValueAdaptor1 );
-
-   // Shoot shoot shoot - I want the matching eigenvector with each value;
-   // have to figure out how to keep track of that.
-   // - heh - I think it's ok as-is!
-
-   m_EVectorCastfilter1 = EVectorCastImageFilterType::New();
-   m_EVectorCastfilter1->SetInput( m_EVectorAdaptor3 );
-   m_EVectorCastfilter2 = EVectorCastImageFilterType::New();
-   m_EVectorCastfilter2->SetInput( m_EVectorAdaptor2 );
-   m_EVectorCastfilter3 = EVectorCastImageFilterType::New();
-   m_EVectorCastfilter3->SetInput( m_EVectorAdaptor1 );
-}
-
 
 
 void BetaFinder::Load(char const* basename)
@@ -188,17 +115,6 @@ void BetaFinder::Load(char const* basename)
       m_ImageLoaded = true;
    }
 }
-
-// Used to classify the seeds
-bool IsBeta(double sheetMin, double sheetMax,
-            double t1, double t2, double t3)
-{
-   bool isBeta = sheetMin <= t1 and t1 <= sheetMax and
-      min(t2 / t3, t3 / t2) > max(t1 / t2, t1 / t3);
-
-   return isBeta;
-}
-
 
 
 // betaimage == inputimage, ie scalar
