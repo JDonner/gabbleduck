@@ -22,7 +22,6 @@ struct BetaPipeline
 
    // Eigenvalue
    // Create an adaptor and plug the output to the parametric space
-EValueImageAdaptorType::Pointer         m_EValueAdaptor3;
    EValueImageAdaptorType::Pointer
       eValueAdaptor1_,
       eValueAdaptor2_,
