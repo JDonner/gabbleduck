@@ -2,12 +2,15 @@
 #define BETA_PIPELINE_H
 
 #include "types.h"
-#include <itkTranslationTransform.h>
+// This type we know is specific to this pipeline
 
 struct BetaPipeline
 {
    BetaPipeline(ImageType::Pointer image,
-                PointPos const& xform);
+                PointPos const& center,
+                // In cells. no point in fractional cells (I believe)
+                int region_width);
+  ~BetaPipeline();
 
    typedef itk::ResampleImageFilter< ImageType, ImageType, double > ResampleFilterType;
    ResampleFilterType::Pointer resampler_;

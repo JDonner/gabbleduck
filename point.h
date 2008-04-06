@@ -13,10 +13,10 @@ struct PointPos
    // offset of cell from original. Components should always be < 1.0.
    // We do this to allow ourselves to resample from the original image,
    // instead of already-resampled images, to minimize accumulated error.
-   Point offset_from_original;
+   Point fractional_offset;
 
    // absolute
-   Point pos;
+   Point absolute_position;
 };
 
 typedef std::vector<PointPos> PointPoses;

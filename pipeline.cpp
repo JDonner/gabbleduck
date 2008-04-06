@@ -2,43 +2,61 @@
 
 
 // /big/common/software/insight/InsightToolkit-3.4.0/Testing/Code/Common/itkTranslationTransformTest.cxx
-ImageType::ConstPointer
-   resample_image(XForm xform, ImageType::ConstPointer image)
-{
-   typedef itk::TranslationTransform< PixelType, Dimensions > TransformType;
 
-   TransformType::Pointer id3 = TransformType::New();
-   VectorType                   offset;
+// ImageType::ConstPointer
+//    resample_image(Point const& offset_from_original, ImageType::ConstPointer image)
+// {
+//    typedef itk::TranslationTransform< PixelType, Dimension > TransformType;
 
-   // Create and show a simple 2D transform from given parameters
-   offset[0] = xform.xoff;
-   offset[1] = xform.yoff;
-   offset[2] = xform.zoff;
-   TransformType::Pointer aff2 = TransformType::New();
-   aff2->SetOffset(offset);
+//    TransformType::Pointer id3 = TransformType::New();
+//    VectorType                   offset;
 
-   ResampleFilterType resampler;
-   resampler.SetTransform(transform);
+//    // Create and show a simple 2D transform from given parameters
+//    offset[0] = offset_from_original[0];
+//    offset[1] = offset_from_original[1];
+//    offset[2] = offset_from_original[2];
+//    TransformType::Pointer aff2 = TransformType::New();
+//    aff2->SetOffset(offset);
 
-   resampler.SetInput(image);
-//   resampler.Update();
+//    ResampleFilterType::Pointer resampler = new ResampleFilterType();
+//    resampler->SetTransform(transform);
 
-   ImageType::ConstPointer outImage = resampler.GetOutput();
-   return outImage;
-}
+//    resampler->SetInput(image);
+// //   resampler.Update();
+
+//    ImageType::ConstPointer outImage = resampler->GetOutput();
+//    return outImage;
+// }
 
 
 BetaPipeline::BetaPipeline(ImageType::Pointer image,
-                           PointPos const& shift)
+                           PointPos const& center,
+                           // In cells. no point in fractional cells (I believe)
+                           int region_width)
 {
+   ImageType::IndexType index;
+   bool isWithin = image->
+      TransformPhysicalPointToIndex(center.absolute_position, index);
+   assert(isWithin);
+   ImageRegion region;
+   region.SetIndex(index);
+   // don't know what units these are, physical or 'cell'.
+   // The '+ 1' to compensate for the phys -> index truncation
+   // And another '+ 1' to deal with our fractional translation
+   region.PadByRadius(region_width + 1 + 1);
+
    typedef itk::Vector<double, Dimension> VectorType;
 
+   // It's a filter, so, we want to set requested region on the input image,
+   // and then a 'shift' transform of a fraction of a cell, right?
+   // output-to-input, and in physical coordinates (itkResampleImageFilter.h -
+   // stupid documentation)
    VectorType offset;
-   offset[0] = shift.offset[0];
-   offset[1] = shift.offset[1];
-   offset[2] = shift.offset[2];
+   offset[0] = center.fractional_offset[0];
+   offset[1] = center.fractional_offset[1];
+   offset[2] = center.fractional_offset[2];
 
-   translation_ = TransformType::New();
+   TranslationTransform::Pointer translation_;
    translation_->SetOffset(offset);
 
    // Resample, to shift the image to new coordinates
@@ -113,4 +131,9 @@ BetaPipeline::BetaPipeline(ImageType::Pointer image,
    eVectorCastFilter2_->SetInput( eVectorAdaptor2_ );
    eVectorCastFilter3_ = EVectorCastImageFilterType::New();
    eVectorCastFilter3_->SetInput( eVectorAdaptor3_ );
+}
+
+BetaPipeline::~BetaPipeline()
+{
+#warning "Need to delete pipeline filters"
 }
