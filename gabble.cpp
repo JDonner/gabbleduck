@@ -204,7 +204,7 @@ BetaFinder::BetaImageType::Pointer
 
 void BetaFinder::Execute()
 {
-   if (! m_ImageLoaded )
+   if (not m_ImageLoaded)
    {
       cout << "Please load an image first" << endl;
       return;

@@ -1,92 +1,9 @@
 #include "BetaNode.h"
 
+// for 'is-far-enough-away'
 static PointSet BetaNode::s_all_beta_points;
 
-bool PointIsBeta(PointPos )
-{
-   bool isBeta = false;
-
-   if (bIsFarEnoughAway) {
-      eigenoutput;
-      {
-      // Now test whether we're Beta enough.
-      Pipeline pipeline = Pipeline(m_source);
-
-      eigenoutput = pipeline.getresult();
-      }
-
-      if (not QualifiesAsBeta(all our stuff, us)) {
-         return false;
-      }
-
-      else {
-         find intersection points;
-
-         make polygon;
-
-         push children;
-         push self into frontier;
-
-         // for (each point) {
-         //    if (point.Explore()) {
-         //       children.push_back(
-         //    }
-         // }
-      }
-
-   }
-}
-
-void FindBetaNodes(seeds, ImageType::ConstPointer image)
-{
-
-   for_exploration.push(seeds);
-
-   while (not for_exploration.empty()) {
-      node = for_exploration.top();
-      for_exploration.pop();
-
-      if (IsBetaLike() and point is far enough away) {
-         // we don't need the machinery anymore, the point is enough
-         node = new BetaNode();
-         for_exploration.push(node.children());
-      }
-   }
-}
-
-
-// We need a G(?) or R(?) tree
-bool BetaNode::IsFarEnoughAwayFromOthers()
-{
-   for (each point) {
-      if (this is within small dist from other point) {
-         return false;
-      }
-   }
-   return true;
-}
-
-
-bool IsBetaLike(point, ImageType::ConstPointer image)
-{
-   Pipeline pipeline = SetUpPipeline(image);
-   eigenstuff = pipeline.getOutput();
-
-   bool isBeta = MeetsBetaCondition();
-}
-
-
-// Used to classify the seeds
-bool MeetsBetaCondition(double sheetMin, double sheetMax,
-                        double t1, double t2, double t3)
-{
-   bool isBeta = sheetMin <= t1 and t1 <= sheetMax and
-      max(t1 / t2, t1 / t3) < min(t2 / t3, t3 / t2);
-
-   return isBeta;
-}
-
-
+// Obsolete - use <Pipeline> object
 void Pipeline::SetUpPipeline(xform, Point point, ImageType::ConstPointer image)
 {
    image->SetRequestedRegion(something smallish around the point);
@@ -179,4 +96,15 @@ void Pipeline::SetUpPipeline(xform, Point point, ImageType::ConstPointer image)
    eVectorCastFilter2->SetInput( eVectorAdaptor2 );
    EVectorCastImageFilterType::ConstPointer eVectorCastFilter3 = EVectorCastImageFilterType::New();
    eVectorCastFilter3->SetInput( eVectorAdaptor1 );
+}
+
+// We need a G(?) or R(?) tree
+bool BetaNode::IsFarEnoughAwayFromOthers()
+{
+   for (each point) {
+      if (this is within small dist from other point) {
+         return false;
+      }
+   }
+   return true;
 }
