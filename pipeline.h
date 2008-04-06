@@ -1,9 +1,8 @@
 #ifndef BETA_PIPELINE_H
 #define BETA_PIPELINE_H
 
-#include "gabble-types.h"
+#include "types.h"
 #include <itkTranslationTransform.h>
-#include "BetaNode.h"
 
 struct BetaPipeline
 {

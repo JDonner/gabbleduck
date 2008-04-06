@@ -1,5 +1,5 @@
-#include "BetaNode.h"
-#include "BetaPipeline.h"
+#include "node.h"
+#include "pipeline.h"
 #include "geometry.h"
 
 
@@ -9,29 +9,22 @@ void FindBetaNodes(seeds, ImageType::ConstPointer image)
    possible_beta_points.push(seeds);
 
    while (not possible_beta_points.empty()) {
-      node = possible_beta_points.top();
+      pt = possible_beta_points.top();
       possible_beta_points.pop();
 
-      bool isBeta = PointIsBeta(PointPos stoff);
+      bool isBeta = PointIsBeta(pt);
 
-      if (point is far enough away and IsBetaLike()) {
+      if (Node::IsFarEnoughAwayFromOthers(pt) and IsBetaLike(pt)) {
          // we don't need the machinery anymore, the point is enough
-         node = new BetaNode(all the relevant info);
-         get geometrical on its ass;
-         possible_beta_points.push(node.children());
+         Node* node = new Node(all the relevant info);
 
          vector<point>& intersections;
          planes_intersection_with_box(vector normal, point pt,
                                       point pt0, point pt1,
                                       intersections);
-
-
          Polygon polygon = MakePolygon(v normal, points& intersections);
-
-
-         push children;
-         push self into frontier;
-
+         node->setPolygon(polygon);
+         possible_beta_points.push(intersections);
       }
    }
 }

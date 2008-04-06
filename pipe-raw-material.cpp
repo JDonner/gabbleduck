@@ -1,8 +1,4 @@
-#include "BetaNode.h"
-
-// for 'is-far-enough-away'
-static PointSet BetaNode::s_all_beta_points;
-
+#if RAW_MATERIAL
 // Obsolete - use <Pipeline> object
 void Pipeline::SetUpPipeline(xform, Point point, ImageType::ConstPointer image)
 {
@@ -97,14 +93,85 @@ void Pipeline::SetUpPipeline(xform, Point point, ImageType::ConstPointer image)
    EVectorCastImageFilterType::ConstPointer eVectorCastFilter3 = EVectorCastImageFilterType::New();
    eVectorCastFilter3->SetInput( eVectorAdaptor1 );
 }
+#endif // RAW_MATERIAL
 
-// We need a G(?) or R(?) tree
-bool BetaNode::IsFarEnoughAwayFromOthers()
-{
-   for (each point) {
-      if (this is within small dist from other point) {
-         return false;
-      }
-   }
-   return true;
-}
+
+#if 0
+// BetaPipeline::Process(ImageType::ConstPointer image)
+// {
+//    BetaPipeline(ImageType::ConstPointer image);
+
+//    itk::ResampleImageFilter< ImageType, ImageType, double >
+
+//    typedef itk::TranslationTransform< PixelType, Dimensions > TransformType;
+
+//    TransformType::Pointer  id3_ = TransformType::New();
+//    VectorType                   offset_;
+
+//    ResampleFilterType resampler_;
+
+//       EigenAnalysisFilterType::JgdCalculatorType::OrderByValue);
+
+//    // Eigenvalue
+//    // Create an adaptor and plug the output to the parametric space
+//    EValueImageAdaptorType::ConstPointer eValueAdaptor1_ = EValueImageAdaptorType::New();
+//    EigenvalueAccessor< EigenValueArrayType > accessor1_;
+//    accessor1_.SetEigenIdx( 0 );
+//    eValueAdaptor1_->SetImage( totalEigenFilter->GetEigenValuesImage() );
+//    eValueAdaptor1_->SetPixelAccessor( accessor1_ );
+
+//    EValueImageAdaptorType::ConstPointer eValueAdaptor2_ = EValueImageAdaptorType::New();
+//    EigenvalueAccessor< EigenValueArrayType > accessor2_;
+//    accessor2_.SetEigenIdx( 1 );
+//    eValueAdaptor2_->SetImage( totalEigenFilter_->GetEigenValuesImage() );
+//    eValueAdaptor2_->SetPixelAccessor( accessor2_ );
+
+//    EValueImageAdaptorType::ConstPointer eValueAdaptor3_ = EValueImageAdaptorType::New();
+//    EigenvalueAccessor< EigenValueArrayType > accessor3_;
+//    accessor3_.SetEigenIdx( 2 );
+//    eValueAdaptor3_->SetImage( totalEigenFilter_->GetEigenValuesImage() );
+//    eValueAdaptor3_->SetPixelAccessor( accessor3_ );
+
+
+//    // Eigenvector
+//    // Create an adaptor and plug the output to the parametric space
+//    EVectorImageAdaptorType::ConstPointer eVectorAdaptor1_ = EVectorImageAdaptorType::New();
+//    EigenvectorAccessor< EVectorMatrixType, EVector > vecAccessor1_;
+//    accessor1_.SetEigenIdx( 0 );
+//    eVectorAdaptor1_->SetImage( totalEigenFilter_->GetEigenVectorsImage() );
+//    eVectorAdaptor1_->SetPixelAccessor( vecAccessor1_ );
+
+//    EVectorImageAdaptorType::ConstPointer eVectorAdaptor2_ = EVectorImageAdaptorType::New();
+//    EigenvectorAccessor< EVectorMatrixType, EVector > vecAccessor2;
+//    accessor2_.SetEigenIdx( 1 );
+//    eVectorAdaptor2_->SetImage( totalEigenFilter_->GetEigenVectorsImage() );
+//    eVectorAdaptor2_->SetPixelAccessor( vecAccessor2_ );
+
+//    EVectorImageAdaptorType::ConstPointer eVectorAdaptor3_ = EVectorImageAdaptorType::New();
+//    EigenvectorAccessor< EVectorMatrixType, EVector > vecAccessor3_;
+//    accessor3_.SetEigenIdx( 2 );
+//    eVectorAdaptor3_->SetImage( totalEigenFilter_->GetEigenVectorsImage() );
+//    eVectorAdaptor3_->SetPixelAccessor( vecAccessor3_ );
+
+//    // eValueCastfilter1 will give the eigenvalues with the maximum
+//    // eigenvalue. eValueCastfilter3 will give the eigenvalues with
+//    // the minimum eigenvalue.
+//    EValueCastImageFilterType::ConstPointer eValueCastFilter1_ = EValueCastImageFilterType::New();
+//    eValueCastFilter1_->SetInput( EValueAdaptor3_ );
+//    EValueCastImageFilterType::ConstPointer eValueCastFilter2_ = EValueCastImageFilterType::New();
+//    eValueCastFilter2_->SetInput( EValueAdaptor2_ );
+//    EValueCastImageFilterType::ConstPointer eValueCastFilter3_ = EValueCastImageFilterType::New();
+//    eValueCastFilter3_->SetInput( EValueAdaptor1_ );
+
+//    // Shoot shoot shoot - I want the matching eigenvector with each value;
+//    // have to figure out how to keep track of that.
+//    // - heh - I think it's ok as-is!
+
+//    EVectorCastImageFilterType::ConstPointer eVectorCastFilter1_ = EVectorCastImageFilterType::New();
+//    eVectorCastFilter1_->SetInput( eVectorAdaptor1_ );
+//    EVectorCastImageFilterType::ConstPointer eVectorCastFilter2_ = EVectorCastImageFilterType::New();
+//    eVectorCastFilter2_->SetInput( eVectorAdaptor2_ );
+//    EVectorCastImageFilterType::ConstPointer eVectorCastFilter3_ = EVectorCastImageFilterType::New();
+//    eVectorCastFilter3_->SetInput( eVectorAdaptor3_ );
+// }
+#endif
