@@ -1,14 +1,14 @@
 #ifndef NODE_H
 #define NODE_H
 
-#include "polygon.h"
-
+#include "types.h"
 #include <vector>
 
 class Node
 {
 public:
-   static bool IsFarEnoughAwayFromOthers(Point const& pt);
+   static bool IsFarEnoughAwayFromOthers(PointType const& pt);
+
    // In 'cell-length' units, not real-world distance.
    static void setMinAllowedDist(double minAllowedDist);
 
@@ -19,10 +19,10 @@ private:
    Polygon polygon_;
 
    ImageType::ConstPointer source_;
-   std::vector<Node*> Nodes;
+   typedef std::vector<Node*> Nodes;
    Nodes children_;
 
-   static Points s_all_beta_points;
+   static Nodes s_all_beta_points;
    static double s_min_allowed_interpoint_dist;
 };
 

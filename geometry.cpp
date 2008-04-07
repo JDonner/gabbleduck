@@ -1,11 +1,13 @@
 #include "types.h"
 #include "pipeline.h"
-#include "polygon.h"
 
 #include <algorithm>
+#include <set>
+#include <cmath>
+#include <vector>
 
 
-// bool IsBetaLike(Point const& point, ImageType::ConstPointer image)
+// bool IsBetaLike(PointType const& point, ImageType::ConstPointer image)
 // {
 //    BetaPipeline pipeline = SetUpPipeline(image);
 //    eigenstuff = pipeline.getOutput();
@@ -18,33 +20,67 @@
 bool MeetsBetaCondition(double sheetMin, double sheetMax,
                         double t1, double t2, double t3)
 {
-   bool isBeta = sheetMin <= t1 and t1 <= sheetMax and
+   bool isBeta =
+      sheetMin <= t1 and t1 <= sheetMax and
       std::max(t1 / t2, t1 / t3) < std::min(t2 / t3, t3 / t2);
 
    return isBeta;
 }
 
 
-Polygon MakePolygon(v normal, points planar-points)
+Polygon MakePolygon(Points const& planar_points)
 {
    // find centroid -- needn't be centroid, just center-of-bounds
    // is ok, no? -- at least, I believe under the circumstances that
    // we'll be ok with it.
 
-   find bounds of points;
-   ctr = center of bounds;
-
-   vector<pair<angle-type, point-no> > unordered;
-
-   for (each point after the first) {
-      cos_alpha = calc dot product with first;
-      sin_alpha = calc cross product with first;
-
-      angle-with-first = atan2(cos_alpha, sin_alpha);
-      unordered.push_back(angle-with-first, point-no);
+   PointType lo, hi;
+   for (unsigned i = 0; i < Dimension; ++i) {
+      lo[i] =  1e38, hi[i] = -1e38;
+   }
+   for (unsigned pt = 0; pt < planar_points.size(); ++pt) {
+      for (unsigned dim = 0; dim < Dimension; ++dim) {
+         if (planar_points[pt][dim] < lo[dim]) {
+            lo[dim] = planar_points[pt][dim];
+         }
+         if (hi[dim] < planar_points[pt][dim]) {
+            hi[dim] = planar_points[pt][dim];
+         }
+      }
    }
 
-   -- now we have a polygon;
+   // &&& Not sure this is on the plane! The bounds would define
+   // a rectangle no (if they're all truly co-planar) and the ctr
+   // would be on it, surely. Yah, should be ok.
+   PointType ctr;
+   for (unsigned i = 0; i < Dimension; ++i) {
+      ctr[i] = (hi[i] + lo[i]) / 2.0;
+   }
+
+   typedef std::set<std::pair<InternalPrecisionType, unsigned> > VertexSet;
+   // use for insertion sort
+   VertexSet vertices;
+
+   // We arbitrarily pick the first point as the axis against which
+   // to measure the other pts' angles.
+   PointType first = planar_points[0];
+   VectorType v0 = planar_points[0] - ctr;
+   InternalPrecisionType v0Norm = v0.GetNorm();
+
+   // 0 angle with itself
+   vertices.insert(std::make_pair(0.0, 0));
+
+   for (unsigned iPt = 1; iPt < planar_points.size(); ++iPt) {
+      VectorType vi = planar_points[iPt] - ctr;
+      // dot product
+      InternalPrecisionType cos_alpha = v0 * vi;
+      // cross product
+      VectorType crossed = CrossProduct(v0, vi);
+      double sin_alpha = crossed.GetNorm() / (vi.GetNorm() * v0Norm);
+
+      InternalPrecisionType angle_with_first = atan2(cos_alpha, sin_alpha);
+      vertices.insert(std::make_pair(angle_with_first, iPt));
+   }
 }
 
 
@@ -53,58 +89,82 @@ Polygon MakePolygon(v normal, points planar-points)
 // ax + by + cz = d
 // where d = axp + byp + czp
 
-
+static
 // Macros, better perhaps
-double x_intersect(double d, double b, double y, double c, double z)
+double x_intersect(double d, double a, double b, double y, double c, double z)
 {
-   x = (d - b * y - c * z) / c;
+   double x = (d - b * y - c * z) / a;
    return x;
 }
 
-double y_intersect(double d, double a, double x, double c, double z)
+static
+double y_intersect(double d, double b, double a, double x, double c, double z)
 {
-   y = (d - a * x - c * z) / b;
+   double y = (d - a * x - c * z) / b;
    return y;
 }
 
-double z_intersect(double d, double a, double x, double b, double y)
+static
+double z_intersect(double d, double c, double a, double x, double b, double y)
 {
-   z = (d - a * x - b * y) / c;
+   double z = (d - a * x - b * y) / c;
    return z;
 }
 
+static
 // box = x0 x1, y0 y1, z0 z1
-void planes_intersection_with_box(vector normal, point pt,
+void planes_intersection_with_box(VectorType normal, PointType const& pt,
                                   // front, lower left, and rear, upper right
-                                  point pt0, point pt1,
-                                  vector<point>& intersections)
+                                  PointType const& lo, PointType const& hi,
+                                  std::vector<PointType>& intersections)
 {
-#define X_WITHIN(x, x0, x1) x0 <= x and x <= x1
-#define Y_WITHIN(y, y0, y1) y0 <= y and y <= y1
-#define Z_WITHIN(z, z0, z1) z0 <= z and z <= z1
+   double
+      x0 = lo[0],
+      y0 = lo[1],
+      z0 = lo[2],
+      x1 = hi[0],
+      y1 = hi[1],
+      z1 = hi[2];
+
+
+#define X_WITHIN x0 <= x and x <= x1
+#define Y_WITHIN y0 <= y and y <= y1
+#define Z_WITHIN z0 <= z and z <= z1
 
 #define CHECK_X_EDGE(Y, Z)                    \
    {                                          \
-   x = x_intersect(d, b, Y, c, Z);            \
-   if (X_WITHIN)                              \
-      intersections.push_back(point(x, Y, Z));\
+      x = x_intersect(d, a, b, Y, c, Z);      \
+      if (X_WITHIN) {                         \
+         PointType p;                         \
+         p[0] = x, p[1] = Y, p[2] = Z;        \
+         intersections.push_back(p);          \
+      }                                       \
    }
 
 #define CHECK_Y_EDGE(X, Z)                    \
    {                                          \
-   y = y_intersect(d, a, X, c, Z);            \
-   if (Y_WITHIN)                              \
-      intersections.push_back(point(X, y, Z));\
+      y = y_intersect(d, b, a, X, c, Z);      \
+      if (Y_WITHIN) {                         \
+         PointType p;                         \
+         p[0] = X, p[1] = y, p[2] = Z;        \
+         intersections.push_back(p);          \
+      }                                       \
    }
 
 #define CHECK_Z_EDGE(X, Y)                    \
    {                                          \
-   x = x_intersect(d, b, Y, c, Z);            \
-   if (Z_WITHIN)                              \
-      intersections.push_back(point(X, Y, z));\
+      z = z_intersect(d, c, a, X, b, Y);      \
+      if (Z_WITHIN) {                         \
+         PointType p;                         \
+         p[0] = X, p[1] = Y, p[2] = z;        \
+         intersections.push_back(p);          \
+      }                                       \
    }
 
-   d = a * pt.x + b * pt.y + c * pt.z;
+   double a = normal[0], b = normal[1], c = normal[2];
+   double d = a * pt[0] + b * pt[1] + c * pt[2];
+   double x, y, z;
+
 
    // each edge can be an intersection, so we check all possibilities.
 
@@ -136,6 +196,7 @@ void planes_intersection_with_box(vector normal, point pt,
 #undef Y_WITHIN
 #undef Z_WITHIN
 }
+
 
 #if 0
 void MakePolygon(vector v, Box box, Triangles& outTriangles)

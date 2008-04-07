@@ -1,19 +1,17 @@
 #include "node.h"
 
 // for 'is-far-enough-away'
-static Node::Points Node::s_all_beta_points;
+Node::Nodes Node::s_all_beta_points;
 // In 'cell-length' units, not real-world distance.
-static double Node::s_min_allowed_interpoint_dist = 1.0;
+double Node::s_min_allowed_interpoint_dist = 1.0;
 
 // Yah it's n^2.
-bool Node::IsFarEnoughAwayFromOthers(Point const& pt)
+bool Node::IsFarEnoughAwayFromOthers(PointType const& pt)
 {
-   Node::Points Node::s_all_beta_points;
-
-   for (Points::const_iterator it = s_all_beta_points.begin(),
+   for (Nodes::const_iterator it = s_all_beta_points.begin(),
            end = s_all_beta_points.end();
         it != end; ++it) {
-      if (it->EuclidianDistanceTo(pt) < s_min_allowed_interpoint_dist) {
+      if ((*it)->pos.absolute_position.EuclideanDistanceTo<double>(pt) < s_min_allowed_interpoint_dist) {
          return false;
       }
    }

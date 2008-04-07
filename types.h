@@ -33,7 +33,7 @@ const unsigned Dimension = 3;
 //   typedef   EigenComponentType HardEVector[Dimension];
 
 typedef  itk::FixedArray<EigenComponentType, Dimension> FixedVectorType;
-typedef  itk::Vector<PixelType, Dimension>              VectorType;
+typedef  itk::Vector<InternalPrecisionType, Dimension>              VectorType;
 
 typedef  VectorType                                     EVector;
 
@@ -72,21 +72,15 @@ typedef  itk::Image<EVectorMatrixType,
 
 typedef  itk::TotalEigenImageFilter<HessianImageType, EigenValueImageType, EVectorImageType>
    EigenAnalysisFilterType;
-#if 0
-typedef  itk::SymmetricEigenAnalysisImageFilter<HessianImageType, EigenValueImageType>
-#endif
+
+//typedef  itk::SymmetricEigenAnalysisImageFilter<HessianImageType, EigenValueImageType>
 
 
 typedef  itk::Mesh< InternalPrecisionType, Dimension > MeshType;
-typedef  itk::PolygonCell
-
-/**
- * Define a few cell types which uses a PixelType of "int".  Again,
- * use the defaults for the other parameters.  Note that a cell's template
- * parameters must match those of the mesh into which it is inserted.
- */
 typedef itk::CellInterface<InternalPrecisionType, MeshType::CellTraits> CellInterfaceType;
 typedef itk::PolygonCell<CellInterfaceType>             PolygonCellType;
+
+typedef PolygonCellType Polygon;
 
 
 ///////////////////////////////////////////////////////////////////
