@@ -258,7 +258,6 @@ void find_seeds(InputImage::Pointer input,
 
 #if defined(TESTING_LOCAL_MAXIMA)
 
-
 void make_seeds_image()
 {
    medianFilter->Update();

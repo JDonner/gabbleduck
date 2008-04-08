@@ -4,6 +4,7 @@
 #include <itkPoint.h>
 #include <vector>
 
+// A totally free point in space.
 typedef itk::Point<double, Dimension> PointType;
 
 struct PointPos

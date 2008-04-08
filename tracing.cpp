@@ -1,15 +1,31 @@
 #include "node.h"
 #include "pipeline.h"
 #include "geometry.h"
+#include <vector>
+
+using namespace std;
+
+typedef ImageType::IndexType Seed;
+typedef vector<Seed> Seeds;
+
+bool PointIsBeta(PointPos pt);
 
 
 // non-recursive version
-void FindBetaNodes(seeds, ImageType::ConstPointer image)
+void FindBetaNodes(ImageType::ConstPointer image,
+                   Seeds const& seeds)
 {
-   possible_beta_points.push(seeds);
+   Points possible_beta_points;
+
+   for (Seeds::const_iterator it = seeds.begin(), end = seeds.end();
+        it != end; ++it) {
+      PointType pt;
+      image->TransformIndexToPhysicalPoint(*it, pt);
+      possible_beta_points.push_back(pt);
+   }
 
    while (not possible_beta_points.empty()) {
-      pt = possible_beta_points.top();
+      PointType pt = possible_beta_points.top();
       possible_beta_points.pop();
 
       bool isBeta = PointIsBeta(pt);
@@ -30,7 +46,7 @@ void FindBetaNodes(seeds, ImageType::ConstPointer image)
 }
 
 // badly named if nothing else
-bool PointIsBeta(PointPos )
+bool PointIsBeta(PointPos pt)
 {
    bool isBeta = false;
 

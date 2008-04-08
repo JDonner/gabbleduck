@@ -28,7 +28,7 @@ bool MeetsBetaCondition(double sheetMin, double sheetMax,
 }
 
 
-Polygon MakePolygon(Points const& planar_points)
+void MakePolygon(Points const& planar_points, Polygon& outPolygon)
 {
    // find centroid -- needn't be centroid, just center-of-bounds
    // is ok, no? -- at least, I believe under the circumstances that
@@ -81,6 +81,8 @@ Polygon MakePolygon(Points const& planar_points)
       InternalPrecisionType angle_with_first = atan2(cos_alpha, sin_alpha);
       vertices.insert(std::make_pair(angle_with_first, iPt));
    }
+   // &&&
+   // copy(vertices -> outPolygon)
 }
 
 

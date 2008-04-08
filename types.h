@@ -37,7 +37,6 @@ typedef  itk::Vector<InternalPrecisionType, Dimension>              VectorType;
 
 typedef  VectorType                                     EVector;
 
-
 typedef  itk::CovariantVector< PixelType, Dimension >  CovariantVectorType;
 
 typedef  itk::Image< InputPixelType, Dimension >       InputImageType;
@@ -75,12 +74,8 @@ typedef  itk::TotalEigenImageFilter<HessianImageType, EigenValueImageType, EVect
 
 //typedef  itk::SymmetricEigenAnalysisImageFilter<HessianImageType, EigenValueImageType>
 
-
-typedef  itk::Mesh< InternalPrecisionType, Dimension > MeshType;
-typedef itk::CellInterface<InternalPrecisionType, MeshType::CellTraits> CellInterfaceType;
-typedef itk::PolygonCell<CellInterfaceType>             PolygonCellType;
-
-typedef PolygonCellType Polygon;
+// No suitable rep in ITK; we'll wait and do something with VTK
+typedef std::vector<PointType> Polygon;
 
 
 ///////////////////////////////////////////////////////////////////
