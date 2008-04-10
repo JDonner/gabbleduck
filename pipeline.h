@@ -10,7 +10,7 @@
 struct BetaPipeline
 {
    BetaPipeline(ImageType::Pointer image,
-                PointPos const& center,
+                PointType const& center,
                 // In cells. no point in fractional cells (I believe)
                 int region_width);
   ~BetaPipeline();

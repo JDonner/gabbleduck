@@ -30,13 +30,13 @@
 
 
 BetaPipeline::BetaPipeline(ImageType::Pointer image,
-                           PointPos const& center,
+                           PointType const& center,
                            // In cells. no point in fractional cells (I believe)
                            int region_width)
 {
    ImageType::IndexType index;
    bool isWithin = image->
-      TransformPhysicalPointToIndex(center.absolute_position, index);
+      TransformPhysicalPointToIndex(center, index);
    assert(isWithin);
    ImageRegion region;
    region.SetIndex(index);
@@ -52,9 +52,10 @@ BetaPipeline::BetaPipeline(ImageType::Pointer image,
    // output-to-input, and in physical coordinates (itkResampleImageFilter.h -
    // stupid documentation)
    VectorType offset;
-   offset[0] = center.fractional_offset[0];
-   offset[1] = center.fractional_offset[1];
-   offset[2] = center.fractional_offset[2];
+   // &&& PointPos. Maybe use <fmod()>
+   offset[0] = center[0];
+   offset[1] = center[1];
+   offset[2] = center[2];
 
    TranslationTransform::Pointer translation_;
    translation_->SetOffset(offset);

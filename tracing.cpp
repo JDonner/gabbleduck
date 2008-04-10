@@ -12,7 +12,7 @@ typedef queue<PointType> PointQueue;
 typedef ImageType::IndexType Seed;
 typedef vector<Seed> Seeds;
 
-extern bool PointIsBeta(Image::Pointer image, PointPos const& pt);
+extern bool PointIsBeta(Image::Pointer image, PointType const& pt);
 
 
 // non-recursive version
@@ -70,7 +70,7 @@ bool MeetsBetaCondition(double sheetMin, double sheetMax,
 
 
 // The /whole/ condition
-bool PointIsBeta(Image::Pointer image, PointPos const& pt)
+bool PointIsBeta(Image::Pointer image, PointType const& pt)
 {
    // &&& arbitrary. I believe this is cell units for the time being
    int region_width = 6;

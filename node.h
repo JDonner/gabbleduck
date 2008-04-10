@@ -10,12 +10,12 @@
 class Node
 {
 public:
-   Node(PointPos const& pos, Polygon const& polygon)
+   Node(PointType const& pos, Polygon const& polygon)
    : pos_(pos)
    , polygon_(polygon)
    {}
 
-   PointPos const& pos() const { return pos_; }
+   PointType const& pos() const { return pos_; }
 
    static bool IsFarEnoughAwayFromOthers(PointType const& pt);
 
@@ -23,7 +23,7 @@ public:
    static void setMinAllowedDist(double minAllowedDist);
 
 private:
-   PointPos pos_;
+   PointType pos_;
 
    // (or triangle list)
    Polygon polygon_;
