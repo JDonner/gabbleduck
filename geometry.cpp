@@ -7,27 +7,6 @@
 #include <vector>
 
 
-// bool IsBetaLike(PointType const& point, ImageType::ConstPointer image)
-// {
-//    BetaPipeline pipeline = SetUpPipeline(image);
-//    eigenstuff = pipeline.getOutput();
-
-//    bool isBeta = MeetsBetaCondition();
-// }
-
-
-// Used to classify the seeds
-bool MeetsBetaCondition(double sheetMin, double sheetMax,
-                        double t1, double t2, double t3)
-{
-   bool isBeta =
-      sheetMin <= t1 and t1 <= sheetMax and
-      std::max(t1 / t2, t1 / t3) < std::min(t2 / t3, t3 / t2);
-
-   return isBeta;
-}
-
-
 void MakePolygon(Points const& planar_points, Polygon& outPolygon)
 {
    // find centroid -- needn't be centroid, just center-of-bounds
@@ -113,12 +92,12 @@ double z_intersect(double d, double c, double a, double x, double b, double y)
    return z;
 }
 
-static
+
 // box = x0 x1, y0 y1, z0 z1
 void planes_intersection_with_box(VectorType normal, PointType const& pt,
                                   // front, lower left, and rear, upper right
                                   PointType const& lo, PointType const& hi,
-                                  std::vector<PointType>& intersections)
+                                  Points& intersections)
 {
    double
       x0 = lo[0],

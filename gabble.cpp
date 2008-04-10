@@ -33,21 +33,21 @@ void BetaFinder::HookUpEigenStuff()
 
    // Eigenvalue
    // Create an adaptor and plug the output to the parametric space
-   m_EValueAdaptor1 = EValueImageAdaptorType::New();
    EigenvalueAccessor< EigenValueArrayType > accessor1;
    accessor1.SetEigenIdx( 0 );
+   m_EValueAdaptor1 = EValueImageAdaptorType::New();
    m_EValueAdaptor1->SetImage( m_TotalEigenFilter->GetEigenValuesImage() );
    m_EValueAdaptor1->SetPixelAccessor( accessor1 );
 
-   m_EValueAdaptor2 = EValueImageAdaptorType::New();
    EigenvalueAccessor< EigenValueArrayType > accessor2;
    accessor2.SetEigenIdx( 1 );
+   m_EValueAdaptor2 = EValueImageAdaptorType::New();
    m_EValueAdaptor2->SetImage( m_TotalEigenFilter->GetEigenValuesImage() );
    m_EValueAdaptor2->SetPixelAccessor( accessor2 );
 
-   m_EValueAdaptor3 = EValueImageAdaptorType::New();
    EigenvalueAccessor< EigenValueArrayType > accessor3;
    accessor3.SetEigenIdx( 2 );
+   m_EValueAdaptor3 = EValueImageAdaptorType::New();
    m_EValueAdaptor3->SetImage( m_TotalEigenFilter->GetEigenValuesImage() );
    m_EValueAdaptor3->SetPixelAccessor( accessor3 );
 
@@ -94,8 +94,6 @@ void BetaFinder::HookUpEigenStuff()
    m_EVectorCastfilter3 = EVectorCastImageFilterType::New();
    m_EVectorCastfilter3->SetInput( m_EVectorAdaptor1 );
 }
-
-
 
 
 void BetaFinder::Load(char const* basename)

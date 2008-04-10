@@ -2,6 +2,9 @@
 #define BETA_PIPELINE_H
 
 #include "types.h"
+#include "point.h"
+#include "polygon.h"
+
 // This type we know is specific to this pipeline
 
 struct BetaPipeline
@@ -11,6 +14,12 @@ struct BetaPipeline
                 // In cells. no point in fractional cells (I believe)
                 int region_width);
   ~BetaPipeline();
+
+
+   EigenvalueAccessor< EigenValueArrayType >::Pointer getEValue
+
+   EigenvectorAccessor< EVectorMatrixType, EVector >
+
 
    typedef itk::ResampleImageFilter< ImageType, ImageType, double > ResampleFilterType;
    ResampleFilterType::Pointer resampler_;
@@ -22,6 +31,7 @@ struct BetaPipeline
 
    HessianFilterType::Pointer hessian_;
 
+   // &&& What's the difference between an adaptor and an accessor?
    // Eigenvalue
    // Create an adaptor and plug the output to the parametric space
    EValueImageAdaptorType::Pointer
@@ -36,9 +46,9 @@ struct BetaPipeline
       eVectorAdaptor3_;
 
    EigenvalueAccessor< EigenValueArrayType >
-      accessor1_,
-      accessor2_,
-      accessor3_;
+      valAccessor1_,
+      valAccessor2_,
+      valAccessor3_;
 
    EigenvectorAccessor< EVectorMatrixType, EVector >
       vecAccessor1_,
@@ -60,8 +70,6 @@ struct BetaPipeline
       eVectorCastFilter1_,
       eVectorCastFilter2_,
       eVectorCastFilter3_;
-
-   std::vector<itk::Object*> objects_;
 };
 
 #endif // BETA_PIPELINE_H

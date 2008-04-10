@@ -79,35 +79,35 @@ BetaPipeline::BetaPipeline(ImageType::Pointer image,
    // Eigenvalue
    // Create an adaptor and plug the output to the parametric space
    eValueAdaptor1_ = EValueImageAdaptorType::New();
-   accessor1_.SetEigenIdx( 0 );
+   valAccessor1_.SetEigenIdx( 0 );
    eValueAdaptor1_->SetImage( totalEigenFilter_->GetEigenValuesImage() );
-   eValueAdaptor1_->SetPixelAccessor( accessor1_ );
+   eValueAdaptor1_->SetPixelAccessor( valAccessor1_ );
 
    eValueAdaptor2_ = EValueImageAdaptorType::New();
-   accessor2_.SetEigenIdx( 1 );
+   valAccessor2_.SetEigenIdx( 1 );
    eValueAdaptor2_->SetImage( totalEigenFilter_->GetEigenValuesImage() );
-   eValueAdaptor2_->SetPixelAccessor( accessor2_ );
+   eValueAdaptor2_->SetPixelAccessor( valAccessor2_ );
 
    eValueAdaptor3_ = EValueImageAdaptorType::New();
-   accessor3_.SetEigenIdx( 2 );
+   valAccessor3_.SetEigenIdx( 2 );
    eValueAdaptor3_->SetImage( totalEigenFilter_->GetEigenValuesImage() );
-   eValueAdaptor3_->SetPixelAccessor( accessor3_ );
+   eValueAdaptor3_->SetPixelAccessor( valAccessor3_ );
 
 
    // Eigenvector
    // Create an adaptor and plug the output to the parametric space
    eVectorAdaptor1_ = EVectorImageAdaptorType::New();
-   accessor1_.SetEigenIdx( 0 );
+   vecAccessor1_.SetEigenIdx( 0 );
    eVectorAdaptor1_->SetImage( totalEigenFilter_->GetEigenVectorsImage() );
    eVectorAdaptor1_->SetPixelAccessor( vecAccessor1_ );
 
    eVectorAdaptor2_ = EVectorImageAdaptorType::New();
-   accessor2_.SetEigenIdx( 1 );
+   vecAccessor2_.SetEigenIdx( 1 );
    eVectorAdaptor2_->SetImage( totalEigenFilter_->GetEigenVectorsImage() );
    eVectorAdaptor2_->SetPixelAccessor( vecAccessor2_ );
 
    eVectorAdaptor3_ = EVectorImageAdaptorType::New();
-   accessor3_.SetEigenIdx( 2 );
+   vecAccessor3_.SetEigenIdx( 2 );
    eVectorAdaptor3_->SetImage( totalEigenFilter_->GetEigenVectorsImage() );
    eVectorAdaptor3_->SetPixelAccessor( vecAccessor3_ );
 
@@ -131,9 +131,75 @@ BetaPipeline::BetaPipeline(ImageType::Pointer image,
    eVectorCastFilter2_->SetInput( eVectorAdaptor2_ );
    eVectorCastFilter3_ = EVectorCastImageFilterType::New();
    eVectorCastFilter3_->SetInput( eVectorAdaptor3_ );
+
+   // -- We may not need these cast + adaptor + accessor things
+   // (maybe some). They're for the benefit of other filters, I think.
+
+// /big/common/insight/InsightToolkit-3.4.0/Testing/Code/Common/itkSymmetricEigenAnalysisTest.cxx
+
+
+// We get our vector as operator[]
 }
 
-BetaPipeline::~BetaPipeline()
-{
-#warning "Need to delete pipeline filters"
-}
+#ifdef RAW_MATERIAL
+  {
+  // Test using itk Matrix
+  std::cout << "Testing ComputeEigenValuesAndVectors() "
+    << "with SymmetricEigenAnalysis< itk::Matrix, itk::FixedArray, itk::Matrix >"
+    << std::endl;
+  typedef itk::Matrix< double, 6, 6 > InputMatrixType;
+  typedef itk::FixedArray< double, 6 > EigenValuesArrayType;
+  typedef itk::Matrix< double, 6, 6 > EigenVectorMatrixType;
+  typedef itk::SymmetricEigenAnalysis< InputMatrixType,
+      EigenValuesArrayType, EigenVectorMatrixType > SymmetricEigenAnalysisType;
+
+  double Sdata[36] = {
+   30.0000,   -3.4273,   13.9254,   13.7049,   -2.4446,   20.2380,
+   -3.4273,   13.7049,   -2.4446,    1.3659,    3.6702,   -0.2282,
+   13.9254,   -2.4446,   20.2380,    3.6702,   -0.2282,   28.6779,
+   13.7049,    1.3659,    3.6702,   12.5273,   -1.6045,    3.9419,
+   -2.4446,    3.6702,   -0.2282,   -1.6045,    3.9419,    2.5821,
+   20.2380,   -0.2282,   28.6779,    3.9419,    2.5821,   44.0636,
+  };
+
+  InputMatrixType S;
+
+  for(unsigned int row=0; row<6; row++)
+    {
+    for(unsigned int col=0; col<6; col++)
+      {
+      S[row][col] = Sdata[ row * 6 + col ];
+      }
+    }
+
+  EigenValuesArrayType eigenvalues;
+  EigenVectorMatrixType eigenvectors;
+  SymmetricEigenAnalysisType symmetricEigenSystem(6);
+
+  symmetricEigenSystem.ComputeEigenValuesAndVectors(S, eigenvalues, eigenvectors );
+
+  std::cout << "EigenValues: " << eigenvalues << std::endl;
+  std::cout << "EigenVectors (each row is an an eigen vector): " << std::endl;
+  std::cout << eigenvectors << std::endl;
+
+  double eigvec3[6] = { 0.5236407,  -0.0013422,  -0.4199706,  -0.5942299,   0.4381326,   0.0659837 };
+  double eigvals[6]= {0.170864, 2.16934, 3.79272, 15.435, 24.6083, 78.2994};
+
+  double tolerance = 0.01;
+  for( unsigned int i=0; i<6; i++ )
+    {
+    if (vnl_math_abs( eigvals[i] - eigenvalues[i] ) > tolerance)
+      {
+      std::cout << "Eigen value computation failed" << std::endl;
+      return EXIT_FAILURE;
+      }
+
+     if (vnl_math_abs( eigvec3[i] - eigenvectors[2][i] ) > tolerance)
+      {
+      std::cout << "Eigen vector computation failed" << std::endl;
+      return EXIT_FAILURE;
+      }
+    }
+  }
+
+#endif // RAW_MATERIAL

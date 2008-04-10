@@ -35,12 +35,13 @@ const unsigned Dimension = 3;
 typedef  itk::FixedArray<EigenComponentType, Dimension> FixedVectorType;
 typedef  itk::Vector<InternalPrecisionType, Dimension>              VectorType;
 
-typedef  VectorType                                     EVector;
+typedef  VectorType                                    EVector;
 
 typedef  itk::CovariantVector< PixelType, Dimension >  CovariantVectorType;
 
 typedef  itk::Image< InputPixelType, Dimension >       InputImageType;
 typedef  InputImageType                                ImageType;
+typedef  ImageType                                     Image;
 typedef  InputImageType                                BetaImageType;
 typedef  itk::ImageRegion<Dimension>                   ImageRegion;
 typedef  itk::Image< VectorType, Dimension >           VectorImageType;
@@ -54,6 +55,11 @@ typedef  itk::HessianRecursiveGaussianImageFilter<InputImageType>
    HessianFilterType;
 typedef  HessianFilterType::OutputImageType            HessianImageType;
 typedef  HessianImageType::PixelType                   HessianPixelType;
+
+
+///////////////////////////////////////////////////////////////////
+// Eigenvalue stuff
+///////////////////////////////////////////////////////////////////
 
 // Set of 3 eigenvalues
 typedef  itk::FixedArray<double, HessianPixelType::Dimension>
@@ -74,13 +80,6 @@ typedef  itk::TotalEigenImageFilter<HessianImageType, EigenValueImageType, EVect
 
 //typedef  itk::SymmetricEigenAnalysisImageFilter<HessianImageType, EigenValueImageType>
 
-// No suitable rep in ITK; we'll wait and do something with VTK
-typedef std::vector<PointType> Polygon;
-
-
-///////////////////////////////////////////////////////////////////
-// Eigenvalue stuff
-///////////////////////////////////////////////////////////////////
 
 // Reads off the eigenvalues
 typedef  itk::ImageAdaptor<EigenValueImageType,
@@ -132,6 +131,5 @@ typedef  itk::CastImageFilter<
 
 //typedef  HessianFilterType::RealType     RealType;
 
-#include "point.h"
-
+// A totally free point in space.
 #endif // GABBLE_TYPES_H

@@ -20,6 +20,8 @@
 // Explanation of what this does.
 // http://www.itk.org/HTML/Curve3DExtraction.htm
 
+// original in:
+// /big/common/insight/InsightApplications-3.4.0/Curves3DExtractor/ceExtractorConsoleBase.cxx
 
 #include <itkImage.h>
 #include <itkHessianRecursiveGaussianImageFilter.h>
