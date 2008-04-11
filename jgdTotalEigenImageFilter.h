@@ -124,8 +124,8 @@ public:
    // EValuesImageType* GetEigenValuesImage();
    // EVectorsImageType* GetEigenVectorsImage();
 
-   typename TEValuesImage::ConstPointer GetEigenValuesImage();
-   typename TEVectorsImage::ConstPointer GetEigenVectorsImage();
+   typename TEValuesImage::Pointer GetEigenValuesImage();
+   typename TEVectorsImage::Pointer GetEigenVectorsImage();
 
    /** ImageDimension enumeration   */
    itkStaticConstMacro(InputImageDimension, unsigned,

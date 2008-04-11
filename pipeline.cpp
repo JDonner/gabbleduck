@@ -77,6 +77,7 @@ BetaPipeline::BetaPipeline(ImageType::Pointer image,
    totalEigenFilter_->OrderEigenValuesBy(
       EigenAnalysisFilterType::JgdCalculatorType::OrderByValue);
 
+#ifdef DE_NADA
    // Eigenvalue
    // Create an adaptor and plug the output to the parametric space
    eValueAdaptor1_ = EValueImageAdaptorType::New();
@@ -132,12 +133,12 @@ BetaPipeline::BetaPipeline(ImageType::Pointer image,
    eVectorCastFilter2_->SetInput( eVectorAdaptor2_ );
    eVectorCastFilter3_ = EVectorCastImageFilterType::New();
    eVectorCastFilter3_->SetInput( eVectorAdaptor3_ );
+#endif // DE_NADA
 
    // -- We may not need these cast + adaptor + accessor things
    // (maybe some). They're for the benefit of other filters, I think.
 
 // /big/common/insight/InsightToolkit-3.4.0/Testing/Code/Common/itkSymmetricEigenAnalysisTest.cxx
-
 
 // We get our vector as operator[]
 }

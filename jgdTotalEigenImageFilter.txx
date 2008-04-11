@@ -49,12 +49,12 @@ template <class TInputImage,class TEValuesImage, class TEVectorsImage>
 // &&& was '*'
 template <class TInputImage,class TEValuesImage, class TEVectorsImage>
 //   typename TotalEigenImageFilter<TInputImage, TEValuesImage, TEVectorsImage>::
-   typename TEValuesImage::ConstPointer
+   typename TEValuesImage::Pointer
    TotalEigenImageFilter<TInputImage, TEValuesImage, TEVectorsImage>
    ::GetEigenValuesImage()
 {
-   typename TEValuesImage::ConstPointer p(
-      dynamic_cast<TEValuesImage const*>(
+   typename TEValuesImage::Pointer p(
+      dynamic_cast<TEValuesImage*>(
          this->ProcessObject::GetOutput(0)));
 
    // return SmartPointer<TEValuesImage>(
@@ -70,12 +70,12 @@ template <class TInputImage,class TEValuesImage, class TEVectorsImage>
  *  Return the thinning Image pointer
  */
 template <class TInputImage, class TEValuesImage, class TEVectorsImage>
-   typename TEVectorsImage::ConstPointer
+   typename TEVectorsImage::Pointer
    TotalEigenImageFilter<TInputImage, TEValuesImage, TEVectorsImage>
    ::GetEigenVectorsImage()
 {
-   typename TEVectorsImage::ConstPointer p(
-      dynamic_cast<TEVectorsImage const*>(
+   typename TEVectorsImage::Pointer p(
+      dynamic_cast<TEVectorsImage*>(
          (this->ProcessObject::GetOutput(1))));
 
    return p;
@@ -96,8 +96,8 @@ template <class TInputImage, class TEValuesImage, class TEVectorsImage>
    ::PrepareData()
 {
    itkDebugMacro(<< "PrepareData Start");
-   typename TEValuesImage::Pointer evalImage = GetEigenValuesImage();
-   typename TEVectorsImage::Pointer evecImage = GetEigenVectorsImage();
+   typename TEValuesImage::ConstPointer evalImage = GetEigenValuesImage();
+   typename TEVectorsImage::ConstPointer evecImage = GetEigenVectorsImage();
 
    InputImagePointer  inputImage  =
       dynamic_cast<const TInputImage  *>( ProcessObject::GetInput(0) );
@@ -107,7 +107,6 @@ template <class TInputImage, class TEValuesImage, class TEVectorsImage>
 
    evecImage->SetBufferedRegion( evecImage->GetRequestedRegion() );
    evecImage->Allocate();
-
 
    // typename EValuesImageType::RegionType region  = evalImage->GetRequestedRegion();
 
@@ -196,12 +195,10 @@ template <class TInputImage,class TEValuesImage, class TEVectorsImage>
    TotalEigenImageFilter<TInputImage,TEValuesImage, TEVectorsImage>
    ::GenerateData()
 {
-
    this->PrepareData();
 
    itkDebugMacro(<< "GenerateData: Computing Thinning Image");
    this->ComputeEigenImages();
-
 }
 
 /**
