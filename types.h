@@ -45,7 +45,8 @@ typedef  ImageType                                     Image;
 typedef  InputImageType                                BetaImageType;
 typedef  itk::ImageRegion<Dimension>                   ImageRegion;
 typedef  itk::Image< VectorType, Dimension >           VectorImageType;
-typedef  itk::Image< CovariantVectorType, Dimension >  CovariantVectorImageType;
+// just an experiment
+//typedef  itk::Image< CovariantVectorType, Dimension >  CovariantVectorImageType;
 
 //   typedef  itk::ImageFileReader< InputImageType >        VolumeReaderType;
 typedef  itk::TranslationTransform<InternalPrecisionType, Dimension> TranslationTransform;

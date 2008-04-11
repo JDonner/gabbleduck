@@ -35,10 +35,10 @@ template <class TInputImage,class TEValuesImage, class TEVectorsImage>
 
    this->SetNumberOfRequiredOutputs( 2 );
 
-   EValuesImagePointer evalImage = EValuesImageType::New();
+   EValuesImagePointer evalImage = TEValuesImage::New();
    this->SetNthOutput( 0, evalImage.GetPointer() );
 
-   EVectorsImagePointer evectorImage = EVectorsImageType::New();
+   EVectorsImagePointer evectorImage = TEVectorsImage::New();
    this->SetNthOutput( 1, evectorImage.GetPointer() );
 
 }
@@ -46,14 +46,23 @@ template <class TInputImage,class TEValuesImage, class TEVectorsImage>
 /**
  *  Return the thinning Image pointer
  */
+// &&& was '*'
 template <class TInputImage,class TEValuesImage, class TEVectorsImage>
-   typename TotalEigenImageFilter<
-   TInputImage, TEValuesImage, TEVectorsImage>::EValuesImageType*
-   TotalEigenImageFilter<TInputImage,TEValuesImage, TEVectorsImage>
+//   typename TotalEigenImageFilter<TInputImage, TEValuesImage, TEVectorsImage>::
+   typename TEValuesImage::ConstPointer
+   TotalEigenImageFilter<TInputImage, TEValuesImage, TEVectorsImage>
    ::GetEigenValuesImage()
 {
-   return dynamic_cast<EValuesImageType*>
-      (this->ProcessObject::GetOutput(0));
+   typename TEValuesImage::ConstPointer p(
+      dynamic_cast<TEValuesImage const*>(
+         this->ProcessObject::GetOutput(0)));
+
+   // return SmartPointer<TEValuesImage>(
+
+   //    dynamic_cast<TEValuesImage*>(
+   //       this->ProcessObject::GetOutput(0)));
+
+   return p;
 }
 
 
@@ -61,12 +70,19 @@ template <class TInputImage,class TEValuesImage, class TEVectorsImage>
  *  Return the thinning Image pointer
  */
 template <class TInputImage, class TEValuesImage, class TEVectorsImage>
-   typename TotalEigenImageFilter<TInputImage, TEValuesImage, TEVectorsImage>::
-   EVectorsImageType* TotalEigenImageFilter<TInputImage, TEValuesImage, TEVectorsImage>
+   typename TEVectorsImage::ConstPointer
+   TotalEigenImageFilter<TInputImage, TEValuesImage, TEVectorsImage>
    ::GetEigenVectorsImage()
 {
-   return dynamic_cast<EVectorsImageType*>
-      (this->ProcessObject::GetOutput(1));
+   typename TEVectorsImage::ConstPointer p(
+      dynamic_cast<TEVectorsImage const*>(
+         (this->ProcessObject::GetOutput(1))));
+
+   return p;
+
+   // return TEVectorsImage::ConstPointer(
+   //    dynamic_cast<TEVectorsImage const*>(
+   //       (this->ProcessObject::GetOutput(1))));
 }
 
 /**
@@ -138,7 +154,7 @@ template <class TInputImage,class TEValuesImage, class TEVectorsImage>
    typename TEValuesImage::Pointer evalImage = this->GetEigenValuesImage();
    typename TEVectorsImage::Pointer evecImage = this->GetEigenVectorsImage();
 
-   typename EValuesImageType::RegionType region  = evalImage->GetRequestedRegion();
+   typename TEValuesImage::RegionType region  = evalImage->GetRequestedRegion();
 
    ImageRegionConstIterator< TInputImage >  it( inputImage,  region );
    ImageRegionIterator< TEValuesImage >   otVal( evalImage,  region );

@@ -1,17 +1,14 @@
 /*=========================================================================
 
-  Program:   Insight Segmentation & Registration Toolkit
-  Module:    $RCSfile: jgdTotalEigenImageFilter.h,v $
-  Language:  C++
-  Date:      $Date: 2006/04/04 13:20:12 $
-  Version:   $Revision: 1.5 $
+// I believe this was drawn from:
+// <Code/BasicFilters/itkSymmetricEigenAnalysisImageFilter.h>
 
-  Copyright (c) Insight Software Consortium. All rights reserved.
-  See ITKCopyright.txt or http://www.itk.org/HTML/Copyright.htm for details.
+Copyright (c) Insight Software Consortium. All rights reserved.
+See ITKCopyright.txt or http://www.itk.org/HTML/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-     PURPOSE.  See the above copyright notices for more information.
+This software is distributed WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+PURPOSE.  See the above copyright notices for more information.
 
 =========================================================================*/
 #ifndef jgdTotalEigenImageFilter_h
@@ -19,6 +16,7 @@
 
 #include <itkImageToImageFilter.h>
 #include <itkSymmetricEigenAnalysis.h>
+
 
 // The class is templated over the input matrix (which is expected to
 // provide access to its elements with the [][] operator), matrix to
@@ -43,139 +41,142 @@ namespace itk
 {
 
 /** \class TotalEigenImageFilter
-*
-* \brief This filter computes one-pixel-wide edges of the input image.
-*
-* This class is parametrized over the type of the input image and the
-* type of the output image.
-*
-* The input is assumed to be a binary image.  If the foreground pixels
-* of the input image do not have a value of 1, they are rescaled to 1
-* internally to simplify the computation.
-*
-* The filter will produce a skeleton of the object.  The output
-* background values are 0, and the foreground values are 1.
-*
-* This filter is a sequential thinning algorithm and known to be
-* computational time dependable on the image size.  The algorithm
-* corresponds with the 2D implementation described in:
-*
-* Rafael C. Gonzales and Richard E. Woods.  Digital Image Processing.
-* Addison Wesley, 491-494, (1993).
-*
-* To do: Make this filter ND.
-*
-* \sa MorphologyImageFilter
-* \ingroup ImageEnhancement MathematicalMorphologyImageFilters
-*/
+ *
+ * \brief This filter computes one-pixel-wide edges of the input image.
+ *
+ * This class is parameterized over the type of the input image and the
+ * type of the output image.
+ *
+ * The input is assumed to be a binary image.  If the foreground pixels
+ * of the input image do not have a value of 1, they are rescaled to 1
+ * internally to simplify the computation.
+ *
+ * The filter will produce a skeleton of the object.  The output
+ * background values are 0, and the foreground values are 1.
+ *
+ * This filter is a sequential thinning algorithm and known to be
+ * computational time dependable on the image size.  The algorithm
+ * corresponds with the 2D implementation described in:
+ *
+ * Rafael C. Gonzales and Richard E. Woods.  Digital Image Processing.
+ * Addison Wesley, 491-494, (1993).
+ *
+ * To do: Make this filter ND.
+ *
+ * \sa MorphologyImageFilter
+ * \ingroup ImageEnhancement MathematicalMorphologyImageFilters
+ */
 // jgd - Indeed, seems to be a matrix type. TEVectorsImage == Image<Matrix..>
 template <class TInputImage, class TEValuesImage, class TEVectorsImage>
-class TotalEigenImageFilter :
-    public ImageToImageFilter<TInputImage, TEValuesImage>
+   class TotalEigenImageFilter :
+      public ImageToImageFilter<TInputImage, TEValuesImage>
 {
 public:
-  /** Standard class typedefs. */
-  typedef TotalEigenImageFilter    Self;
-  typedef ImageToImageFilter<TInputImage, TEValuesImage> Superclass;
-  typedef SmartPointer<Self> Pointer;
-  typedef SmartPointer<const Self> ConstPointer;
+   /** Standard class typedefs. */
+   typedef TotalEigenImageFilter    Self;
+   typedef ImageToImageFilter<TInputImage, TEValuesImage> Superclass;
+   typedef SmartPointer<Self> Pointer;
+   typedef SmartPointer<const Self> ConstPointer;
 
-  typedef typename TInputImage::   PixelType InputPixelType;
-  typedef typename TEValuesImage:: PixelType EValuesPixelType;
-  typedef typename TEVectorsImage::PixelType EVectorsPixelType;
-  typedef typename InputPixelType::ValueType InputValueType;
+   typedef typename TInputImage::   PixelType InputPixelType;
+   typedef typename TEValuesImage:: PixelType EValuesPixelType;
+   typedef typename TEVectorsImage::PixelType EVectorsPixelType;
+   typedef typename InputPixelType::ValueType InputValueType;
 
-  typedef SymmetricEigenAnalysis<InputPixelType, EValuesPixelType, EVectorsPixelType>
-    JgdCalculatorType;
+   typedef SymmetricEigenAnalysis<InputPixelType, EValuesPixelType, EVectorsPixelType>
+      JgdCalculatorType;
 
-  typedef typename JgdCalculatorType::EigenValueOrderType EigenValueOrderType;
+   typedef typename JgdCalculatorType::EigenValueOrderType EigenValueOrderType;
 
-  /** Method for creation through the object factory */
-  itkNewMacro(Self);
+   /** Method for creation through the object factory */
+   itkNewMacro(Self);
 
-  /** Run-time type information (and related methods). */
-  itkTypeMacro( TotalEigenImageFilter, ImageToImageFilter );
+   /** Run-time type information (and related methods). */
+   itkTypeMacro( TotalEigenImageFilter, ImageToImageFilter );
 
-  /** Type for input image. */
-  typedef   TInputImage       InputImageType;
+   /** Type for input image. */
+   typedef TInputImage       InputImageType;
 
-  /** Type for output image: Skelenton of the object.  */
-  typedef   TEValuesImage      EValuesImageType;
-  typedef   TEVectorsImage     EVectorsImageType;
+//   /** Type for output image: Skelenton of the object.  */
+//   typedef TEValuesImage     EValuesImageType;
+//   typedef TEVectorsImage    EVectorsImageType;
 
-  /** Type for the region of the input image. */
-  typedef typename InputImageType::RegionType   RegionType;
+   /** Type for the region of the input image. */
+   typedef typename InputImageType::RegionType   RegionType;
 
-  /** Type for the index of the input image. */
-  typedef typename RegionType::IndexType  IndexType;
+   /** Type for the index of the input image. */
+   typedef typename RegionType::IndexType  IndexType;
 
-  /** Type for the index of the input image. */
-  typedef typename InputImageType::PixelType PixelType ;
+   /** Type for the index of the input image. */
+   typedef typename InputImageType::PixelType PixelType ;
 
-  /** Type for the size of the input image. */
-  typedef typename RegionType::SizeType   SizeType;
+   /** Type for the size of the input image. */
+   typedef typename RegionType::SizeType   SizeType;
 
-  /** Pointer Type for input image. */
-  typedef typename InputImageType::ConstPointer InputImagePointer;
+   /** Pointer Type for input image. */
+   typedef typename InputImageType::ConstPointer InputImagePointer;
 
-  /** Pointer Type for the output image. */
-  typedef typename EValuesImageType::Pointer EValuesImagePointer;
-  typedef typename EVectorsImageType::Pointer EVectorsImagePointer;
+   /** Pointer Type for the output image. */
+   typedef typename TEValuesImage::Pointer EValuesImagePointer;
+   typedef typename TEVectorsImage::Pointer EVectorsImagePointer;
 
-  // &&& Why not const?
-  EValuesImageType* GetEigenValuesImage();
-  EVectorsImageType* GetEigenVectorsImage();
+   // // &&& Why not const?
+   // EValuesImageType* GetEigenValuesImage();
+   // EVectorsImageType* GetEigenVectorsImage();
 
-  /** ImageDimension enumeration   */
-  itkStaticConstMacro(InputImageDimension, unsigned,
-                      TInputImage::ImageDimension );
-  itkStaticConstMacro(OutputImageDimension, unsigned,
-                      TEValuesImage::ImageDimension );
+   typename TEValuesImage::ConstPointer GetEigenValuesImage();
+   typename TEVectorsImage::ConstPointer GetEigenVectorsImage();
+
+   /** ImageDimension enumeration   */
+   itkStaticConstMacro(InputImageDimension, unsigned,
+                       TInputImage::ImageDimension );
+   itkStaticConstMacro(OutputImageDimension, unsigned,
+                       TEValuesImage::ImageDimension );
 
 #ifdef ITK_USE_CONCEPT_CHECKING
-  /** Begin concept checking */
-  itkConceptMacro(InputHasNumericTraitsCheck,
-                  (Concept::HasNumericTraits<InputValueType>));
-  itkConceptMacro(SameDimensionCheck,
-                  (Concept::SameDimension<InputImageDimension, OutputImageDimension>));
-  /** End concept checking */
+   /** Begin concept checking */
+   itkConceptMacro(InputHasNumericTraitsCheck,
+                   (Concept::HasNumericTraits<InputValueType>));
+   itkConceptMacro(SameDimensionCheck,
+                   (Concept::SameDimension<InputImageDimension, OutputImageDimension>));
+   /** End concept checking */
 #endif
 
-  void SetDimension( unsigned int n )
-    {
-    m_Calculator.SetDimension(n);
-    }
+   void SetDimension( unsigned int n )
+   {
+      m_Calculator.SetDimension(n);
+   }
 
-  void OrderEigenValuesBy( typename JgdCalculatorType::EigenValueOrderType order )
-  {
-    if( order == JgdCalculatorType::OrderByMagnitude )
-    {
-      m_Calculator.SetOrderEigenMagnitudes( true );
-    }
-    else if( order == JgdCalculatorType::DoNotOrder )
-    {
-      m_Calculator.SetOrderEigenValues( false );
-    }
-  }
+   void OrderEigenValuesBy( typename JgdCalculatorType::EigenValueOrderType order )
+   {
+      if( order == JgdCalculatorType::OrderByMagnitude )
+      {
+         m_Calculator.SetOrderEigenMagnitudes( true );
+      }
+      else if( order == JgdCalculatorType::DoNotOrder )
+      {
+         m_Calculator.SetOrderEigenValues( false );
+      }
+   }
 
 protected:
-  TotalEigenImageFilter();
-  virtual ~TotalEigenImageFilter() {}
-  void PrintSelf(std::ostream& os, Indent indent) const;
+   TotalEigenImageFilter();
+   virtual ~TotalEigenImageFilter() {}
+   void PrintSelf(std::ostream& os, Indent indent) const;
 
-  void GenerateData();
+   void GenerateData();
 
-  /** Prepare data. */
-  void PrepareData();
+   /** Prepare data. */
+   void PrepareData();
 
-  void ComputeEigenImages();
-
-private:
-  TotalEigenImageFilter(const Self&); //purposely not implemented
-  void operator=(const Self&); //purposely not implemented
+   void ComputeEigenImages();
 
 private:
-  JgdCalculatorType m_Calculator;
+   TotalEigenImageFilter(const Self&); //purposely not implemented
+   void operator=(const Self&); //purposely not implemented
+
+private:
+   JgdCalculatorType m_Calculator;
 
 }; // end of TotalEigenImageFilter class
 

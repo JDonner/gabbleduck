@@ -16,10 +16,13 @@ struct BetaPipeline
   ~BetaPipeline();
 
 
-   EigenvalueAccessor< EigenValueArrayType >::Pointer getEValue
+   EigenValueImageType::ConstPointer eigValImage() const {
+      return totalEigenFilter_->GetEigenValuesImage();
+   }
 
-   EigenvectorAccessor< EVectorMatrixType, EVector >
-
+   EVectorImageType::ConstPointer eigVecImage() const {
+      return totalEigenFilter_->GetEigenVectorsImage();
+   }
 
    typedef itk::ResampleImageFilter< ImageType, ImageType, double > ResampleFilterType;
    ResampleFilterType::Pointer resampler_;
