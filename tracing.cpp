@@ -77,15 +77,16 @@ bool PointIsBeta(Image::Pointer image, PointType const& pt)
 
    BetaPipeline pipeline(image, pt, region_width);
 
-   // &&& The heavy lifting, reading eigenvectors & eigenvalues at <pt>
-   // position.
-   eigenoutput;
-   {
-      // Now test whether we're Beta enough.
-      BetaPipeline pipeline = BetaPipeline(m_source);
+// pipeline.eigValImage();
+// pipeline.eigVecImage();
 
-      eigenoutput = pipeline.getresult();
-   }
+   EVectorImageType::Pointer evecImage = pipeline.eigVecImage();
+
+   EVectorImageType::IndexType index;
+   index[0] = 0;
+   index[1] = 0;
+   index[2] = 0;
+   double* evec = evecImage->GetPixel(index)[0];
 
 // /big/common/insight/InsightToolkit-3.4.0/Testing/Code/Common/itkSymmetricEigenAnalysisTest.cxx
 

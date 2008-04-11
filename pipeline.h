@@ -15,7 +15,6 @@ struct BetaPipeline
                 int region_width);
   ~BetaPipeline();
 
-
    EigenValueImageType::Pointer eigValImage() {
       return totalEigenFilter_->GetEigenValuesImage();
    }
@@ -24,6 +23,7 @@ struct BetaPipeline
       return totalEigenFilter_->GetEigenVectorsImage();
    }
 
+private:
    typedef itk::ResampleImageFilter< ImageType, ImageType, double > ResampleFilterType;
    ResampleFilterType::Pointer resampler_;
 
