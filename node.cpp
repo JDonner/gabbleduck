@@ -11,7 +11,7 @@ bool Node::IsFarEnoughAwayFromOthers(PointType const& pt)
    for (Nodes::const_iterator it = s_all_beta_points.begin(),
            end = s_all_beta_points.end();
         it != end; ++it) {
-      if ((*it)->pos().absolute_position.EuclideanDistanceTo<double>(pt) < s_min_allowed_interpoint_dist) {
+      if ((*it)->pos().EuclideanDistanceTo<double>(pt) < s_min_allowed_interpoint_dist) {
          return false;
       }
    }

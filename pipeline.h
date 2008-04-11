@@ -16,11 +16,11 @@ struct BetaPipeline
   ~BetaPipeline();
 
 
-   EigenValueImageType::ConstPointer eigValImage() {
+   EigenValueImageType::Pointer eigValImage() {
       return totalEigenFilter_->GetEigenValuesImage();
    }
 
-   EVectorImageType::ConstPointer eigVecImage() {
+   EVectorImageType::Pointer eigVecImage() {
       return totalEigenFilter_->GetEigenVectorsImage();
    }
 

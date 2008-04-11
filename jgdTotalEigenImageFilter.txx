@@ -96,8 +96,8 @@ template <class TInputImage, class TEValuesImage, class TEVectorsImage>
    ::PrepareData()
 {
    itkDebugMacro(<< "PrepareData Start");
-   typename TEValuesImage::ConstPointer evalImage = GetEigenValuesImage();
-   typename TEVectorsImage::ConstPointer evecImage = GetEigenVectorsImage();
+   typename TEValuesImage::Pointer evalImage = GetEigenValuesImage();
+   typename TEVectorsImage::Pointer evecImage = GetEigenVectorsImage();
 
    InputImagePointer  inputImage  =
       dynamic_cast<const TInputImage  *>( ProcessObject::GetInput(0) );

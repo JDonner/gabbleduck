@@ -1,11 +1,13 @@
 #include "types.h"
 #include "pipeline.h"
+#include "polygon.h"
 
 #include <algorithm>
 #include <set>
 #include <cmath>
 #include <vector>
 
+using namespace std;
 
 void MakePolygon(Points const& planar_points, Polygon& outPolygon)
 {
@@ -60,8 +62,12 @@ void MakePolygon(Points const& planar_points, Polygon& outPolygon)
       InternalPrecisionType angle_with_first = atan2(cos_alpha, sin_alpha);
       vertices.insert(std::make_pair(angle_with_first, iPt));
    }
-   // &&&
-   // copy(vertices -> outPolygon)
+
+//   copy(vertices.begin(), vertices.end(), back_insert_iterator<Polygon>(outPolygon));
+   for (VertexSet::const_iterator it = vertices.begin(), end = vertices.end();
+        it != end; ++it) {
+      outPolygon.push_back(planar_points[it->second]);
+   }
 }
 
 

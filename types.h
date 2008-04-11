@@ -11,8 +11,8 @@
 #include <itkCastImageFilter.h>
 #include <itkResampleImageFilter.h>
 
-#include <itkMesh.h>
-#include <itkPolygonCell.h>
+//#include <itkMesh.h>
+//#include <itkPolygonCell.h>
 
 #include "PixelAccessors.h"
 #include "jgdTotalEigenImageFilter.h"
