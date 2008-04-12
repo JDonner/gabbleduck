@@ -186,13 +186,6 @@ void planes_intersection_with_box(VectorType normal, PointType const& pt,
 
 
 #if 0
-void MakePolygon(vector v, Box box, Triangles& outTriangles)
-{
-   intersect with edges;
-
-   outTriangles.push_back(triangle);
-}
-
 // This makes no sense - how can thickness deal with flatness?
 // I think the eigenVALUE stuff was, 'how it's been done before,
 // but is not relevant to now'.

@@ -13,7 +13,6 @@ struct BetaPipeline
                 PointType const& center,
                 // In cells. no point in fractional cells (I believe)
                 int region_width);
-  ~BetaPipeline();
 
    EigenValueImageType::Pointer eigValImage() {
       return totalEigenFilter_->GetEigenValuesImage();
