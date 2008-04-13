@@ -9,8 +9,11 @@
 
 using namespace std;
 
-void MakePolygon(Points const& planar_points, Polygon& outPolygon)
+void MakePolygon(VectorType const& /*normal*/,
+                 Points const& planar_points,
+                 Polygon& outPolygon)
 {
+   // We don't use the normal, but we might, for
    // find centroid -- needn't be centroid, just center-of-bounds
    // is ok, no? -- at least, I believe under the circumstances that
    // we'll be ok with it.

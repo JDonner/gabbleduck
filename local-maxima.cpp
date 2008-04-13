@@ -1,8 +1,8 @@
+#include "local-maxima.h"
+
 #include <itkNeighborhoodIterator.h>
 #include <itkBinaryThresholdImageFilter.h>
-#include <itkImage.h>
 #include <itkConstantBoundaryCondition.h>
-#include <itkImageFileReader.h>
 
 #include <queue>
 #include <set>
@@ -11,16 +11,7 @@
 #include <assert.h>
 
 
-typedef double      InputPixel;
-typedef bool        BeatenPixel;
-typedef BeatenPixel UncollectedPixel;
-
-const unsigned Dimension = 3;
-
-typedef itk::Image< InputPixel, Dimension >       InputImage;
-typedef itk::Image< BeatenPixel, Dimension >      BeatenImage;
 typedef itk::BinaryThresholdImageFilter< InputImage, BeatenImage > ThresholdFilter;
-
 
 typedef itk::ConstantBoundaryCondition<BeatenImage> BeatenConstantBoundaryCondition;
 typedef itk::NeighborhoodIterator<BeatenImage, BeatenConstantBoundaryCondition> BeatenNit;
@@ -32,22 +23,11 @@ typedef itk::ConstantBoundaryCondition<InputImage> InputConstantBoundaryConditio
 typedef itk::ConstNeighborhoodIterator<
    InputImage, InputConstantBoundaryCondition> InputNit;
 
-typedef std::queue<BeatenNit::IndexType> PosQueue;
-
-//typedef std::set<BeatenNit::IndexType,
-typedef std::set<BeatenImage::IndexType,
-                 itk::Functor::IndexLexicographicCompare<Dimension> > PointSet;
-// Called 'region' because occasionally there will be a plateau of
-// equal seeds.
-// By PointSet* because it's too much of a pain to define a '<' operator
-// for a pointset.
-typedef std::set<PointSet*> SeedRegionSet;
-
-
 typedef BeatenImage UncollectedImage;
 typedef BeatenNit   UncollectedNit;
 
-typedef itk::ImageFileReader< InputImage > VolumeReaderType;
+typedef std::queue<BeatenNit::IndexType> PosQueue;
+
 
 using namespace std;
 
@@ -225,6 +205,13 @@ void collect_connected(UncollectedNit itFrom,
    }
 }
 
+
+// We collect 'regions' instead of leaving the points separate,
+// because we'd like to eventually choose one point to represent
+// the whole region, following the paper (not sure how difference
+// that would make, though. The most important thing is whether a
+// point is beta-like, and whether we find it as a seed or not
+// doesn't seem like it should make much difference).
 void collect_seed_regions(BeatenImage::Pointer beatenImage,
                           SeedRegionSet& outSeedRegions)
 {
@@ -247,14 +234,32 @@ void collect_seed_regions(BeatenImage::Pointer beatenImage,
 }
 
 
-void find_seeds(InputImage::Pointer input,
-                SeedRegionSet& outSeedRegions,
-                double threshhold)
+void individual_seeds_from_regions(SeedRegionSet const& seedRegions, Seeds& outSeeds)
 {
-   BeatenImage::Pointer beaten_bitmap = threshhold_phase(input, threshhold);
-   exploration_phase(input, beaten_bitmap);
-   collect_seed_regions(beaten_bitmap, outSeedRegions);
+   for (SeedRegionSet::const_iterator it = seedRegions.begin(), end = seedRegions.end();
+        it != end; ++it) {
+      PointSet const* pset = *it;
+      for (PointSet::const_iterator it = pset->begin(), end = pset->end();
+           it != end; ++it) {
+         outSeeds.push_back(*it);
+      }
+   }
 }
+
+
+void find_seeds(InputImage::Pointer image,
+                double threshhold,
+                Seeds& outSeeds)
+{
+   BeatenImage::Pointer beaten_bitmap = threshhold_phase(image, threshhold);
+   exploration_phase(image, beaten_bitmap);
+
+   SeedRegionSet seedRegions;
+   collect_seed_regions(beaten_bitmap, seedRegions);
+
+   individual_seeds_from_regions(seedRegions, outSeeds);
+}
+
 
 #if defined(TESTING_LOCAL_MAXIMA)
 

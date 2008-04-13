@@ -2,15 +2,14 @@
 #include "pipeline.h"
 #include "geometry.h"
 #include "point.h"
+#include "tracing.h"
+
 #include <vector>
 #include <queue>
 
 using namespace std;
 
 typedef queue<PointType> PointQueue;
-
-typedef ImageType::IndexType Seed;
-typedef vector<Seed> Seeds;
 
 extern bool PointIsBeta(Image::Pointer image, PointType const& pt);
 

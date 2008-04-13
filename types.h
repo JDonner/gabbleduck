@@ -122,6 +122,9 @@ typedef  itk::Image<EVector, Dimension>           EachEVectorImageType;
 typedef  itk::CastImageFilter<
    EVectorImageAdaptorType, EachEVectorImageType>  EVectorCastImageFilterType;
 
+// This same types works for all images
+typedef itk::Index<Dimension> IndexType;
+
 // typedef  itk::ImageFileWriter<EValueCastImageFilterType::OutputImageType> WriterType;
 
 // typedef  itk::ImageFileWriter<EValueCastImageFilterType::OutputImageType> EigenValueWriterType;

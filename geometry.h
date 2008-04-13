@@ -9,6 +9,7 @@ bool MeetsBetaCondition(double sheetMin, double sheetMax,
 
 void MakePolygon(VectorType const& normal, Points const& planar_points,
                  Polygon& outPolygon);
+void MakePolygon(Points const& planar_points, Polygon& outPolygon);
 
 void planes_intersection_with_box(VectorType normal, PointType const& pt,
                                   // front, lower left, and rear, upper right
