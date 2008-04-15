@@ -188,46 +188,48 @@ void planes_intersection_with_box(VectorType normal, PointType const& pt,
 }
 
 
-#if 0
-// This makes no sense - how can thickness deal with flatness?
-// I think the eigenVALUE stuff was, 'how it's been done before,
-// but is not relevant to now'.
-// This eigenVECTOR stuff is all there is!
-// Do we take the main
-void TraceFlatness(seeds,
-                   EValueImage::ConstPointer l1Image,
-                   EValueImage::ConstPointer l2Image,
-                   EValueImage::ConstPointer l3Image)
-                   EVectorImage::ConstPointer v1Image,
-                   EVectorImage::ConstPointer v2Image,
-                   EVectorImage::ConstPointer v3Image)
+// Find a translation that will make pt align to the nearest <spacing>
+// units.
+// Must stay in physical coords
+// output-to-input
+void transform_shift(PointType const& pt,
+                     Image::SpacingType const& spacing,
+                     VectorType& outShift)
 {
-   TriangleList triangles;
-   // bottom right of page 9:
-   // for each maximal (critical) seed point:
-   // - the vector corresponding to the maximum
-   // eigenVALUE - ie, eigenvector_0
+   for (unsigned i = 0; i < Dimension; ++i) {
+      double bounded = fmod(pt[i], spacing[i]);
+      double united = bounded / spacing[i];
+      // should be 0 or 1
+      double refcoord = trunc(united + 0.5);
 
-   for (seeds::const_iterator itSeed = seeds.begin(), endSeed = seeds.end();
-        itSeed != endSeed; ++itSeed) {
-      Index idx = summat;
-      double t1 = magnitude(v1Image[idx]);
-      double t2 = magnitude(v2Image[idx]);
-      double t3 = magnitude(v2Image[idx]);
-      if (IsBeta(sheetMin, sheetMax, t1, t2, t3)) {
-         Box box;
-         MakePolygon(v1, box, triangles);
+      assert(0.0 == refcoord or refcoord == 1.0);
+
+      outShift[i] = (refcoord - united);
+      if (not (-0.5 <= outShift[i] and outShift[i] <= 0.5)) {
+         cout << "shift fails (" << i << "th): " << outShift[i] << endl;
+         assert(false);
       }
+      outShift *= spacing[i];
    }
-
-   // so now I have my starter triangles....
-
-   // we find the edges that need continuing,
-   // and continue.
-   //
-   // The stopping point I think, is when the 'checked point' doesn't
-   // meet the eigenVALUE criterion for flatness (but you'd think
-   // it would be, meets IsBeta.... - it is (whew) )
-
 }
-#endif
+
+void pt_shift(PointType const& pt,
+              Image::SpacingType const& spacing,
+              VectorType& outShift)
+{
+   for (unsigned i = 0; i < Dimension; ++i) {
+      double bounded = fmod(pt[i], spacing[i]);
+      double united = bounded / spacing[i];
+      // should be 0 or 1
+      double refcoord = trunc(united + 0.5);
+
+      assert(0.0 == refcoord or refcoord == 1.0);
+
+      outShift[i] = (united - refcoord);
+      if (not (-0.5 <= outShift[i] and outShift[i] <= 0.5)) {
+         cout << "shift fails (" << i << "th): " << outShift[i] << endl;
+         assert(false);
+      }
+      outShift *= spacing[i];
+   }
+}

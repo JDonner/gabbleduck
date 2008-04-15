@@ -32,12 +32,12 @@ int main(int argc, char** argv)
    Seeds seeds;
    find_seeds(image, threshhold, seeds);
 
-   cout << seeds.size() << " seed regions" << endl;
+cout << seeds.size() << " seed regions" << endl;
 
    Nodes betaNodes;
    FindBetaNodes(image, seeds, betaNodes);
 
-   cout << "found: " << betaNodes.size() << " beta nodes" << endl;
+cout << "found: " << betaNodes.size() << " beta nodes" << endl;
 
    return 0;
 }

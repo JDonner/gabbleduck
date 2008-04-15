@@ -1,4 +1,5 @@
 #include "pipeline.h"
+#include "geometry.h"
 
 #include <iostream>
 
@@ -8,47 +9,14 @@ using namespace std;
 
 // /big/common/software/insight/InsightToolkit-3.4.0/Testing/Code/Common/itkTranslationTransformTest.cxx
 
-// ImageType::ConstPointer
-//    resample_image(Point const& offset_from_original, ImageType::ConstPointer image)
-// {
-//    typedef itk::TranslationTransform< PixelType, Dimension > TransformType;
-
-//    TransformType::Pointer id3 = TransformType::New();
-//    VectorType                   offset;
-
-//    // Create and show a simple 2D transform from given parameters
-//    offset[0] = offset_from_original[0];
-//    offset[1] = offset_from_original[1];
-//    offset[2] = offset_from_original[2];
-//    TransformType::Pointer aff2 = TransformType::New();
-//    aff2->SetOffset(offset);
-
-//    ResampleFilterType::Pointer resampler = new ResampleFilterType();
-//    resampler->SetTransform(transform);
-
-//    resampler->SetInput(image);
-// //   resampler.Update();
-
-//    ImageType::ConstPointer outImage = resampler->GetOutput();
-//    return outImage;
-// }
-
-// pt
-void shift(PointType const& pt,
-           Image::SpacingType const& spacing,
-           VectorType& outShift)
-{
-   for (unsigned i = 0; i < Dimension; ++i) {
-      outShift[i] = fmod(pt[i], spacing[i]) - spacing[i] / 2.0;
-   }
-}
-
-
 BetaPipeline::BetaPipeline(ImageType::Pointer image,
                            PointType const& center,
                            // In cells. no point in fractional cells (I believe)
                            int region_width)
 {
+cout << "input: " << endl;
+image->Print(cout, 2);
+
    ImageType::IndexType index;
    bool isWithin = image->TransformPhysicalPointToIndex(center, index);
    assert(isWithin);
@@ -62,24 +30,40 @@ BetaPipeline::BetaPipeline(ImageType::Pointer image,
 
    // It's a filter, so, we want to set requested region on the input image,
    // and then a 'shift' transform of a fraction of a cell, right?
-   // output- to- input, and in physical coordinates (itkResampleImageFilter.h -
-   // stupid documentation)
+   // output- to- input, and in physical coordinates (itkResampleImageFilter.h)
+
+  /** Set the coordinate transformation.
+   * Set the coordinate transform to use for resampling.  Note that this must
+   * be in physical coordinates and it is the output-to-input transform, NOT
+   * the input-to-output transform that you might naively expect.  By default
+   * the filter uses an Identity transform. You must provide a different
+   * transform here, before attempting to run the filter, if you do not want to
+   * use the default Identity transform. */
    VectorType offset;
 
-   shift(center, image->GetSpacing(), offset);
+   transform_shift(center, image->GetSpacing(), offset);
 
-cout << "center: " << center
+cout << "center(phys): " << center
+     << "; spacing(phys): " << image->GetSpacing()
      << "; offset: " << offset << endl;
 
    TranslationTransform::Pointer translation_ = TranslationTransform::New();
    translation_->SetOffset(offset);
 
-
+   // /big/common/software/insight/InsightToolkit-3.4.0/Examples/Filtering/ResampleImageFilter.cxx is most helpful
    // Resample, to shift the image to (slightly) new coordinates
    resampler_ = ResampleFilterType::New();
 //   resampler_.SetInterpolator();
    resampler_->SetTransform(translation_);
    resampler_->SetInput(image);
+   resampler_->SetDefaultPixelValue(0.0);
+
+cout << "resampler (before update): " << endl;
+resampler_->GetOutput()->Print(cout, 2);
+
+resampler_->Update();
+cout << "resampler (after update): " << endl;
+resampler_->GetOutput()->Print(cout, 2);
 
 
    // file:///big/common/software/insight/install/html/classitk_1_1HessianRecursiveGaussianImageFilter.html

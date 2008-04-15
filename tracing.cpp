@@ -12,6 +12,12 @@ using namespace std;
 typedef queue<PointType> PointQueue;
 
 extern bool PointIsBeta(Image::Pointer image, PointType const& pt);
+bool MeetsBetaCondition(double sheetMin, double sheetMax,
+                        double t1, double t2, double t3);
+void new_pt(PointType const& pt, Image::SpacingType const& spacing,
+            PointType& newPt);
+void new_pt_index(PointType const& pt, Image::SpacingType const& spacing,
+                  ImageType::IndexType& newPt);
 
 
 // non-recursive version
@@ -28,8 +34,8 @@ cout << "image origin: " << image->GetOrigin() << endl;
       PointType pt;
       image->TransformIndexToPhysicalPoint(*it, pt);
       possible_beta_points.push(pt);
-cout << "seed: " << *it
-     << "; pt: " << pt << endl;
+//cout << __FILE__ << " seed: " << *it
+//     << "; pt: " << pt << endl;
    }
 
    while (not possible_beta_points.empty()) {
@@ -59,6 +65,42 @@ cout << "seed: " << *it
    }
 }
 
+// The /whole/ condition
+// <pt> is in pixels. Hrm; the problem with that is that when we shift
+// the image around slightly, we'll have to convert those. Ie,
+// we'll require the nodes to remember their offsets... Hm.
+bool PointIsBeta(Image::Pointer image, PointType const& origPt)
+{
+   // &&& arbitrary. I believe this is cell units for the time being
+   int region_width = 6;
+
+   BetaPipeline pipeline(image, origPt, region_width);
+
+   VectorType ptShift;
+   pt_shift(origPt, image->GetSpacing(), ptShift);
+
+   PointType newPt = origPt + ptShift;
+   EigenVectorImageType::IndexType index;
+   image->TransformPhysicalPointToIndex(newPt, index);
+
+cout << __FILE__ << " index: " << index << endl;
+
+   EigenVectorImageType::Pointer evecImage = pipeline.eigVecImage();
+   EigenVectorImageType::RegionType definedRegion = evecImage->GetBufferedRegion();
+
+cout << __FILE__ << "defined region: " << definedRegion << endl;
+
+   EigenVector v1 = evecImage->GetPixel(index)[0];
+   EigenVector v2 = evecImage->GetPixel(index)[1];
+   EigenVector v3 = evecImage->GetPixel(index)[2];
+
+   double sheetMin, sheetMax;
+   double t1 = v1.GetNorm(), t2 = v2.GetNorm(), t3 = v3.GetNorm();
+   bool isBeta = MeetsBetaCondition(sheetMin, sheetMax, t1, t2, t3);
+
+   return isBeta;
+}
+
 
 // Used to classify the seeds
 bool MeetsBetaCondition(double sheetMin, double sheetMax,
@@ -76,51 +118,23 @@ void new_pt(PointType const& pt,
             Image::SpacingType const& spacing,
             PointType& newPt)
 {
+   VectorType shift;
+   pt_shift(pt, spacing, shift);
    for (unsigned i = 0; i < Dimension; ++i) {
-      newPt[i] = trunc(pt[i] + spacing[i] / 2.0) * spacing[i];
+      newPt[i] += shift[i];
    }
 }
 
 
-void new_pt_index(PointType const& pt,
-                  Image::SpacingType const& spacing,
-                  ImageType::IndexType& newPt)
-{
-   for (unsigned i = 0; i < Dimension; ++i) {
-      newPt[i] = int(pt[i] + spacing[i] / 2.0);
-   }
-}
-
-
-// The /whole/ condition
-// <pt> is in pixels. Hrm; the problem with that is that when we shift
-// the image around slightly, we'll have to convert those. Ie,
-// we'll require the nodes to remember their offsets... Hm.
-bool PointIsBeta(Image::Pointer image, PointType const& pt)
-{
-   // &&& arbitrary. I believe this is cell units for the time being
-   int region_width = 6;
-
-   BetaPipeline pipeline(image, pt, region_width);
-
-   EigenVectorImageType::Pointer evecImage = pipeline.eigVecImage();
-//   evecImage->SetRequestedRegion();
-
-   EigenVectorImageType::IndexType index;
-   new_pt_index(pt, image->GetSpacing(), index);
-
-cout << "index: " << index << endl;
-
-   EigenVector v1 = evecImage->GetPixel(index)[0];
-   EigenVector v2 = evecImage->GetPixel(index)[1];
-   EigenVector v3 = evecImage->GetPixel(index)[2];
-
-   double sheetMin, sheetMax;
-   double t1 = v1.GetNorm(), t2 = v2.GetNorm(), t3 = v3.GetNorm();
-   bool isBeta = MeetsBetaCondition(sheetMin, sheetMax, t1, t2, t3);
-
-   return isBeta;
-}
+// void new_pt_index(PointType const& pt,
+//                   Image::SpacingType const& spacing,
+//                   ImageType::IndexType& newIndex)
+// {
+//    for (unsigned i = 0; i < Dimension; ++i) {
+//       newIndex[i] = int(pt[i] + spacing[i] / 2.0);
+//       assert(0 <= newPt[i]);
+//    }
+// }
 
 // Seeds are in pixels, no sense in anything else.
 // We want to resample (for a new image) against the original image,

@@ -15,12 +15,17 @@ struct BetaPipeline
                 int region_width);
 
    EigenValueImageType::Pointer eigValImage() {
+      update();
       return totalEigenFilter_->GetEigenValuesImage();
    }
 
    EigenVectorImageType::Pointer eigVecImage() {
+      update();
       return totalEigenFilter_->GetEigenVectorsImage();
    }
+
+private:
+   void update() { totalEigenFilter_->Update(); }
 
 private:
    typedef itk::ResampleImageFilter< ImageType, ImageType, double > ResampleFilterType;
@@ -32,6 +37,9 @@ private:
    VectorType                   offset_;
 
    HessianFilterType::Pointer hessian_;
+
+   EigenAnalysisFilterType::Pointer
+      totalEigenFilter_;
 
    // &&& What's the difference between an adaptor and an accessor?
    // Eigenvalue
@@ -56,9 +64,6 @@ private:
       vecAccessor1_,
       vecAccessor2_,
       vecAccessor3_;
-
-   EigenAnalysisFilterType::Pointer
-      totalEigenFilter_;
 
    // eValueCastfilter1 will give the eigenvalues with the maximum
    // eigenvalue. eValueCastfilter3 will give the eigenvalues with

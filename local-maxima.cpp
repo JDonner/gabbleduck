@@ -57,7 +57,7 @@ BeatenImage::Pointer
 {
    ThresholdFilter::Pointer thresh = ThresholdFilter::New();
    thresh->SetInput(input);
-   cout << "threshhold: " << threshhold << endl;
+cout << "threshhold: " << threshhold << endl;
 
    thresh->SetLowerThreshold(threshhold);
    thresh->SetUpperThreshold(1.0e38);
@@ -129,8 +129,8 @@ unsigned top_level = 0, n_unbeaten = 0;
          }
       }
    }
-   cout << "top level: " << top_level << endl
-        << "unbeat: " << n_unbeaten << endl;
+cout << "top level: " << top_level << endl
+     << "unbeat: " << n_unbeaten << endl;
 }
 
 
@@ -293,11 +293,11 @@ int main(int argc, char** argv)
    InputImage::Pointer inputImage = reader->GetOutput();
    SeedRegionSet seedRegions;
    find_seeds(inputImage, seedRegions, threshhold);
-   cout << seedRegions.size() << " seed regions" << endl;
+cout << seedRegions.size() << " seed regions" << endl;
 
-   cout << "number explored: " << g_n_explored << endl;
-   cout << "snuffed: " << g_n_explored << endl;
-   cout << "components: " << g_n_components << endl;
+cout << "number explored: " << g_n_explored << endl;
+cout << "snuffed: " << g_n_explored << endl;
+cout << "components: " << g_n_components << endl;
 }
 
 #endif // TESTING_LOCAL_MAXIMA
