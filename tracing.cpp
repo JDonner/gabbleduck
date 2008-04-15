@@ -110,6 +110,7 @@ bool MeetsBetaCondition(double sheetMin, double sheetMax,
       sheetMin <= t1 and t1 <= sheetMax and
       std::max(t1 / t2, t1 / t3) < std::min(t2 / t3, t3 / t2);
 
+cout << "Is beta? " << isBeta << endl;
    return isBeta;
 }
 

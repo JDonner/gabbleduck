@@ -24,6 +24,9 @@ struct BetaPipeline
       return totalEigenFilter_->GetEigenVectorsImage();
    }
 
+   void set_up_resampler(ImageType::Pointer image,
+                         PointType const& center);
+
 private:
    void update() { totalEigenFilter_->Update(); }
 

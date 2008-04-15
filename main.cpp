@@ -32,6 +32,10 @@ int main(int argc, char** argv)
    Seeds seeds;
    find_seeds(image, threshhold, seeds);
 
+//IndexType oneTestSeed = seeds[0];
+//seeds.clear();
+//seeds.push_back(oneTestSeed);
+
 cout << seeds.size() << " seed regions" << endl;
 
    Nodes betaNodes;

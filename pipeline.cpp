@@ -7,6 +7,57 @@
 using namespace std;
 
 
+void BetaPipeline::set_up_resampler(ImageType::Pointer image,
+                                    PointType const& center)
+{
+   // /big/common/software/insight/InsightToolkit-3.4.0/Examples/Filtering/ResampleImageFilter.cxx is most helpful
+   // Resample, to shift the image to (slightly) new coordinates
+   resampler_ = ResampleFilterType::New();
+//   resampler_.SetInterpolator();
+
+  /** Set the coordinate transformation.
+   * Set the coordinate transform to use for resampling.  Note that this must
+   * be in physical coordinates and it is the output-to-input transform, NOT
+   * the input-to-output transform that you might naively expect.  By default
+   * the filter uses an Identity transform. You must provide a different
+   * transform here, before attempting to run the filter, if you do not want to
+   * use the default Identity transform. */
+   VectorType offset;
+
+   transform_shift(center, image->GetSpacing(), offset);
+
+cout << "center(phys): " << center
+     << "; spacing(phys): " << image->GetSpacing()
+     << "; offset: " << offset << endl;
+
+   translation_ = TranslationTransform::New();
+   translation_->SetOffset(offset);
+
+   resampler_->SetTransform(translation_);
+   resampler_->SetInput(image);
+   resampler_->SetDefaultPixelValue(0.0);
+
+   resampler_->SetOutputSpacing(image->GetSpacing());
+
+   // &&& Is this what I want, or do I want it shifted...?
+   resampler_->SetOutputOrigin( image->GetOrigin() );
+
+   resampler_->SetSize(image->GetLargestPossibleRegion().GetSize());
+
+   // nice!
+//   resampler_->SetOutputStartIndex();
+
+
+cout << "resampler (before update): " << endl;
+resampler_->GetOutput()->Print(cout, 2);
+
+resampler_->Update();
+cout << "resampler (after update): " << endl;
+resampler_->GetOutput()->Print(cout, 2);
+
+
+}
+
 // /big/common/software/insight/InsightToolkit-3.4.0/Testing/Code/Common/itkTranslationTransformTest.cxx
 
 BetaPipeline::BetaPipeline(ImageType::Pointer image,
@@ -32,39 +83,7 @@ image->Print(cout, 2);
    // and then a 'shift' transform of a fraction of a cell, right?
    // output- to- input, and in physical coordinates (itkResampleImageFilter.h)
 
-  /** Set the coordinate transformation.
-   * Set the coordinate transform to use for resampling.  Note that this must
-   * be in physical coordinates and it is the output-to-input transform, NOT
-   * the input-to-output transform that you might naively expect.  By default
-   * the filter uses an Identity transform. You must provide a different
-   * transform here, before attempting to run the filter, if you do not want to
-   * use the default Identity transform. */
-   VectorType offset;
-
-   transform_shift(center, image->GetSpacing(), offset);
-
-cout << "center(phys): " << center
-     << "; spacing(phys): " << image->GetSpacing()
-     << "; offset: " << offset << endl;
-
-   TranslationTransform::Pointer translation_ = TranslationTransform::New();
-   translation_->SetOffset(offset);
-
-   // /big/common/software/insight/InsightToolkit-3.4.0/Examples/Filtering/ResampleImageFilter.cxx is most helpful
-   // Resample, to shift the image to (slightly) new coordinates
-   resampler_ = ResampleFilterType::New();
-//   resampler_.SetInterpolator();
-   resampler_->SetTransform(translation_);
-   resampler_->SetInput(image);
-   resampler_->SetDefaultPixelValue(0.0);
-
-cout << "resampler (before update): " << endl;
-resampler_->GetOutput()->Print(cout, 2);
-
-resampler_->Update();
-cout << "resampler (after update): " << endl;
-resampler_->GetOutput()->Print(cout, 2);
-
+   set_up_resampler(image, center);
 
    // file:///big/common/software/insight/install/html/classitk_1_1HessianRecursiveGaussianImageFilter.html
 
