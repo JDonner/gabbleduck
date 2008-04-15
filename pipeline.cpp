@@ -1,5 +1,10 @@
 #include "pipeline.h"
 
+#include <iostream>
+
+
+using namespace std;
+
 
 // /big/common/software/insight/InsightToolkit-3.4.0/Testing/Code/Common/itkTranslationTransformTest.cxx
 
@@ -28,6 +33,16 @@
 //    return outImage;
 // }
 
+// pt
+void shift(PointType const& pt,
+           Image::SpacingType const& spacing,
+           VectorType& outShift)
+{
+   for (unsigned i = 0; i < Dimension; ++i) {
+      outShift[i] = fmod(pt[i], spacing[i]) - spacing[i] / 2.0;
+   }
+}
+
 
 BetaPipeline::BetaPipeline(ImageType::Pointer image,
                            PointType const& center,
@@ -35,9 +50,9 @@ BetaPipeline::BetaPipeline(ImageType::Pointer image,
                            int region_width)
 {
    ImageType::IndexType index;
-   bool isWithin = image->
-      TransformPhysicalPointToIndex(center, index);
+   bool isWithin = image->TransformPhysicalPointToIndex(center, index);
    assert(isWithin);
+
    ImageRegion region;
    region.SetIndex(index);
    // don't know what units these are, physical or 'cell'.
@@ -45,32 +60,38 @@ BetaPipeline::BetaPipeline(ImageType::Pointer image,
    // And another '+ 1' to deal with our fractional translation
    region.PadByRadius(region_width + 1 + 1);
 
-   typedef itk::Vector<double, Dimension> VectorType;
-
    // It's a filter, so, we want to set requested region on the input image,
    // and then a 'shift' transform of a fraction of a cell, right?
-   // output-to-input, and in physical coordinates (itkResampleImageFilter.h -
+   // output- to- input, and in physical coordinates (itkResampleImageFilter.h -
    // stupid documentation)
    VectorType offset;
-   // &&& PointPos. Maybe use <fmod()>
-   offset[0] = center[0];
-   offset[1] = center[1];
-   offset[2] = center[2];
 
-   TranslationTransform::Pointer translation_;
+   shift(center, image->GetSpacing(), offset);
+
+cout << "center: " << center
+     << "; offset: " << offset << endl;
+
+   TranslationTransform::Pointer translation_ = TranslationTransform::New();
    translation_->SetOffset(offset);
 
-   // Resample, to shift the image to new coordinates
+
+   // Resample, to shift the image to (slightly) new coordinates
    resampler_ = ResampleFilterType::New();
 //   resampler_.SetInterpolator();
    resampler_->SetTransform(translation_);
    resampler_->SetInput(image);
 
 
+   // file:///big/common/software/insight/install/html/classitk_1_1HessianRecursiveGaussianImageFilter.html
+
    hessian_ = HessianFilterType::New();
+   // 1.0 is default sigma value. Units are image's physical units
+   // (see itkGaussianDerivativeImageFunction, which all the rest use).
+   hessian_->SetSigma(1.0);
    hessian_->SetInput(resampler_->GetOutput());
 
-   // Compute eigenvalues.. order them in ascending order
+   // file:///big/common/software/insight/install/html/classitk_1_1SymmetricEigenAnalysisImageFilter.html
+   // Compute eigenvalues.. order them in descending order
    totalEigenFilter_ = EigenAnalysisFilterType::New();
    totalEigenFilter_->SetDimension( Dimension );
    totalEigenFilter_->SetInput( hessian_->GetOutput() );

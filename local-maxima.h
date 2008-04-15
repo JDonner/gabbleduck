@@ -13,6 +13,8 @@ typedef BeatenPixel UncollectedPixel;
 typedef itk::Image< InputPixel, Dimension >       InputImage;
 typedef itk::Image< BeatenPixel, Dimension >      BeatenImage;
 
+// Seed locations are in pixels
+
 typedef std::vector<IndexType> Seeds;
 
 //typedef std::set<BeatenNit::IndexType,

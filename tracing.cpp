@@ -21,11 +21,15 @@ void FindBetaNodes(ImageType::Pointer image,
 {
    PointQueue possible_beta_points;
 
+cout << "image origin: " << image->GetOrigin() << endl;
+
    for (Seeds::const_iterator it = seeds.begin(), end = seeds.end();
         it != end; ++it) {
       PointType pt;
       image->TransformIndexToPhysicalPoint(*it, pt);
       possible_beta_points.push(pt);
+cout << "seed: " << *it
+     << "; pt: " << pt << endl;
    }
 
    while (not possible_beta_points.empty()) {
@@ -68,7 +72,30 @@ bool MeetsBetaCondition(double sheetMin, double sheetMax,
 }
 
 
+void new_pt(PointType const& pt,
+            Image::SpacingType const& spacing,
+            PointType& newPt)
+{
+   for (unsigned i = 0; i < Dimension; ++i) {
+      newPt[i] = trunc(pt[i] + spacing[i] / 2.0) * spacing[i];
+   }
+}
+
+
+void new_pt_index(PointType const& pt,
+                  Image::SpacingType const& spacing,
+                  ImageType::IndexType& newPt)
+{
+   for (unsigned i = 0; i < Dimension; ++i) {
+      newPt[i] = int(pt[i] + spacing[i] / 2.0);
+   }
+}
+
+
 // The /whole/ condition
+// <pt> is in pixels. Hrm; the problem with that is that when we shift
+// the image around slightly, we'll have to convert those. Ie,
+// we'll require the nodes to remember their offsets... Hm.
 bool PointIsBeta(Image::Pointer image, PointType const& pt)
 {
    // &&& arbitrary. I believe this is cell units for the time being
@@ -76,31 +103,31 @@ bool PointIsBeta(Image::Pointer image, PointType const& pt)
 
    BetaPipeline pipeline(image, pt, region_width);
 
-// pipeline.eigValImage();
-// pipeline.eigVecImage();
+   EigenVectorImageType::Pointer evecImage = pipeline.eigVecImage();
+//   evecImage->SetRequestedRegion();
 
-   EVectorImageType::Pointer evecImage = pipeline.eigVecImage();
+   EigenVectorImageType::IndexType index;
+   new_pt_index(pt, image->GetSpacing(), index);
 
-   EVectorImageType::IndexType index;
-   index[0] = 0;
-   index[1] = 0;
-   index[2] = 0;
-   double* evec = evecImage->GetPixel(index)[0];
+cout << "index: " << index << endl;
 
-// /big/common/insight/InsightToolkit-3.4.0/Testing/Code/Common/itkSymmetricEigenAnalysisTest.cxx
+   EigenVector v1 = evecImage->GetPixel(index)[0];
+   EigenVector v2 = evecImage->GetPixel(index)[1];
+   EigenVector v3 = evecImage->GetPixel(index)[2];
 
    double sheetMin, sheetMax;
-   double t1, t2, t3;
+   double t1 = v1.GetNorm(), t2 = v2.GetNorm(), t3 = v3.GetNorm();
    bool isBeta = MeetsBetaCondition(sheetMin, sheetMax, t1, t2, t3);
 
    return isBeta;
 }
 
-
-// cross-product(v a, v b)
-// {
-//    v cross;
-//    cross.i = + a.j * b.k - b.j * a.k;
-//    cross.j = - a.i * b.k - b.i * a.k;
-//    cross.k = + a.i * b.j - b.i * a.j;
-// }
+// Seeds are in pixels, no sense in anything else.
+// We want to resample (for a new image) against the original image,
+// for fidelity's sake. The shift is in physical coords.
+// This offset is: pt loc (in whichever coords) fmod(pt.X, imagespace.X)
+// Intersections will be in whatever coords we start with.
+// (Can we keep from accumulating error?)
+// We can't, as long as we calculate via a long chain of moves, which
+// we must. We can resample wrt to the original image which is good, but
+// location, we can't avoid multiple offsets.

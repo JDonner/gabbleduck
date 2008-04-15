@@ -28,14 +28,14 @@ typedef InternalPrecisionType                         EigenComponentType;
 const unsigned Dimension = 3;
 
 // pointer to array of size 3
-//   typedef   EigenComponentType (*HardEVector)[Dimension];
+//   typedef   EigenComponentType (*HardEigenVector)[Dimension];
 // array of size 3
-//   typedef   EigenComponentType HardEVector[Dimension];
+//   typedef   EigenComponentType HardEigenVector[Dimension];
 
 typedef  itk::FixedArray<EigenComponentType, Dimension> FixedVectorType;
 typedef  itk::Vector<InternalPrecisionType, Dimension>              VectorType;
 
-typedef  VectorType                                    EVector;
+typedef  VectorType                                    EigenVector;
 
 typedef  itk::CovariantVector< PixelType, Dimension >  CovariantVectorType;
 
@@ -68,15 +68,15 @@ typedef  itk::FixedArray<double, HessianPixelType::Dimension>
 
 typedef  itk::Matrix<double,
                       HessianPixelType::Dimension,
-                      HessianPixelType::Dimension>     EVectorMatrixType;
+                      HessianPixelType::Dimension>     EigenVectorMatrixType;
 
 // 3, of 3
 typedef  itk::Image<EigenValueArrayType,
                      HessianImageType::ImageDimension> EigenValueImageType;
-typedef  itk::Image<EVectorMatrixType,
-                     HessianImageType::ImageDimension> EVectorImageType;
+typedef  itk::Image<EigenVectorMatrixType,
+                     HessianImageType::ImageDimension> EigenVectorImageType;
 
-typedef  itk::TotalEigenImageFilter<HessianImageType, EigenValueImageType, EVectorImageType>
+typedef  itk::TotalEigenImageFilter<HessianImageType, EigenValueImageType, EigenVectorImageType>
    EigenAnalysisFilterType;
 
 //typedef  itk::SymmetricEigenAnalysisImageFilter<HessianImageType, EigenValueImageType>
@@ -99,15 +99,15 @@ typedef  itk::CastImageFilter<
 typedef  itk::ResampleImageFilter<ImageType, ImageType, double> ResampleFilterType;
 
 ///////////////////////////////////////////////////////////////////
-// EVector
+// EigenVector
 ///////////////////////////////////////////////////////////////////
 
 
 // This Cast filter we can exchange for an 'extract' filter.
 
 // Reads off the eigenvectors
-typedef  itk::ImageAdaptor<EVectorImageType,
-                            EigenvectorAccessor<EVectorMatrixType, EVector> > EVectorImageAdaptorType;
+typedef  itk::ImageAdaptor<EigenVectorImageType,
+                            EigenvectorAccessor<EigenVectorMatrixType, EigenVector> > EigenVectorImageAdaptorType;
 
 // Each eigenvector is a 3D mesh? We have 3 of these, one each per eigenvector
 // (which you'd never guess by the name).
@@ -116,11 +116,11 @@ typedef  itk::ImageAdaptor<EVectorImageType,
 // &&& Why are we going to 'mesh' in the first place? Why not just
 // an image of a vector row? Let's go fix adaptors.
 
-typedef  itk::Image<EVector, Dimension>           EachEVectorImageType;
+typedef  itk::Image<EigenVector, Dimension>           EachEigenVectorImageType;
 
 // extracts eigenvectors
 typedef  itk::CastImageFilter<
-   EVectorImageAdaptorType, EachEVectorImageType>  EVectorCastImageFilterType;
+   EigenVectorImageAdaptorType, EachEigenVectorImageType>  EigenVectorCastImageFilterType;
 
 // This same types works for all images
 typedef itk::Index<Dimension> IndexType;
@@ -128,7 +128,7 @@ typedef itk::Index<Dimension> IndexType;
 // typedef  itk::ImageFileWriter<EValueCastImageFilterType::OutputImageType> WriterType;
 
 // typedef  itk::ImageFileWriter<EValueCastImageFilterType::OutputImageType> EigenValueWriterType;
-// typedef  itk::ImageFileWriter<EVectorCastImageFilterType::OutputImageType> EVectorWriterType;
+// typedef  itk::ImageFileWriter<EigenVectorCastImageFilterType::OutputImageType> EigenVectorWriterType;
 
 // typedef  itk::Image< OverlayPixelType, Dimension > OverlayImageType;
 // typedef  itk::ImageFileWriter< OverlayImageType > OverlayWriterType;

@@ -23,6 +23,7 @@ public:
    static void setMinAllowedDist(double minAllowedDist);
 
 private:
+   // Should this be in pixels, or physical coordinates?
    PointType pos_;
 
    // (or triangle list)

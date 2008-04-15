@@ -18,7 +18,7 @@ struct BetaPipeline
       return totalEigenFilter_->GetEigenValuesImage();
    }
 
-   EVectorImageType::Pointer eigVecImage() {
+   EigenVectorImageType::Pointer eigVecImage() {
       return totalEigenFilter_->GetEigenVectorsImage();
    }
 
@@ -42,7 +42,7 @@ private:
       eValueAdaptor3_;
 
    // Eigenvector
-   EVectorImageAdaptorType::Pointer
+   EigenVectorImageAdaptorType::Pointer
       eVectorAdaptor1_,
       eVectorAdaptor2_,
       eVectorAdaptor3_;
@@ -52,7 +52,7 @@ private:
       valAccessor2_,
       valAccessor3_;
 
-   EigenvectorAccessor< EVectorMatrixType, EVector >
+   EigenvectorAccessor< EigenVectorMatrixType, EigenVector >
       vecAccessor1_,
       vecAccessor2_,
       vecAccessor3_;
@@ -68,7 +68,7 @@ private:
       eValueCastFilter2_,
       eValueCastFilter3_;
 
-   EVectorCastImageFilterType::Pointer
+   EigenVectorCastImageFilterType::Pointer
       eVectorCastFilter1_,
       eVectorCastFilter2_,
       eVectorCastFilter3_;

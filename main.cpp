@@ -37,5 +37,7 @@ int main(int argc, char** argv)
    Nodes betaNodes;
    FindBetaNodes(image, seeds, betaNodes);
 
+   cout << "found: " << betaNodes.size() << " beta nodes" << endl;
+
    return 0;
 }
