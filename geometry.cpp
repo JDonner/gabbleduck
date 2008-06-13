@@ -197,14 +197,28 @@ void transform_shift(PointType const& pt,
                      VectorType& outShift)
 {
    for (unsigned i = 0; i < Dimension; ++i) {
+      // 'within' spacing
       double bounded = fmod(pt[i], spacing[i]);
-      double united = bounded / spacing[i];
-      // should be 0 or 1
-      double refcoord = trunc(united + 0.5);
+      // unit value, 0-1 * spacing
+      double unitted = bounded / spacing[i];
 
-      assert(0.0 == refcoord or refcoord == 1.0);
+//      // 'which coord are we closest to?' should be 0 or 1
+      // refcoord is 0 or 1, unitted is 0 - 1
+//      double refcoord = round(unitted);
 
-      outShift[i] = (refcoord - united);
+      // outshift is, where our point is, as an offset to the nearer of
+      // the two possible points.
+      // of the two nearest coords.
+      if (0.5 <= unitted) {
+         outShift[i] = unitted - 1.0;
+      }
+      else if (unitted <= -0.5) {
+         outShift[i] = unitted + 1.0;
+      }
+      else {
+         outShift[i] = unitted;
+      }
+
       if (not (-0.5 <= outShift[i] and outShift[i] <= 0.5)) {
          cout << "shift fails (" << i << "th): " << outShift[i] << endl;
          assert(false);
@@ -217,19 +231,20 @@ void pt_shift(PointType const& pt,
               Image::SpacingType const& spacing,
               VectorType& outShift)
 {
-   for (unsigned i = 0; i < Dimension; ++i) {
-      double bounded = fmod(pt[i], spacing[i]);
-      double united = bounded / spacing[i];
-      // should be 0 or 1
-      double refcoord = trunc(united + 0.5);
+   transform_shift(pt, spacing, outShift);
+   // for (unsigned i = 0; i < Dimension; ++i) {
+   //    double bounded = fmod(pt[i], spacing[i]);
+   //    double unitted = bounded / spacing[i];
+   //    // should be 0 or 1
+   //    double refcoord = trunc(unitted + 0.5);
 
-      assert(0.0 == refcoord or refcoord == 1.0);
+   //    assert(0.0 == refcoord or refcoord == 1.0);
 
-      outShift[i] = (united - refcoord);
-      if (not (-0.5 <= outShift[i] and outShift[i] <= 0.5)) {
-         cout << "shift fails (" << i << "th): " << outShift[i] << endl;
-         assert(false);
-      }
-      outShift *= spacing[i];
-   }
+   //    outShift[i] = (unitted - refcoord);
+   //    if (not (-0.5 <= outShift[i] and outShift[i] <= 0.5)) {
+   //       cout << "shift fails (" << i << "th): " << outShift[i] << endl;
+   //       assert(false);
+   //    }
+   //    outShift *= spacing[i];
+   // }
 }

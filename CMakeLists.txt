@@ -1,6 +1,6 @@
 PROJECT(gabble)
 
-SET(ITK_DIR /big/common/software/insight/install/lib/InsightToolkit)
+SET(ITK_DIR /usr/local/itk-3.6/lib/InsightToolkit/)
 
 FIND_PACKAGE(ITK)
 IF(ITK_FOUND)
@@ -28,7 +28,7 @@ SET(SOURCES
 
 ADD_EXECUTABLE(gabble ${SOURCES})
 
-SET_SOURCE_FILES_PROPERTIES(${SOURCES} PROPERTIES COMPILE_FLAGS "-Wall -Wextra -fmessage-length=60")
+SET_SOURCE_FILES_PROPERTIES(${SOURCES} PROPERTIES COMPILE_FLAGS "-march=athlon-xp -Wall -Wextra -fmessage-length=60 -g")
 
 # Huh - I guess it knows internally where to find the ITK libs
 TARGET_LINK_LIBRARIES(

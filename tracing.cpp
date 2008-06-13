@@ -88,8 +88,10 @@ cout << __FILE__ << " index: " << index << endl;
    EigenVectorImageType::Pointer evecImage = pipeline.eigVecImage();
    EigenVectorImageType::RegionType definedRegion = evecImage->GetBufferedRegion();
 
-cout << __FILE__ << "defined region: " << definedRegion << endl;
-
+// &&& grrr - defined region is at 0,0,0, [5,5,5]
+// and index is way in the middle somewhere.
+cout << __FILE__ << "\ndefined region: \n" << endl;
+definedRegion.Print(cout);
    EigenVector v1 = evecImage->GetPixel(index)[0];
    EigenVector v2 = evecImage->GetPixel(index)[1];
    EigenVector v3 = evecImage->GetPixel(index)[2];

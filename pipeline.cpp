@@ -42,11 +42,15 @@ cout << "center(phys): " << center
    // &&& Is this what I want, or do I want it shifted...?
    resampler_->SetOutputOrigin( image->GetOrigin() );
 
-   resampler_->SetSize(image->GetLargestPossibleRegion().GetSize());
+//   ImageType::RegionType region = image->GetLargestPossibleRegion();
+   ImageType::SizeType too_small;
+   too_small[0] = too_small[1] = too_small[2] = 5;
+   // &&& Ah, here's the place we need to change...
+   // &&& this size is in pixels, right?
+   resampler_->SetSize(too_small);
 
    // nice!
 //   resampler_->SetOutputStartIndex();
-
 
 cout << "resampler (before update): " << endl;
 resampler_->GetOutput()->Print(cout, 2);
@@ -54,8 +58,6 @@ resampler_->GetOutput()->Print(cout, 2);
 resampler_->Update();
 cout << "resampler (after update): " << endl;
 resampler_->GetOutput()->Print(cout, 2);
-
-
 }
 
 // /big/common/software/insight/InsightToolkit-3.4.0/Testing/Code/Common/itkTranslationTransformTest.cxx
