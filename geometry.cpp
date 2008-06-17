@@ -192,10 +192,11 @@ void planes_intersection_with_box(VectorType normal, PointType const& pt,
 // units.
 // Must stay in physical coords
 // output-to-input
-void transform_shift(PointType const& pt,
-                     Image::SpacingType const& spacing,
-                     VectorType& outShift)
+VectorType
+   transform_shift(PointType const& pt,
+                   Image::SpacingType const& spacing)
 {
+   VectorType shift;
    for (unsigned i = 0; i < Dimension; ++i) {
       // 'within' spacing
       double bounded = fmod(pt[i], spacing[i]);
@@ -210,28 +211,29 @@ void transform_shift(PointType const& pt,
       // the two possible points.
       // of the two nearest coords.
       if (0.5 <= unitted) {
-         outShift[i] = unitted - 1.0;
+         shift[i] = unitted - 1.0;
       }
       else if (unitted <= -0.5) {
-         outShift[i] = unitted + 1.0;
+         shift[i] = unitted + 1.0;
       }
       else {
-         outShift[i] = unitted;
+         shift[i] = unitted;
       }
 
-      if (not (-0.5 <= outShift[i] and outShift[i] <= 0.5)) {
-         cout << "shift fails (" << i << "th): " << outShift[i] << endl;
+      if (not (-0.5 <= shift[i] and shift[i] <= 0.5)) {
+         cout << "shift fails (" << i << "th): " << shift[i] << endl;
          assert(false);
       }
-      outShift *= spacing[i];
+      shift *= spacing[i];
    }
+   return shift;
 }
 
-void pt_shift(PointType const& pt,
-              Image::SpacingType const& spacing,
+void pt_shift(PointType const& physPt,
+              Image::SpacingType const& physSpacing,
               VectorType& outShift)
 {
-   transform_shift(pt, spacing, outShift);
+   outShift = transform_shift(physPt, physSpacing);
    // for (unsigned i = 0; i < Dimension; ++i) {
    //    double bounded = fmod(pt[i], spacing[i]);
    //    double unitted = bounded / spacing[i];

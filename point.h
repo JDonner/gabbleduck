@@ -4,6 +4,8 @@
 #include <itkPoint.h>
 #include <vector>
 
+// Physical?
+// &&& oer - PointType is an ITK type, too.
 typedef itk::Point<double, Dimension> PointType;
 
 // struct PointPos

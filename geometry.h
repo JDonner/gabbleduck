@@ -17,9 +17,9 @@ void planes_intersection_with_box(VectorType normal, PointType const& pt,
                                   Points& intersections);
 // pt
 // Must stay in physical coords
-void transform_shift(PointType const& pt,
-                     Image::SpacingType const& spacing,
-                     VectorType& outShift);
+VectorType transform_shift(PointType const& pt,
+                           Image::SpacingType const& spacing);
+
 
 void pt_shift(PointType const& pt,
               Image::SpacingType const& spacing,

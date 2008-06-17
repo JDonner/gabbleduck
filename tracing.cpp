@@ -31,24 +31,26 @@ cout << "image origin: " << image->GetOrigin() << endl;
 
    for (Seeds::const_iterator it = seeds.begin(), end = seeds.end();
         it != end; ++it) {
-      PointType pt;
-      image->TransformIndexToPhysicalPoint(*it, pt);
-      possible_beta_points.push(pt);
+      PointType physPt;
+      image->TransformIndexToPhysicalPoint(*it, physPt);
+      possible_beta_points.push(physPt);
 //cout << __FILE__ << " seed: " << *it
-//     << "; pt: " << pt << endl;
+//     << "; physPt: " << physPt << endl;
    }
 
-   while (not possible_beta_points.empty()) {
-      PointType pt = possible_beta_points.front();
+   for (unsigned nthVisited = 0; not possible_beta_points.empty();
+        ++nthVisited) {
+      cout << nthVisited << "th visited" << endl;
+      PointType physPt = possible_beta_points.front();
       possible_beta_points.pop();
 
-      if (Node::IsFarEnoughAwayFromOthers(pt) and PointIsBeta(image, pt)) {
+      if (Node::IsFarEnoughAwayFromOthers(physPt) and PointIsBeta(image, physPt)) {
          // we don't need the machinery anymore, the point is enough
          PointType loCell, hiCell;
          VectorType normal;
 
          Points intersections;
-         planes_intersection_with_box(normal, pt,
+         planes_intersection_with_box(normal, physPt,
                                       // &&& ack, cell stuff, here
                                       loCell, hiCell,
                                       intersections);
@@ -60,30 +62,30 @@ cout << "image origin: " << image->GetOrigin() << endl;
               it != end; ++it) {
             possible_beta_points.push(*it);
          }
-         outNodes.push_back(new Node(pt, polygon));
+         outNodes.push_back(new Node(physPt, polygon));
       }
    }
 }
 
 // The /whole/ condition
-// <pt> is in pixels. Hrm; the problem with that is that when we shift
+// <physPt> is in pixels. Hrm; the problem with that is that when we shift
 // the image around slightly, we'll have to convert those. Ie,
 // we'll require the nodes to remember their offsets... Hm.
-bool PointIsBeta(Image::Pointer image, PointType const& origPt)
+bool PointIsBeta(Image::Pointer image, PointType const& physPt)
 {
    // &&& arbitrary. I believe this is cell units for the time being
    int region_width = 6;
 
-   BetaPipeline pipeline(image, origPt, region_width);
+   BetaPipeline pipeline(image, physPt, region_width);
 
-   VectorType ptShift;
-   pt_shift(origPt, image->GetSpacing(), ptShift);
+   VectorType physShift;
+   pt_shift(physPt, image->GetSpacing(), physShift);
 
-   PointType newPt = origPt + ptShift;
+   PointType newPt = physPt + physShift;
    EigenVectorImageType::IndexType index;
    image->TransformPhysicalPointToIndex(newPt, index);
 
-cout << __FILE__ << " index: " << index << endl;
+cout << __FILE__ << " (awkward) index: " << index << endl;
 
    EigenVectorImageType::Pointer evecImage = pipeline.eigVecImage();
    EigenVectorImageType::RegionType definedRegion = evecImage->GetBufferedRegion();
