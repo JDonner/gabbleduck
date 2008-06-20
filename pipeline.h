@@ -30,7 +30,8 @@ struct BetaPipeline
 private:
    void update() { totalEigenFilter_->Update(); }
 
-private:
+#define DEBUG_PRIVATE public
+DEBUG_PRIVATE:
    typedef itk::ResampleImageFilter< ImageType, ImageType, double > ResampleFilterType;
    ResampleFilterType::Pointer resampler_;
 

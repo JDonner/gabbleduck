@@ -7,7 +7,7 @@
 using namespace std;
 
 
-void BetaPipeline::set_up_resampler(ImageType::Pointer image,
+void BetaPipeline::set_up_resampler(ImageType::Pointer fullImage,
                                     PointType const& physCenter)
 {
    // /big/common/software/insight/InsightToolkit-3.4.0/Examples/Filtering/ResampleImageFilter.cxx is most helpful
@@ -23,23 +23,23 @@ void BetaPipeline::set_up_resampler(ImageType::Pointer image,
    * transform. You must provide a different transform here, before
    * attempting to run the filter, if you do not want to use the
    * default Identity transform. */
-   VectorType offset = transform_shift(physCenter, image->GetSpacing());
+   VectorType offset = transform_shift(physCenter, fullImage->GetSpacing());
 
 cout << "physCenter(phys): " << physCenter
-     << "; spacing(phys): " << image->GetSpacing()
+     << "; spacing(phys): " << fullImage->GetSpacing()
      << "; offset: " << offset << endl;
 
    translation_ = TranslationTransform::New();
    translation_->SetOffset(offset);
 
    resampler_->SetTransform(translation_);
-   resampler_->SetInput(image);
+   resampler_->SetInput(fullImage);
    resampler_->SetDefaultPixelValue(0.0);
 
-   ImageType::SpacingType spacing = image->GetSpacing();
+   ImageType::SpacingType spacing = fullImage->GetSpacing();
    resampler_->SetOutputSpacing(spacing);
 
-//   ImageType::RegionType region = image->GetLargestPossibleRegion();
+//   ImageType::RegionType region = fullImage->GetLargestPossibleRegion();
 
    ImageType::SizeType too_small;
    too_small[0] = too_small[1] = too_small[2] = 5;
@@ -48,7 +48,7 @@ cout << "physCenter(phys): " << physCenter
    resampler_->SetSize(too_small);
 
 
-   ImageType::PointType physOrigin = image->GetOrigin();
+   ImageType::PointType physOrigin = fullImage->GetOrigin();
    // fastest-moving (ie, X) first, says the resampling section of the guide
    for (unsigned i = 0; i < Dimension; ++i) {
       physOrigin[i] = physCenter[i] - (too_small[i] * spacing[i]) / 2.0;
@@ -72,21 +72,21 @@ resampler_->GetOutput()->Print(cout, 2);
 
 // /big/common/software/insight/InsightToolkit-3.4.0/Testing/Code/Common/itkTranslationTransformTest.cxx
 
-BetaPipeline::BetaPipeline(ImageType::Pointer image,
+BetaPipeline::BetaPipeline(ImageType::Pointer fullImage,
                            PointType const& physCenter,
                            // In cells. no point in fractional cells (I believe)
                            int region_width)
 {
 cout << "input: " << endl;
-image->Print(cout, 2);
+fullImage->Print(cout, 2);
 
    ImageType::IndexType index;
-   bool isWithin = image->TransformPhysicalPointToIndex(physCenter, index);
+   bool isWithin = fullImage->TransformPhysicalPointToIndex(physCenter, index);
    assert(isWithin);
 
    ImageRegion region;
    region.SetIndex(index);
-   // don't know what units these are, physical or 'cell'.
+   // add 'size'. Don't know what units these are, physical or pixel.
    // The '+ 1' to compensate for the phys -> index truncation
    // And another '+ 1' to deal with our fractional translation
    region.PadByRadius(region_width + 1 + 1);
@@ -95,7 +95,7 @@ image->Print(cout, 2);
    // and then a 'shift' transform of a fraction of a cell, right?
    // output- to- input, and in physical coordinates (itkResampleImageFilter.h)
 
-   set_up_resampler(image, physCenter);
+   set_up_resampler(fullImage, physCenter);
 
    // file:///big/common/software/insight/install/html/classitk_1_1HessianRecursiveGaussianImageFilter.html
 
@@ -114,61 +114,61 @@ image->Print(cout, 2);
       EigenAnalysisFilterType::JgdCalculatorType::OrderByValue);
 
 #ifdef DE_NADA
-   // Eigenvalue
-   // Create an adaptor and plug the output to the parametric space
-   eValueAdaptor1_ = EValueImageAdaptorType::New();
-   valAccessor1_.SetEigenIdx( 0 );
-   eValueAdaptor1_->SetImage( totalEigenFilter_->GetEigenValuesImage() );
-   eValueAdaptor1_->SetPixelAccessor( valAccessor1_ );
+   // // Eigenvalue
+   // // Create an adaptor and plug the output to the parametric space
+   // eValueAdaptor1_ = EValueImageAdaptorType::New();
+   // valAccessor1_.SetEigenIdx( 0 );
+   // eValueAdaptor1_->SetImage( totalEigenFilter_->GetEigenValuesImage() );
+   // eValueAdaptor1_->SetPixelAccessor( valAccessor1_ );
 
-   eValueAdaptor2_ = EValueImageAdaptorType::New();
-   valAccessor2_.SetEigenIdx( 1 );
-   eValueAdaptor2_->SetImage( totalEigenFilter_->GetEigenValuesImage() );
-   eValueAdaptor2_->SetPixelAccessor( valAccessor2_ );
+   // eValueAdaptor2_ = EValueImageAdaptorType::New();
+   // valAccessor2_.SetEigenIdx( 1 );
+   // eValueAdaptor2_->SetImage( totalEigenFilter_->GetEigenValuesImage() );
+   // eValueAdaptor2_->SetPixelAccessor( valAccessor2_ );
 
-   eValueAdaptor3_ = EValueImageAdaptorType::New();
-   valAccessor3_.SetEigenIdx( 2 );
-   eValueAdaptor3_->SetImage( totalEigenFilter_->GetEigenValuesImage() );
-   eValueAdaptor3_->SetPixelAccessor( valAccessor3_ );
+   // eValueAdaptor3_ = EValueImageAdaptorType::New();
+   // valAccessor3_.SetEigenIdx( 2 );
+   // eValueAdaptor3_->SetImage( totalEigenFilter_->GetEigenValuesImage() );
+   // eValueAdaptor3_->SetPixelAccessor( valAccessor3_ );
 
 
-   // Eigenvector
-   // Create an adaptor and plug the output to the parametric space
-   eVectorAdaptor1_ = EVectorImageAdaptorType::New();
-   vecAccessor1_.SetEigenIdx( 0 );
-   eVectorAdaptor1_->SetImage( totalEigenFilter_->GetEigenVectorsImage() );
-   eVectorAdaptor1_->SetPixelAccessor( vecAccessor1_ );
+   // // Eigenvector
+   // // Create an adaptor and plug the output to the parametric space
+   // eVectorAdaptor1_ = EVectorImageAdaptorType::New();
+   // vecAccessor1_.SetEigenIdx( 0 );
+   // eVectorAdaptor1_->SetImage( totalEigenFilter_->GetEigenVectorsImage() );
+   // eVectorAdaptor1_->SetPixelAccessor( vecAccessor1_ );
 
-   eVectorAdaptor2_ = EVectorImageAdaptorType::New();
-   vecAccessor2_.SetEigenIdx( 1 );
-   eVectorAdaptor2_->SetImage( totalEigenFilter_->GetEigenVectorsImage() );
-   eVectorAdaptor2_->SetPixelAccessor( vecAccessor2_ );
+   // eVectorAdaptor2_ = EVectorImageAdaptorType::New();
+   // vecAccessor2_.SetEigenIdx( 1 );
+   // eVectorAdaptor2_->SetImage( totalEigenFilter_->GetEigenVectorsImage() );
+   // eVectorAdaptor2_->SetPixelAccessor( vecAccessor2_ );
 
-   eVectorAdaptor3_ = EVectorImageAdaptorType::New();
-   vecAccessor3_.SetEigenIdx( 2 );
-   eVectorAdaptor3_->SetImage( totalEigenFilter_->GetEigenVectorsImage() );
-   eVectorAdaptor3_->SetPixelAccessor( vecAccessor3_ );
+   // eVectorAdaptor3_ = EVectorImageAdaptorType::New();
+   // vecAccessor3_.SetEigenIdx( 2 );
+   // eVectorAdaptor3_->SetImage( totalEigenFilter_->GetEigenVectorsImage() );
+   // eVectorAdaptor3_->SetPixelAccessor( vecAccessor3_ );
 
-   // eValueCastfilter1 will give the eigenvalues with the maximum
-   // eigenvalue. eValueCastfilter3 will give the eigenvalues with
-   // the minimum eigenvalue.
-   eValueCastFilter1_ = EValueCastImageFilterType::New();
-   eValueCastFilter1_->SetInput( eValueAdaptor1_ );
-   eValueCastFilter2_ = EValueCastImageFilterType::New();
-   eValueCastFilter2_->SetInput( eValueAdaptor2_ );
-   eValueCastFilter3_ = EValueCastImageFilterType::New();
-   eValueCastFilter3_->SetInput( eValueAdaptor3_ );
+   // // eValueCastfilter1 will give the eigenvalues with the maximum
+   // // eigenvalue. eValueCastfilter3 will give the eigenvalues with
+   // // the minimum eigenvalue.
+   // eValueCastFilter1_ = EValueCastImageFilterType::New();
+   // eValueCastFilter1_->SetInput( eValueAdaptor1_ );
+   // eValueCastFilter2_ = EValueCastImageFilterType::New();
+   // eValueCastFilter2_->SetInput( eValueAdaptor2_ );
+   // eValueCastFilter3_ = EValueCastImageFilterType::New();
+   // eValueCastFilter3_->SetInput( eValueAdaptor3_ );
 
-   // Shoot shoot shoot - I want the matching eigenvector with each value;
-   // have to figure out how to keep track of that.
-   // - heh - I think it's ok as-is!
+   // // Shoot shoot shoot - I want the matching eigenvector with each value;
+   // // have to figure out how to keep track of that.
+   // // - heh - I think it's ok as-is!
 
-   eVectorCastFilter1_ = EVectorCastImageFilterType::New();
-   eVectorCastFilter1_->SetInput( eVectorAdaptor1_ );
-   eVectorCastFilter2_ = EVectorCastImageFilterType::New();
-   eVectorCastFilter2_->SetInput( eVectorAdaptor2_ );
-   eVectorCastFilter3_ = EVectorCastImageFilterType::New();
-   eVectorCastFilter3_->SetInput( eVectorAdaptor3_ );
+   // eVectorCastFilter1_ = EVectorCastImageFilterType::New();
+   // eVectorCastFilter1_->SetInput( eVectorAdaptor1_ );
+   // eVectorCastFilter2_ = EVectorCastImageFilterType::New();
+   // eVectorCastFilter2_->SetInput( eVectorAdaptor2_ );
+   // eVectorCastFilter3_ = EVectorCastImageFilterType::New();
+   // eVectorCastFilter3_->SetInput( eVectorAdaptor3_ );
 #endif // DE_NADA
 
    // -- We may not need these cast + adaptor + accessor things

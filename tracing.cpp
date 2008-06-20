@@ -68,32 +68,41 @@ cout << "image origin: " << image->GetOrigin() << endl;
 }
 
 // The /whole/ condition
-// <physPt> is in pixels. Hrm; the problem with that is that when we shift
+// <physPt> is in pixels.(???) Hrm; the problem with that is that when we shift
 // the image around slightly, we'll have to convert those. Ie,
 // we'll require the nodes to remember their offsets... Hm.
-bool PointIsBeta(Image::Pointer image, PointType const& physPt)
+bool PointIsBeta(Image::Pointer fullImage, PointType const& physPt)
 {
    // &&& arbitrary. I believe this is cell units for the time being
    int region_width = 6;
 
-   BetaPipeline pipeline(image, physPt, region_width);
+   // pipeline does resampling
+   BetaPipeline pipeline(fullImage, physPt, region_width);
 
    VectorType physShift;
-   pt_shift(physPt, image->GetSpacing(), physShift);
+   pt_shift(physPt, fullImage->GetSpacing(), physShift);
+
+ImageType::IndexType indexUseless;
+pipeline.resampler_->GetOutput()->TransformPhysicalPointToIndex(physPt, indexUseless);
+cout << __FILE__ << " (useless) index: " << indexUseless << endl;
 
    PointType newPt = physPt + physShift;
-   EigenVectorImageType::IndexType index;
-   image->TransformPhysicalPointToIndex(newPt, index);
+   ImageType::IndexType index;
+   bool isWithinImage = pipeline.resampler_->GetOutput()->TransformPhysicalPointToIndex(newPt, index);
 
-cout << __FILE__ << " (awkward) index: " << index << endl;
+cout << __FILE__ << " (awkward) index: " << index << "; within?: " << isWithinImage << endl;
 
    EigenVectorImageType::Pointer evecImage = pipeline.eigVecImage();
-   EigenVectorImageType::RegionType definedRegion = evecImage->GetBufferedRegion();
+EigenVectorImageType::RegionType eigDefinedRegion = evecImage->GetBufferedRegion();
+
+ImageType::RegionType snipDefinedRegion = fullImage->GetBufferedRegion();
+cout << __FILE__ << "\nsnip defined region: \n" << endl;
+snipDefinedRegion.Print(cout);
 
 // &&& grrr - defined region is at 0,0,0, [5,5,5]
 // and index is way in the middle somewhere.
-cout << __FILE__ << "\ndefined region: \n" << endl;
-definedRegion.Print(cout);
+cout << __FILE__ << "\neig defined region: \n" << endl;
+eigDefinedRegion.Print(cout);
    EigenVector v1 = evecImage->GetPixel(index)[0];
    EigenVector v2 = evecImage->GetPixel(index)[1];
    EigenVector v3 = evecImage->GetPixel(index)[2];
