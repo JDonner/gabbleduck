@@ -15,6 +15,8 @@ void BetaPipeline::set_up_resampler(ImageType::Pointer fullImage,
    resampler_ = ResampleFilterType::New();
 //   resampler_.SetInterpolator();
 
+   resampler_->DebugOff();
+
   /** Set the coordinate transformation.
    * Set the coordinate transform to use for resampling.  Note that
    * this must be in physical coordinates and it is the
@@ -66,8 +68,8 @@ cout << "physCenter(phys): " << physCenter
 // resampler_->GetOutput()->Print(cout, 2);
 
 resampler_->Update();
-cout << "resampler (after update): " << endl;
-resampler_->GetOutput()->Print(cout, 2);
+//cout << "resampler (after update): " << endl;
+//resampler_->GetOutput()->Print(cout, 2);
 }
 
 // /big/common/software/insight/InsightToolkit-3.4.0/Testing/Code/Common/itkTranslationTransformTest.cxx
@@ -77,8 +79,8 @@ BetaPipeline::BetaPipeline(ImageType::Pointer fullImage,
                            // In cells. no point in fractional cells (I believe)
                            int region_width)
 {
-cout << "input: " << endl;
-fullImage->Print(cout, 2);
+//cout << "input: " << endl;
+//fullImage->Print(cout, 2);
 
    ImageType::IndexType index;
    bool isWithin = fullImage->TransformPhysicalPointToIndex(physCenter, index);

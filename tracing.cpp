@@ -29,6 +29,7 @@ void FindBetaNodes(ImageType::Pointer image,
 
 cout << "image origin: " << image->GetOrigin() << endl;
 
+   // Load possible betas
    for (Seeds::const_iterator it = seeds.begin(), end = seeds.end();
         it != end; ++it) {
       PointType physPt;
@@ -38,33 +39,46 @@ cout << "image origin: " << image->GetOrigin() << endl;
 //     << "; physPt: " << physPt << endl;
    }
 
-   for (unsigned nthVisited = 0; not possible_beta_points.empty();
+   unsigned nthVisited;
+   unsigned n_far_enough_away = 0;
+   unsigned n_beta = 0;
+   for (nthVisited = 0; not possible_beta_points.empty();
         ++nthVisited) {
       cout << nthVisited << "th visited" << endl;
       PointType physPt = possible_beta_points.front();
       possible_beta_points.pop();
 
-      if (Node::IsFarEnoughAwayFromOthers(physPt) and PointIsBeta(image, physPt)) {
-         // we don't need the machinery anymore, the point is enough
-         PointType loCell, hiCell;
-         VectorType normal;
+      if (Node::IsFarEnoughAwayFromOthers(physPt)) {
+         ++n_far_enough_away;
 
-         Points intersections;
-         planes_intersection_with_box(normal, physPt,
-                                      // &&& ack, cell stuff, here
-                                      loCell, hiCell,
-                                      intersections);
-         Polygon polygon;
-         MakePolygon(normal, intersections, polygon);
+         if (PointIsBeta(image, physPt)) {
+            ++n_beta;
+            // we don't need the machinery anymore, the point is enough
+            PointType loCell, hiCell;
+            VectorType normal;
 
-         for (Points::const_iterator it = intersections.begin(),
-                 end = intersections.end();
-              it != end; ++it) {
-            possible_beta_points.push(*it);
+            Points intersections;
+            planes_intersection_with_box(normal, physPt,
+                                         // &&& ack, cell stuff, here
+                                         loCell, hiCell,
+                                         intersections);
+            Polygon polygon;
+            MakePolygon(normal, intersections, polygon);
+
+            for (Points::const_iterator it = intersections.begin(),
+                    end = intersections.end();
+                 it != end; ++it) {
+cout << "adding a pt " << endl;
+               possible_beta_points.push(*it);
+            }
+            outNodes.push_back(new Node(physPt, polygon));
          }
-         outNodes.push_back(new Node(physPt, polygon));
       }
    }
+cout << nthVisited << " total visited" << "\n"
+     << n_far_enough_away << " far enough away" << "\n"
+     << n_beta << " beta" << "\n"
+     << endl;
 }
 
 // The /whole/ condition
@@ -74,7 +88,7 @@ cout << "image origin: " << image->GetOrigin() << endl;
 bool PointIsBeta(Image::Pointer fullImage, PointType const& physPt)
 {
    // &&& arbitrary. I believe this is cell units for the time being
-   int region_width = 6;
+   int region_width = 7;
 
    // pipeline does resampling
    BetaPipeline pipeline(fullImage, physPt, region_width);
@@ -97,18 +111,19 @@ EigenVectorImageType::RegionType eigDefinedRegion = evecImage->GetBufferedRegion
 
 ImageType::RegionType snipDefinedRegion = fullImage->GetBufferedRegion();
 cout << __FILE__ << "\nsnip defined region: \n" << endl;
-snipDefinedRegion.Print(cout);
+//snipDefinedRegion.Print(cout);
 
 // &&& grrr - defined region is at 0,0,0, [5,5,5]
 // and index is way in the middle somewhere.
 cout << __FILE__ << "\neig defined region: \n" << endl;
-eigDefinedRegion.Print(cout);
+//eigDefinedRegion.Print(cout);
    EigenVector v1 = evecImage->GetPixel(index)[0];
    EigenVector v2 = evecImage->GetPixel(index)[1];
    EigenVector v3 = evecImage->GetPixel(index)[2];
 
    double sheetMin, sheetMax;
    double t1 = v1.GetNorm(), t2 = v2.GetNorm(), t3 = v3.GetNorm();
+cout << "vx: " << v1 << "; " << v2 << "; " << v3 << endl;
    bool isBeta = MeetsBetaCondition(sheetMin, sheetMax, t1, t2, t3);
 
    return isBeta;
@@ -119,6 +134,11 @@ eigDefinedRegion.Print(cout);
 bool MeetsBetaCondition(double sheetMin, double sheetMax,
                         double t1, double t2, double t3)
 {
+cout << sheetMin << " <= " << t1 << " <= " << sheetMax << endl;
+cout << "t1: " << t1 << "; t2: " << t2 << "; t3: " << t3 << endl;
+cout << "std::max(t1 / t2, t1 / t3) < std::min(t2 / t3, t3 / t2)"
+     << std::max(t1 / t2, t1 / t3) << " "
+     << std::min(t2 / t3, t3 / t2) << endl;
    bool isBeta =
       sheetMin <= t1 and t1 <= sheetMax and
       std::max(t1 / t2, t1 / t3) < std::min(t2 / t3, t3 / t2);
