@@ -18,6 +18,10 @@ PURPOSE.  See the above copyright notices for more information.
 #include <itkImageToImageFilter.h>
 #include <itkSymmetricEigenAnalysis.h>
 
+// - This says that the QL method (I believe!) for finding eigenvectors
+// of a symmetric matrix, has them come out orthogonal and unit, ie orthonormal.
+// http://mathalacarte.com/cb/mom.fcg/ch05-01.pdf?_;ydm=0;II=30
+
 
 // The class is templated over the input matrix (which is expected to
 // provide access to its elements with the [][] operator), matrix to

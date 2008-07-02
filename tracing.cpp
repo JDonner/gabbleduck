@@ -14,6 +14,7 @@ typedef queue<PointType> PointQueue;
 extern bool PointIsBeta(Image::Pointer image, PointType const& pt);
 bool MeetsBetaCondition(double sheetMin, double sheetMax,
                         double t1, double t2, double t3);
+bool PointIsPlanelike(EigenValue u1, EigenValue u2, EigenValue u3);
 void new_pt(PointType const& pt, Image::SpacingType const& spacing,
             PointType& newPt);
 void new_pt_index(PointType const& pt, Image::SpacingType const& spacing,
@@ -81,6 +82,9 @@ cout << nthVisited << " total visited" << "\n"
      << endl;
 }
 
+// Yay!
+//BSplineInterpolateImageFunction::EvaluateAtContinuousIndex
+
 // The /whole/ condition
 // <physPt> is in pixels.(???) Hrm; the problem with that is that when we shift
 // the image around slightly, we'll have to convert those. Ie,
@@ -106,6 +110,17 @@ cout << __FILE__ << " (useless) index: " << indexUseless << endl;
 
 cout << __FILE__ << " (awkward) index: " << index << "; within?: " << isWithinImage << endl;
 
+   EigenValueImageType::Pointer evalImage = pipeline.eigValImage();
+   EigenValue u1 = evalImage->GetPixel(index)[0];
+   EigenValue u2 = evalImage->GetPixel(index)[1];
+   EigenValue u3 = evalImage->GetPixel(index)[2];
+
+   if (PointIsPlanelike(u1, u2, u3)) {
+      cout << "woo hoo, planelike!" << endl;
+      // &&& just for the encouraging effect
+      return true;
+   }
+
    EigenVectorImageType::Pointer evecImage = pipeline.eigVecImage();
 EigenVectorImageType::RegionType eigDefinedRegion = evecImage->GetBufferedRegion();
 
@@ -121,12 +136,27 @@ cout << __FILE__ << "\neig defined region: \n" << endl;
    EigenVector v2 = evecImage->GetPixel(index)[1];
    EigenVector v3 = evecImage->GetPixel(index)[2];
 
+
+
    double sheetMin, sheetMax;
    double t1 = v1.GetNorm(), t2 = v2.GetNorm(), t3 = v3.GetNorm();
 cout << "vx: " << v1 << "; " << v2 << "; " << v3 << endl;
    bool isBeta = MeetsBetaCondition(sheetMin, sheetMax, t1, t2, t3);
 
    return isBeta;
+}
+
+
+// u_x are eigenvalues
+bool PointIsPlanelike(EigenValue u1, EigenValue u2, EigenValue u3)
+{
+   double p1 = (u1 - u2) / u1;
+   double p2 = (u2 - u3) / u1;
+   double p3 = u3 / u1;
+
+   bool planelike = p1 > p2 and p1 > p3;
+
+   return planelike;
 }
 
 

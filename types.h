@@ -33,8 +33,9 @@ const unsigned Dimension = 3;
 //   typedef   EigenComponentType HardEigenVector[Dimension];
 
 typedef  itk::FixedArray<EigenComponentType, Dimension> FixedVectorType;
-typedef  itk::Vector<InternalPrecisionType, Dimension>              VectorType;
+typedef  itk::Vector<InternalPrecisionType, Dimension>  VectorType;
 
+typedef  InternalPrecisionType                         EigenValue;
 typedef  VectorType                                    EigenVector;
 
 typedef  itk::CovariantVector< PixelType, Dimension >  CovariantVectorType;
