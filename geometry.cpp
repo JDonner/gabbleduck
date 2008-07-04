@@ -106,7 +106,7 @@ double z_intersect(double d, double c, double a, double x, double b, double y)
 void planes_intersection_with_box(VectorType normal, PointType const& pt,
                                   // front, lower left, and rear, upper right
                                   PointType const& lo, PointType const& hi,
-                                  Points& intersections)
+                                  Points& outIntersections)
 {
    double
       x0 = lo[0],
@@ -127,7 +127,7 @@ void planes_intersection_with_box(VectorType normal, PointType const& pt,
       if (X_WITHIN) {                         \
          PointType p;                         \
          p[0] = x, p[1] = Y, p[2] = Z;        \
-         intersections.push_back(p);          \
+         outIntersections.push_back(p);       \
       }                                       \
    }
 
@@ -137,7 +137,7 @@ void planes_intersection_with_box(VectorType normal, PointType const& pt,
       if (Y_WITHIN) {                         \
          PointType p;                         \
          p[0] = X, p[1] = y, p[2] = Z;        \
-         intersections.push_back(p);          \
+         outIntersections.push_back(p);       \
       }                                       \
    }
 
@@ -147,7 +147,7 @@ void planes_intersection_with_box(VectorType normal, PointType const& pt,
       if (Z_WITHIN) {                         \
          PointType p;                         \
          p[0] = X, p[1] = Y, p[2] = z;        \
-         intersections.push_back(p);          \
+         outIntersections.push_back(p);       \
       }                                       \
    }
 
@@ -178,7 +178,7 @@ void planes_intersection_with_box(VectorType normal, PointType const& pt,
    CHECK_Z_EDGE(x0, y1); // e11
    CHECK_Z_EDGE(x1, y1); // e12
 
-   assert(intersections.size() <= 6);
+   assert(outIntersections.size() <= 6);
 #undef CHECK_X_EDGE
 #undef CHECK_Y_EDGE
 #undef CHECK_Z_EDGE

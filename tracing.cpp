@@ -11,10 +11,12 @@ using namespace std;
 
 typedef queue<PointType> PointQueue;
 
-extern bool PointIsBeta(Image::Pointer image, PointType const& pt);
+void CalcEigenStuff(Image::Pointer fullImage, PointType const& physPt,
+                    EigenValues& outEVals, EigenVectors& outEVecs);
+extern bool PointIsBeta(EigenValues const& outEVals, EigenVectors const& outEVecs);
 bool MeetsBetaCondition(double sheetMin, double sheetMax,
                         double t1, double t2, double t3);
-bool PointIsPlanelike(EigenValue u1, EigenValue u2, EigenValue u3);
+bool PointIsPlanelike(EigenValues const& evals);
 void new_pt(PointType const& pt, Image::SpacingType const& spacing,
             PointType& newPt);
 void new_pt_index(PointType const& pt, Image::SpacingType const& spacing,
@@ -52,11 +54,26 @@ cout << "image origin: " << image->GetOrigin() << endl;
       if (Node::IsFarEnoughAwayFromOthers(physPt)) {
          ++n_far_enough_away;
 
-         if (PointIsBeta(image, physPt)) {
+         EigenValues evals;
+         EigenVectors evecs;
+
+         CalcEigenStuff(image, physPt, evals, evecs);
+
+         if (PointIsBeta(evals, evecs)) {
             ++n_beta;
             // we don't need the machinery anymore, the point is enough
             PointType loCell, hiCell;
-            VectorType normal;
+
+            // point is at center of cell
+            for (unsigned i = 0; i < 3; ++i) {
+               // yes inefficient but looks cleaner
+               ImageType::SpacingType spacing = image->GetSpacing();
+               loCell[i] = physPt[i] - spacing[i] / 2.0;
+               hiCell[i] = physPt[i] + spacing[i] / 2.0;
+            }
+
+            // dominant eigenvector
+            VectorType normal = evecs[0];
 
             Points intersections;
             planes_intersection_with_box(normal, physPt,
@@ -69,7 +86,7 @@ cout << "image origin: " << image->GetOrigin() << endl;
             for (Points::const_iterator it = intersections.begin(),
                     end = intersections.end();
                  it != end; ++it) {
-cout << "adding a pt " << endl;
+//cout << "adding a pt " << endl;
                possible_beta_points.push(*it);
             }
             outNodes.push_back(new Node(physPt, polygon));
@@ -82,14 +99,8 @@ cout << nthVisited << " total visited" << "\n"
      << endl;
 }
 
-// Yay!
-//BSplineInterpolateImageFunction::EvaluateAtContinuousIndex
-
-// The /whole/ condition
-// <physPt> is in pixels.(???) Hrm; the problem with that is that when we shift
-// the image around slightly, we'll have to convert those. Ie,
-// we'll require the nodes to remember their offsets... Hm.
-bool PointIsBeta(Image::Pointer fullImage, PointType const& physPt)
+void CalcEigenStuff(Image::Pointer fullImage, PointType const& physPt,
+                    EigenValues& outEVals, EigenVectors& outEVecs)
 {
    // &&& arbitrary. I believe this is cell units for the time being
    int region_width = 7;
@@ -100,25 +111,20 @@ bool PointIsBeta(Image::Pointer fullImage, PointType const& physPt)
    VectorType physShift;
    pt_shift(physPt, fullImage->GetSpacing(), physShift);
 
-ImageType::IndexType indexUseless;
-pipeline.resampler_->GetOutput()->TransformPhysicalPointToIndex(physPt, indexUseless);
-cout << __FILE__ << " (useless) index: " << indexUseless << endl;
+// ImageType::IndexType indexUseless;
+// pipeline.resampler_->GetOutput()->TransformPhysicalPointToIndex(physPt, indexUseless);
+// cout << __FILE__ << " (useless) index: " << indexUseless << endl;
 
    PointType newPt = physPt + physShift;
    ImageType::IndexType index;
    bool isWithinImage = pipeline.resampler_->GetOutput()->TransformPhysicalPointToIndex(newPt, index);
+   assert(isWithinImage);
 
-cout << __FILE__ << " (awkward) index: " << index << "; within?: " << isWithinImage << endl;
+//cout << __FILE__ << " (awkward) index: " << index << "; within?: " << isWithinImage << endl;
 
    EigenValueImageType::Pointer evalImage = pipeline.eigValImage();
-   EigenValue u1 = evalImage->GetPixel(index)[0];
-   EigenValue u2 = evalImage->GetPixel(index)[1];
-   EigenValue u3 = evalImage->GetPixel(index)[2];
-
-   if (PointIsPlanelike(u1, u2, u3)) {
-      cout << "woo hoo, planelike!" << endl;
-      // &&& just for the encouraging effect
-      return true;
+   for (unsigned i = 0; i < Dimension; ++i) {
+      outEVals[i] = evalImage->GetPixel(index)[i];
    }
 
    EigenVectorImageType::Pointer evecImage = pipeline.eigVecImage();
@@ -132,24 +138,47 @@ cout << __FILE__ << "\nsnip defined region: \n" << endl;
 // and index is way in the middle somewhere.
 cout << __FILE__ << "\neig defined region: \n" << endl;
 //eigDefinedRegion.Print(cout);
-   EigenVector v1 = evecImage->GetPixel(index)[0];
-   EigenVector v2 = evecImage->GetPixel(index)[1];
-   EigenVector v3 = evecImage->GetPixel(index)[2];
+   for (unsigned i = 0; i < Dimension; ++i) {
+      outEVecs[i] = evecImage->GetPixel(index)[i];
+   }
+}
+
+// Yay!
+//BSplineInterpolateImageFunction::EvaluateAtContinuousIndex
+
+// The /whole/ condition
+// <physPt> is in pixels.(???) Hrm; the problem with that is that when we shift
+// the image around slightly, we'll have to convert those. Ie,
+// we'll require the nodes to remember their offsets... Hm.
+bool PointIsBeta(EigenValues const& evals, EigenVectors const& evecs)
+{
+   if (PointIsPlanelike(evals)) {
+      cout << "woo hoo, planelike!" << endl;
+      // &&& just for the encouraging effect
+      return true;
+   }
+   else {
+      cout << "... not planelike" << endl;
+   }
 
 
-
-   double sheetMin, sheetMax;
-   double t1 = v1.GetNorm(), t2 = v2.GetNorm(), t3 = v3.GetNorm();
-cout << "vx: " << v1 << "; " << v2 << "; " << v3 << endl;
-   bool isBeta = MeetsBetaCondition(sheetMin, sheetMax, t1, t2, t3);
+   // &&& This is where things get tougher
+//    double sheetMin, sheetMax;
+//    double t1 = v1.GetNorm(), t2 = v2.GetNorm(), t3 = v3.GetNorm();
+// cout << "vx: " << v1 << "; " << v2 << "; " << v3 << endl;
+   bool isBeta = false; //MeetsBetaCondition(sheetMin, sheetMax, t1, t2, t3);
 
    return isBeta;
 }
 
 
 // u_x are eigenvalues
-bool PointIsPlanelike(EigenValue u1, EigenValue u2, EigenValue u3)
+bool PointIsPlanelike(EigenValues const& evals)
 {
+   EigenValue u1 = evals[0];
+   EigenValue u2 = evals[1];
+   EigenValue u3 = evals[2];
+
    double p1 = (u1 - u2) / u1;
    double p2 = (u2 - u3) / u1;
    double p3 = u3 / u1;
