@@ -10,6 +10,7 @@
 #include <itkImageAdaptor.h>
 #include <itkCastImageFilter.h>
 #include <itkResampleImageFilter.h>
+#include <itkBSplineInterpolateImageFunction.h>
 
 //#include <itkMesh.h>
 //#include <itkPolygonCell.h>
@@ -101,6 +102,7 @@ typedef  itk::CastImageFilter<
    EValueImageAdaptorType, EachEigenValueImageType>  EValueCastImageFilterType;
 
 typedef  itk::ResampleImageFilter<ImageType, ImageType, double> ResampleFilterType;
+typedef  itk::BSplineInterpolateImageFunction<ImageType> InterpolatorType;
 
 ///////////////////////////////////////////////////////////////////
 // EigenVector

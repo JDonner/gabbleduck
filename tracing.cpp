@@ -13,16 +13,22 @@ typedef queue<PointType> PointQueue;
 
 void CalcEigenStuff(Image::Pointer fullImage, PointType const& physPt,
                     EigenValues& outEVals, EigenVectors& outEVecs);
-extern bool PointIsBeta(EigenValues const& outEVals, EigenVectors const& outEVecs);
-bool MeetsBetaCondition(double sheetMin, double sheetMax,
-                        double t1, double t2, double t3);
+bool PointIsBeta(PointType const& physPt,
+                 EigenValues const& outEVals,
+                 EigenVectors const& outEVecs,
+                 ImageType::Pointer image);
+bool MeetsBetaCondition(PointType const& physPt,
+                        EigenValues const& evals,
+                        EigenVectors const& evec,
+                        ImageType::Pointer image,
+                        double sheetMin, double sheetMax);
 bool PointIsPlanelike(EigenValues const& evals);
 void new_pt(PointType const& pt, Image::SpacingType const& spacing,
             PointType& newPt);
 void new_pt_index(PointType const& pt, Image::SpacingType const& spacing,
                   ImageType::IndexType& newPt);
 
-
+// Arg, I think this wants to be an object
 // non-recursive version
 void FindBetaNodes(ImageType::Pointer image,
                    Seeds const& seeds,
@@ -59,7 +65,7 @@ cout << "image origin: " << image->GetOrigin() << endl;
 
          CalcEigenStuff(image, physPt, evals, evecs);
 
-         if (PointIsBeta(evals, evecs)) {
+         if (PointIsBeta(physPt, evals, evecs, image)) {
             ++n_beta;
             // we don't need the machinery anymore, the point is enough
             PointType loCell, hiCell;
@@ -102,14 +108,14 @@ cout << nthVisited << " total visited" << "\n"
 void CalcEigenStuff(Image::Pointer fullImage, PointType const& physPt,
                     EigenValues& outEVals, EigenVectors& outEVecs)
 {
+   VectorType physShift;
+   pt_shift(physPt, fullImage->GetSpacing(), physShift);
+
    // &&& arbitrary. I believe this is cell units for the time being
    int region_width = 7;
 
    // pipeline does resampling
    BetaPipeline pipeline(fullImage, physPt, region_width);
-
-   VectorType physShift;
-   pt_shift(physPt, fullImage->GetSpacing(), physShift);
 
 // ImageType::IndexType indexUseless;
 // pipeline.resampler_->GetOutput()->TransformPhysicalPointToIndex(physPt, indexUseless);
@@ -143,14 +149,13 @@ cout << __FILE__ << "\neig defined region: \n" << endl;
    }
 }
 
-// Yay!
-//BSplineInterpolateImageFunction::EvaluateAtContinuousIndex
-
 // The /whole/ condition
 // <physPt> is in pixels.(???) Hrm; the problem with that is that when we shift
 // the image around slightly, we'll have to convert those. Ie,
 // we'll require the nodes to remember their offsets... Hm.
-bool PointIsBeta(EigenValues const& evals, EigenVectors const& evecs)
+bool PointIsBeta(PointType const& physPt,
+                 EigenValues const& evals, EigenVectors const& evecs,
+                 ImageType::Pointer image)
 {
    if (PointIsPlanelike(evals)) {
       cout << "woo hoo, planelike!" << endl;
@@ -161,12 +166,14 @@ bool PointIsBeta(EigenValues const& evals, EigenVectors const& evecs)
       cout << "... not planelike" << endl;
    }
 
+   // in physical units; &&& these values are utter nonsense.
+   const double sheetMin = 0.1, sheetMax = 0.8;
 
    // &&& This is where things get tougher
 //    double sheetMin, sheetMax;
 //    double t1 = v1.GetNorm(), t2 = v2.GetNorm(), t3 = v3.GetNorm();
 // cout << "vx: " << v1 << "; " << v2 << "; " << v3 << endl;
-   bool isBeta = false; //MeetsBetaCondition(sheetMin, sheetMax, t1, t2, t3);
+   bool isBeta = MeetsBetaCondition(physPt, evals, evecs, image, sheetMin, sheetMax);
 
    return isBeta;
 }
@@ -186,24 +193,6 @@ bool PointIsPlanelike(EigenValues const& evals)
    bool planelike = p1 > p2 and p1 > p3;
 
    return planelike;
-}
-
-
-// Used to classify the seeds
-bool MeetsBetaCondition(double sheetMin, double sheetMax,
-                        double t1, double t2, double t3)
-{
-cout << sheetMin << " <= " << t1 << " <= " << sheetMax << endl;
-cout << "t1: " << t1 << "; t2: " << t2 << "; t3: " << t3 << endl;
-cout << "std::max(t1 / t2, t1 / t3) < std::min(t2 / t3, t3 / t2)"
-     << std::max(t1 / t2, t1 / t3) << " "
-     << std::min(t2 / t3, t3 / t2) << endl;
-   bool isBeta =
-      sheetMin <= t1 and t1 <= sheetMax and
-      std::max(t1 / t2, t1 / t3) < std::min(t2 / t3, t3 / t2);
-
-cout << "Is beta? " << isBeta << endl;
-   return isBeta;
 }
 
 
@@ -238,3 +227,67 @@ void new_pt(PointType const& pt,
 // We can't, as long as we calculate via a long chain of moves, which
 // we must. We can resample wrt to the original image which is good, but
 // location, we can't avoid multiple offsets.
+
+
+// initial, and drop-off - doesn't ITK have such a thing already?
+double length_of_density(ImageType::Pointer image,
+                         PointType const& initial_pt,
+                         VectorType const& direction,
+                         double max_dist, double increment)
+{
+   InterpolatorType::Pointer interpolator = InterpolatorType::New();
+   interpolator->SetInputImage(image);
+   interpolator->SetSplineOrder(3);
+   InterpolatorType::ContinuousIndexType cindex;
+   cindex.CastFrom(initial_pt);
+   double initial_density = interpolator->EvaluateAtContinuousIndex(cindex);
+
+   double density = initial_density;
+   VectorType vec = direction;
+
+   // forwards
+   double fwd_length = 0.0;
+   for (int times = 1; initial_density * 0.5 <= density; ++times) {
+      cindex.CastFrom(initial_pt + times * increment * direction);
+      density = interpolator->EvaluateAtContinuousIndex(cindex);
+      fwd_length = times * increment;
+   }
+
+   // backwards
+   double bkwd_length = 0.0;
+   for (int times = -1; initial_density * 0.5 <= density; --times) {
+      cindex.CastFrom(initial_pt + times * increment * direction);
+      density = interpolator->EvaluateAtContinuousIndex(cindex);
+      bkwd_length = times * increment;
+   }
+
+   double length_of_comparable_density = fwd_length + -bkwd_length;
+
+   return length_of_comparable_density;
+}
+
+
+// Used to classify the seeds
+bool MeetsBetaCondition(PointType const& physPt,
+                        EigenValues const& /* evals */, EigenVectors const& evec,
+                        ImageType::Pointer image,
+                        double sheetMin, double sheetMax)
+{
+   // &&& arbitrary!
+   double increment = 0.1;
+   double t1 = length_of_density(image, physPt, evec[0], sheetMax, increment);
+   double t2 = length_of_density(image, physPt, evec[1], sheetMax, increment);
+   double t3 = length_of_density(image, physPt, evec[2], sheetMax, increment);
+
+cout << sheetMin << " <= " << t1 << " <= " << sheetMax << endl;
+cout << "t1: " << t1 << "; t2: " << t2 << "; t3: " << t3 << endl;
+cout << "std::max(t1 / t2, t1 / t3) < std::min(t2 / t3, t3 / t2)"
+     << std::max(t1 / t2, t1 / t3) << " "
+     << std::min(t2 / t3, t3 / t2) << endl;
+   bool isBeta =
+      sheetMin <= t1 and t1 <= sheetMax and
+      std::max(t1 / t2, t1 / t3) < std::min(t2 / t3, t3 / t2);
+
+cout << "Is beta? " << isBeta << endl;
+   return isBeta;
+}
