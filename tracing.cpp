@@ -3,6 +3,8 @@
 #include "geometry.h"
 #include "point.h"
 #include "tracing.h"
+#include "settings.h"
+#include "instrument.h"
 
 #include <vector>
 #include <queue>
@@ -42,18 +44,34 @@ cout << "image origin: " << image->GetOrigin() << endl;
    for (Seeds::const_iterator it = seeds.begin(), end = seeds.end();
         it != end; ++it) {
       PointType physPt;
+
+// ImageType::IndexType index = *it;
+// for (int i = -1; i <= 1; ++i) {
+// for (int j = -1; j <= 1; ++j) {
+// for (int k = -1; k <= 1; ++k) {
+// //if (i == 0 and j == 0 and k == 0) continue;
+// ImageType::IndexType t = index;
+// t[0] += i;
+// t[1] += j;
+// t[2] += k;
+// double dens = image->GetPixel(t);
+// cout << dens << '\t'
+//      << "i: " << i << "; "
+//      << "j: " << j << "; "
+//      << "k: " << k << "; "
+//      << endl;
+// }
+// }
+// }
+
       image->TransformIndexToPhysicalPoint(*it, physPt);
       possible_beta_points.push(physPt);
 //cout << __FILE__ << " seed: " << *it
 //     << "; physPt: " << physPt << endl;
    }
 
-   unsigned nthVisited;
-   unsigned n_far_enough_away = 0;
-   unsigned n_beta = 0;
-   for (nthVisited = 0; not possible_beta_points.empty();
-        ++nthVisited) {
-      cout << nthVisited << "th visited" << endl;
+   for (; not possible_beta_points.empty(); ) {
+      ++n_total_visited;
       PointType physPt = possible_beta_points.front();
       possible_beta_points.pop();
 
@@ -66,12 +84,12 @@ cout << "image origin: " << image->GetOrigin() << endl;
          CalcEigenStuff(image, physPt, evals, evecs);
 
          if (PointIsBeta(physPt, evals, evecs, image)) {
-            ++n_beta;
+            ++n_beta_nodes;
             // we don't need the machinery anymore, the point is enough
             PointType loCell, hiCell;
 
             // point is at center of cell
-            for (unsigned i = 0; i < 3; ++i) {
+            for (unsigned i = 0; i < Dimension; ++i) {
                // yes inefficient but looks cleaner
                ImageType::SpacingType spacing = image->GetSpacing();
                loCell[i] = physPt[i] - spacing[i] / 2.0;
@@ -83,7 +101,6 @@ cout << "image origin: " << image->GetOrigin() << endl;
 
             Points intersections;
             planes_intersection_with_box(normal, physPt,
-                                         // &&& ack, cell stuff, here
                                          loCell, hiCell,
                                          intersections);
             Polygon polygon;
@@ -99,10 +116,6 @@ cout << "image origin: " << image->GetOrigin() << endl;
          }
       }
    }
-cout << nthVisited << " total visited" << "\n"
-     << n_far_enough_away << " far enough away" << "\n"
-     << n_beta << " beta" << "\n"
-     << endl;
 }
 
 void CalcEigenStuff(Image::Pointer fullImage, PointType const& physPt,
@@ -111,7 +124,7 @@ void CalcEigenStuff(Image::Pointer fullImage, PointType const& physPt,
    VectorType physShift;
    pt_shift(physPt, fullImage->GetSpacing(), physShift);
 
-   // &&& arbitrary. I believe this is cell units for the time being
+   // &&& Wants to be WindowSize, in physical units (arg!)
    int region_width = 7;
 
    // pipeline does resampling
@@ -137,12 +150,12 @@ void CalcEigenStuff(Image::Pointer fullImage, PointType const& physPt,
 EigenVectorImageType::RegionType eigDefinedRegion = evecImage->GetBufferedRegion();
 
 ImageType::RegionType snipDefinedRegion = fullImage->GetBufferedRegion();
-cout << __FILE__ << "\nsnip defined region: \n" << endl;
+//cout << __FILE__ << "\nsnip defined region: \n" << endl;
 //snipDefinedRegion.Print(cout);
 
 // &&& grrr - defined region is at 0,0,0, [5,5,5]
 // and index is way in the middle somewhere.
-cout << __FILE__ << "\neig defined region: \n" << endl;
+//cout << __FILE__ << "\neig defined region: \n" << endl;
 //eigDefinedRegion.Print(cout);
    for (unsigned i = 0; i < Dimension; ++i) {
       outEVecs[i] = evecImage->GetPixel(index)[i];
@@ -157,23 +170,19 @@ bool PointIsBeta(PointType const& physPt,
                  EigenValues const& evals, EigenVectors const& evecs,
                  ImageType::Pointer image)
 {
+   bool isBeta = false;
    if (PointIsPlanelike(evals)) {
-      cout << "woo hoo, planelike!" << endl;
-      // &&& just for the encouraging effect
-      return true;
+++n_planelike_nodes;
+      isBeta = MeetsBetaCondition(physPt, evals, evecs, image, BetaMin, BetaMax);
    }
    else {
-      cout << "... not planelike" << endl;
+++n_non_planelike_nodes;
    }
-
-   // in physical units; &&& these values are utter nonsense.
-   const double sheetMin = 0.1, sheetMax = 0.8;
 
    // &&& This is where things get tougher
 //    double sheetMin, sheetMax;
 //    double t1 = v1.GetNorm(), t2 = v2.GetNorm(), t3 = v3.GetNorm();
 // cout << "vx: " << v1 << "; " << v2 << "; " << v3 << endl;
-   bool isBeta = MeetsBetaCondition(physPt, evals, evecs, image, sheetMin, sheetMax);
 
    return isBeta;
 }
@@ -230,38 +239,79 @@ void new_pt(PointType const& pt,
 
 
 // initial, and drop-off - doesn't ITK have such a thing already?
-double length_of_density(ImageType::Pointer image,
+double length_of_density(InterpolatorType::Pointer interpolator,
                          PointType const& initial_pt,
+                         double initial_density,
                          VectorType const& direction,
                          double max_dist, double increment)
 {
-   InterpolatorType::Pointer interpolator = InterpolatorType::New();
-   interpolator->SetInputImage(image);
-   interpolator->SetSplineOrder(3);
-   InterpolatorType::ContinuousIndexType cindex;
-   cindex.CastFrom(initial_pt);
-   double initial_density = interpolator->EvaluateAtContinuousIndex(cindex);
 
-   double density = initial_density;
+// /big/common/software/insight-3.6/InsightToolkit-3.6.0/Testing/Code/BasicFilters/itkBSplineInterpolateImageFunctionTest.cxx
+
+//cout << "image size: " << image->GetBufferedRegion().GetSize() << endl;
+//interpolator->DebugOn();
+//   InterpolatorType::ContinuousIndexType cindex;
+//   cindex.CastFrom(initial_pt);
+// double pt_density = interpolator->Evaluate(initial_pt);
+// ImageType::IndexType index;
+// image->TransformPhysicalPointToIndex(initial_pt, index);
+// double index_density = interpolator->EvaluateAtIndex(index);
+// cout << "index_density: " << index_density
+//      << "pt_density: " << pt_density
+//      << endl;
+
+// double dens = image->GetPixel(index);
+// cout << "true dens: " << dens << endl;
+
+   // useless; looks to be just a floating point version of the index
+//   itk::ContinuousIndex<double, Dimension> icindex;
+//   bool isWithin = image->TransformPhysicalPointToContinuousIndex(initial_pt, icindex);
+// cout << "initial_pt: " << initial_pt << "; "
+//      << "initial_density: " << initial_density << "; "
+//     << "cindex: " << cindex << "; "
+//     << "icindex: " << icindex << "; "
+//     << "dir: " << direction << "; "
+//     << "within: " << isWithin << "; "
+//     << endl;
+
+   double density;
    VectorType vec = direction;
+
+
+if (initial_density < ScrubDensity) {
+//cout << "low density? " << initial_density << " < " << ScrubDensity << endl;
+++n_lo_density_centers;
+return 0.0;
+}
+else {
+//cout << "ok density " << initial_density << endl;
+++n_ok_density_centers;
+}
 
    // forwards
    double fwd_length = 0.0;
-   for (int times = 1; initial_density * 0.5 <= density; ++times) {
-      cindex.CastFrom(initial_pt + times * increment * direction);
-      density = interpolator->EvaluateAtContinuousIndex(cindex);
+   density = initial_density;
+   for (int times = 1; initial_density * SeedFalloff <= density; ++times) {
+      PointType test_pt = initial_pt + times * increment * direction;
+      density = interpolator->Evaluate(test_pt);
       fwd_length = times * increment;
    }
 
    // backwards
    double bkwd_length = 0.0;
-   for (int times = -1; initial_density * 0.5 <= density; --times) {
-      cindex.CastFrom(initial_pt + times * increment * direction);
-      density = interpolator->EvaluateAtContinuousIndex(cindex);
+   density = initial_density;
+   for (int times = -1; initial_density * SeedFalloff <= density; --times) {
+      PointType test_pt = initial_pt + times * increment * direction;
+      density = interpolator->Evaluate(test_pt);
       bkwd_length = times * increment;
    }
 
    double length_of_comparable_density = fwd_length + -bkwd_length;
+
+if (0 < length_of_comparable_density) {
+cout << "non-zero length: " << length_of_comparable_density << endl;
+++n_non_zero_lengths;
+}
 
    return length_of_comparable_density;
 }
@@ -273,21 +323,38 @@ bool MeetsBetaCondition(PointType const& physPt,
                         ImageType::Pointer image,
                         double sheetMin, double sheetMax)
 {
-   // &&& arbitrary!
-   double increment = 0.1;
-   double t1 = length_of_density(image, physPt, evec[0], sheetMax, increment);
-   double t2 = length_of_density(image, physPt, evec[1], sheetMax, increment);
-   double t3 = length_of_density(image, physPt, evec[2], sheetMax, increment);
+   // &&& mebbe arbitrary!
+   double increment = 0.125 * image->GetSpacing()[0];
+//cout << "increment: " << increment << endl;
 
-cout << sheetMin << " <= " << t1 << " <= " << sheetMax << endl;
+   InterpolatorType::Pointer interpolator = InterpolatorType::New();
+
+#if GABBLE_INTERPOLATOR_IS_SPLINE
+//cout << "yep it's spline, order: " << GabbleSplineOrder << endl;
+   // NOTE: order must come before image
+   interpolator->SetSplineOrder(GabbleSplineOrder);
+#endif
+   interpolator->SetInputImage(image);
+   double initial_density = interpolator->Evaluate(physPt);
+
+   double t1 = length_of_density(interpolator, physPt, initial_density, evec[0], sheetMax, increment);
+   double t2 = length_of_density(interpolator, physPt, initial_density, evec[1], sheetMax, increment);
+   double t3 = length_of_density(interpolator, physPt, initial_density, evec[2], sheetMax, increment);
+
+cout << sheetMin << " <= " << t1 << " <= " << sheetMax << " ?" << endl;
 cout << "t1: " << t1 << "; t2: " << t2 << "; t3: " << t3 << endl;
-cout << "std::max(t1 / t2, t1 / t3) < std::min(t2 / t3, t3 / t2)"
-     << std::max(t1 / t2, t1 / t3) << " "
+cout << "std::max(t1 / t2, t1 / t3) < std::min(t2 / t3, t3 / t2)\n"
+     << "\t" << std::max(t1 / t2, t1 / t3) << "\t\t"
      << std::min(t2 / t3, t3 / t2) << endl;
    bool isBeta =
       sheetMin <= t1 and t1 <= sheetMax and
       std::max(t1 / t2, t1 / t3) < std::min(t2 / t3, t3 / t2);
 
-cout << "Is beta? " << isBeta << endl;
+if (isBeta) {
+cout << "ACTUAL BETA" << endl;
+}
+else {
+cout << "failed beta" << endl;
+}
    return isBeta;
 }

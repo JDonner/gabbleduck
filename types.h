@@ -11,12 +11,15 @@
 #include <itkCastImageFilter.h>
 #include <itkResampleImageFilter.h>
 #include <itkBSplineInterpolateImageFunction.h>
+#include <itkContinuousIndex.h>
 
 //#include <itkMesh.h>
 //#include <itkPolygonCell.h>
 
 #include "PixelAccessors.h"
 #include "jgdTotalEigenImageFilter.h"
+
+#include "settings.h"
 
 
 typedef double                                        InputPixelType;
@@ -102,7 +105,12 @@ typedef  itk::CastImageFilter<
    EValueImageAdaptorType, EachEigenValueImageType>  EValueCastImageFilterType;
 
 typedef  itk::ResampleImageFilter<ImageType, ImageType, double> ResampleFilterType;
+
+#if defined(GABBLE_INTERPOLATOR_IS_SPLINE)
 typedef  itk::BSplineInterpolateImageFunction<ImageType> InterpolatorType;
+#elif defined(GABBLE_INTERPOLATOR_IS_LINEAR)
+// &&& ... a linear interpolator
+#endif //
 
 ///////////////////////////////////////////////////////////////////
 // EigenVector

@@ -1,3 +1,4 @@
+#include "settings.h"
 #include "pipeline.h"
 #include "geometry.h"
 
@@ -27,9 +28,9 @@ void BetaPipeline::set_up_resampler(ImageType::Pointer fullImage,
    * default Identity transform. */
    VectorType offset = transform_shift(physCenter, fullImage->GetSpacing());
 
-cout << "physCenter(phys): " << physCenter
-     << "; spacing(phys): " << fullImage->GetSpacing()
-     << "; offset: " << offset << endl;
+// cout << "physCenter(phys): " << physCenter
+//      << "; spacing(phys): " << fullImage->GetSpacing()
+//      << "; offset: " << offset << endl;
 
    translation_ = TranslationTransform::New();
    translation_->SetOffset(offset);
@@ -104,7 +105,7 @@ BetaPipeline::BetaPipeline(ImageType::Pointer fullImage,
    hessian_ = HessianFilterType::New();
    // 1.0 is default sigma value. Units are image's physical units
    // (see itkGaussianDerivativeImageFunction, which all the rest use).
-   hessian_->SetSigma(1.0);
+   hessian_->SetSigma(GaussianSupport);
    hessian_->SetInput(resampler_->GetOutput());
 
    // file:///big/common/software/insight/install/html/classitk_1_1SymmetricEigenAnalysisImageFilter.html

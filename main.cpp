@@ -3,8 +3,11 @@
 #include "tracing.h"
 #include "local-maxima.h"
 #include "node.h"
+#include "settings.h"
+#include "instrument.h"
 
 #include <iostream>
+#include <iomanip>
 
 typedef itk::ImageFileReader< InputImage > VolumeReaderType;
 
@@ -15,11 +18,13 @@ int main(int argc, char** argv)
 {
    --argc, ++argv;
 
+   cout << fixed << setprecision(3);
+
    if (argc < 1) {
       cout << "pass in the name of a file, to get the eigenvalue images" << endl;
    }
 
-   double threshhold = 0.3;
+   double threshhold = ScrubDensity;
    if (2 <= argc) {
       threshhold = atof(argv[1]);
    }
@@ -42,6 +47,8 @@ cout << seeds.size() << " seed regions" << endl;
    FindBetaNodes(image, seeds, betaNodes);
 
 cout << "found: " << betaNodes.size() << " beta nodes" << endl;
+
+dump_instrument_vars();
 
    return 0;
 }

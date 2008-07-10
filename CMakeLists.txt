@@ -18,6 +18,7 @@ INCLUDE_DIRECTORIES(
 )
 
 SET(SOURCES
+      instrument.cpp
       geometry.cpp
       local-maxima.cpp
       main.cpp
@@ -28,7 +29,7 @@ SET(SOURCES
 
 ADD_EXECUTABLE(gabble ${SOURCES})
 
-SET_SOURCE_FILES_PROPERTIES(${SOURCES} PROPERTIES COMPILE_FLAGS "-march=athlon-xp -Wall -Wextra -fmessage-length=60 -g")
+SET_SOURCE_FILES_PROPERTIES(${SOURCES} PROPERTIES COMPILE_FLAGS "-g -march=athlon-xp -Wall -W -Wextra -fmessage-length=60")
 
 # Huh - I guess it knows internally where to find the ITK libs
 TARGET_LINK_LIBRARIES(
