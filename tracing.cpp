@@ -5,6 +5,8 @@
 #include "tracing.h"
 #include "settings.h"
 #include "instrument.h"
+// for image snapshotting
+#include "main.h"
 
 #include <vector>
 #include <queue>
@@ -85,6 +87,7 @@ cout << "image origin: " << image->GetOrigin() << endl;
 
          if (PointIsBeta(physPt, evals, evecs, image)) {
             ++n_beta_nodes;
+
             // we don't need the machinery anymore, the point is enough
             PointType loCell, hiCell;
 
@@ -113,6 +116,8 @@ cout << "image origin: " << image->GetOrigin() << endl;
                possible_beta_points.push(*it);
             }
             outNodes.push_back(new Node(physPt, polygon));
+
+maybe_snap_image(n_beta_nodes, outNodes);
          }
       }
    }
@@ -323,8 +328,7 @@ bool MeetsBetaCondition(PointType const& physPt,
                         ImageType::Pointer image,
                         double sheetMin, double sheetMax)
 {
-   // &&& mebbe arbitrary!
-   double increment = 0.125 * image->GetSpacing()[0];
+   double increment = LineIncrement * image->GetSpacing()[0];
 //cout << "increment: " << increment << endl;
 
    InterpolatorType::Pointer interpolator = InterpolatorType::New();

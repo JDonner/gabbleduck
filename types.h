@@ -139,6 +139,7 @@ typedef  itk::CastImageFilter<
 // This same types works for all images
 typedef itk::Index<Dimension> IndexType;
 
+
 // typedef  itk::ImageFileWriter<EValueCastImageFilterType::OutputImageType> WriterType;
 
 // typedef  itk::ImageFileWriter<EValueCastImageFilterType::OutputImageType> EigenValueWriterType;

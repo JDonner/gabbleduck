@@ -34,7 +34,19 @@ const double ScrubDensity = 0.3;
 // This is absolutely arbitrary and wants to be experimental.
 const double SeedFalloff = 0.7;
 
+// Or, a binary search?
+const double LineIncrement = 0.25;
+
 // &&& don't know what this is. Should be BetaThickness, though, apparently.
 const double GaussianSupport = BetaThickness;
+
+
+// Not a physical constant; maybe belongs in instrument...
+const unsigned SnapshotIntervalBase = 500;
+const unsigned SnapshotIntervalPower = 2;
+const double FauxBetaPointDensity = 0.1;
+const unsigned ImageZoom = 4;
+
+const double RequiredNewPointSeparation = 0.5;
 
 #endif // CONSTANTS_H

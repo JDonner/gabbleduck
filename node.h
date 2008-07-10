@@ -34,7 +34,6 @@ private:
    Nodes children_;
 
    static Nodes s_all_beta_points;
-   static double s_min_allowed_interpoint_dist;
 };
 
 typedef std::vector<Node*> Nodes;
