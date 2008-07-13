@@ -234,7 +234,8 @@ void collect_seed_regions(BeatenImage::Pointer beatenImage,
 }
 
 
-void individual_seeds_from_regions(SeedRegionSet const& seedRegions, Seeds& outSeeds)
+void individual_seeds_from_regions(SeedRegionSet const& seedRegions,
+                                   Seeds& outSeeds)
 {
    for (SeedRegionSet::const_iterator it = seedRegions.begin(), end = seedRegions.end();
         it != end; ++it) {

@@ -13,7 +13,7 @@ enum GabbleSampleInterpolator {
    GABBLE_INTERPOLATOR_SPLINE_5
 };
 
-const unsigned GabbleSplineOrder = 3;
+const unsigned GabbleSplineOrder = 1;
 
 #define GABBLE_INTERPOLATOR GABBLE_INTERPOLATOR_SPLINE_3
 #  define GABBLE_INTERPOLATOR_IS_SPLINE 1
@@ -38,5 +38,8 @@ const unsigned GabbleSplineOrder = 3;
 // #else
 // #  define GABBLE_INTERPOLATOR_IS_LINEAR 1
 // #endif
+
+//#define WANT_GRID_BOUNDS_CHECKING 0
+#define WANT_GRID_BOUNDS_CHECKING 1
 
 #endif // SETTINGS_H

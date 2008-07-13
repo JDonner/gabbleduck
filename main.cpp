@@ -11,6 +11,7 @@
 #include <sstream>
 #include <iomanip>
 #include <assert.h>
+#include <stdlib.h>
 
 
 typedef itk::ImageFileReader<InputImage> VolumeReaderType;
@@ -100,6 +101,11 @@ void maybe_snap_image(unsigned n_betas, Nodes const& nodes)
          std::cout << err << std::endl;
          assert(false);
       }
+
+      // If <FinalSnapshot> == 0 indicates infinite
+      if (FinalSnapshot and FinalSnapshot <= s_iSeries) {
+         ::exit(EXIT_SUCCESS);
+      }
    }
 }
 
@@ -127,20 +133,38 @@ int main(int argc, char** argv)
 
    ImageType::Pointer image = reader->GetOutput();
 
+   Seeds allSeeds;
+   find_seeds(image, threshhold, allSeeds);
 
-   Seeds seeds;
-   find_seeds(image, threshhold, seeds);
+   // find maximum seed density
+   PixelType maxSeedDensity = -1.0;
+   for (Seeds::const_iterator it = allSeeds.begin(), end = allSeeds.end();
+        it != end; ++it) {
+      PixelType seedDensity = image->GetPixel(*it);
+      if (maxSeedDensity < seedDensity) {
+         maxSeedDensity = seedDensity;
+      }
+   }
+
+   Seeds trueMaxSeeds;
+   for (Seeds::const_iterator it = allSeeds.begin(), end = allSeeds.end();
+        it != end; ++it) {
+      if (SeedDensityWorthinessThreshold * maxSeedDensity < image->GetPixel(*it)) {
+         trueMaxSeeds.push_back(*it);
+      }
+   }
 
 //IndexType oneTestSeed = seeds[0];
 //seeds.clear();
 //seeds.push_back(oneTestSeed);
 
-cout << seeds.size() << " seed regions" << endl;
+cout << "safe seeds: " << trueMaxSeeds.size()
+     << "; all seeds: " << allSeeds.size() << endl;
 
    create_snapshot_image(extract_basename(fname), image);
 
    Nodes betaNodes;
-   FindBetaNodes(image, seeds, betaNodes);
+   FindBetaNodes(image, trueMaxSeeds, betaNodes);
 
 cout << "found: " << betaNodes.size() << " beta nodes" << endl;
 

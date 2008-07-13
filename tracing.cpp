@@ -5,6 +5,7 @@
 #include "tracing.h"
 #include "settings.h"
 #include "instrument.h"
+#include "spatial-hash.h"
 // for image snapshotting
 #include "main.h"
 
@@ -14,6 +15,8 @@
 using namespace std;
 
 typedef queue<PointType> PointQueue;
+
+
 
 void CalcEigenStuff(Image::Pointer fullImage, PointType const& physPt,
                     EigenValues& outEVals, EigenVectors& outEVecs);
@@ -32,12 +35,30 @@ void new_pt(PointType const& pt, Image::SpacingType const& spacing,
 void new_pt_index(PointType const& pt, Image::SpacingType const& spacing,
                   ImageType::IndexType& newPt);
 
+
+static SpatialHash s_hash;
+
 // Arg, I think this wants to be an object
 // non-recursive version
 void FindBetaNodes(ImageType::Pointer image,
                    Seeds const& seeds,
                    Nodes& outNodes)
 {
+   ImageType::SizeType size = image->GetLargestPossibleRegion().GetSize();
+   ImageType::SpacingType spacing = image->GetSpacing();
+
+   unsigned nPixels[Dimension];
+   double physSpacing[Dimension];
+   ImageType::PointType image_origin = image->GetOrigin();
+   // ImageType::SizeType's indexes are fastest-moving first, in ours, they're last. So, we reverse them.
+   for (unsigned i = 0; i < Dimension; ++i) {
+      nPixels[i] = size[Dimension - 1 - i];
+      // I assume 'fastest-moving' == 0 here, too...
+      physSpacing[i] = spacing[Dimension - 1 - i];
+   }
+
+   s_hash.init(image_origin, RequiredNewPointSeparation, nPixels, physSpacing);
+
    PointQueue possible_beta_points;
 
 cout << "image origin: " << image->GetOrigin() << endl;
@@ -77,7 +98,11 @@ cout << "image origin: " << image->GetOrigin() << endl;
       PointType physPt = possible_beta_points.front();
       possible_beta_points.pop();
 
-      if (Node::IsFarEnoughAwayFromOthers(physPt)) {
+      bool bFarEnoughAway = not s_hash.isWithinDistanceOfAnything(
+         physPt, RequiredNewPointSeparation);
+
+      if (bFarEnoughAway) {
+         s_hash.addPt(physPt);
          ++n_far_enough_away;
 
          EigenValues evals;
@@ -296,7 +321,7 @@ else {
    // forwards
    double fwd_length = 0.0;
    density = initial_density;
-   for (int times = 1; initial_density * SeedFalloff <= density; ++times) {
+   for (int times = 1; initial_density * SeedDensityFalloff <= density; ++times) {
       PointType test_pt = initial_pt + times * increment * direction;
       density = interpolator->Evaluate(test_pt);
       fwd_length = times * increment;
@@ -305,7 +330,7 @@ else {
    // backwards
    double bkwd_length = 0.0;
    density = initial_density;
-   for (int times = -1; initial_density * SeedFalloff <= density; --times) {
+   for (int times = -1; initial_density * SeedDensityFalloff <= density; --times) {
       PointType test_pt = initial_pt + times * increment * direction;
       density = interpolator->Evaluate(test_pt);
       bkwd_length = times * increment;

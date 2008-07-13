@@ -33,7 +33,7 @@ private:
    typedef std::vector<Node*> Nodes;
    Nodes children_;
 
-   static Nodes s_all_beta_points;
+//   static Nodes s_all_beta_points;
 };
 
 typedef std::vector<Node*> Nodes;
