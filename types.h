@@ -11,7 +11,7 @@
 #include <itkCastImageFilter.h>
 #include <itkResampleImageFilter.h>
 #include <itkBSplineInterpolateImageFunction.h>
-#include <itkContinuousIndex.h>
+#include <itkLinearInterpolateImageFunction.h>
 
 //#include <itkMesh.h>
 //#include <itkPolygonCell.h>
@@ -106,11 +106,13 @@ typedef  itk::CastImageFilter<
 
 typedef  itk::ResampleImageFilter<ImageType, ImageType, double> ResampleFilterType;
 
-#if defined(GABBLE_INTERPOLATOR_IS_SPLINE)
-typedef  itk::BSplineInterpolateImageFunction<ImageType> InterpolatorType;
+#if defined(GABBLE_INTERPOLATOR_IS_SPLINE) && (GABBLE_INTERPOLATOR_IS_SPLINE == 1)
+  typedef  itk::BSplineInterpolateImageFunction<ImageType, PixelType> InterpolatorType;
 #elif defined(GABBLE_INTERPOLATOR_IS_LINEAR)
-// &&& ... a linear interpolator
-#endif //
+  typedef itk::LinearInterpolateImageFunction<ImageType, PixelType> InterpolatorType;
+#else
+#  warning "no interpolator defined!"
+#endif
 
 ///////////////////////////////////////////////////////////////////
 // EigenVector
@@ -121,7 +123,7 @@ typedef  itk::BSplineInterpolateImageFunction<ImageType> InterpolatorType;
 
 // Reads off the eigenvectors
 typedef  itk::ImageAdaptor<EigenVectorImageType,
-                            EigenvectorAccessor<EigenVectorMatrixType, EigenVector> > EigenVectorImageAdaptorType;
+                           EigenvectorAccessor<EigenVectorMatrixType, EigenVector> > EigenVectorImageAdaptorType;
 
 // Each eigenvector is a 3D mesh? We have 3 of these, one each per eigenvector
 // (which you'd never guess by the name).

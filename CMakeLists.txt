@@ -18,6 +18,7 @@ INCLUDE_DIRECTORIES(
 )
 
 SET(SOURCES
+      constants.cpp
       instrument.cpp
       geometry.cpp
       local-maxima.cpp
@@ -32,9 +33,14 @@ ADD_EXECUTABLE(gabble ${SOURCES})
 
 SET_SOURCE_FILES_PROPERTIES(${SOURCES} PROPERTIES COMPILE_FLAGS "-g -pg -Wall -W -march=athlon-xp -fmessage-length=60")
 
+# -lc_p brings in profiled C libs
+#SET(LINK_FLAGS -pg -lc_p)
+SET_TARGET_PROPERTIES(gabble PROPERTIES LINK_FLAGS "-pg")
+
 # Huh - I guess it knows internally where to find the ITK libs
 TARGET_LINK_LIBRARIES(
         gabble
+        boost_program_options
         ITKCommon
         ITKIO
         ITKBasicFilters

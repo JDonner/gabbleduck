@@ -12,7 +12,8 @@ unsigned n_far_enough_away = 0;
 unsigned n_planelike_nodes = 0;
 unsigned n_non_planelike_nodes = 0;
 unsigned n_beta_nodes = 0;
-
+unsigned n_total_hashed_pts = 0;
+unsigned n_rejected_as_too_close = 0;
 
 void dump_instrument_vars()
 {
@@ -27,4 +28,6 @@ void dump_instrument_vars()
    cout << "n_planelike_nodes: " << n_planelike_nodes << endl;
    cout << "n_non_planelike_nodes: " << n_non_planelike_nodes << endl;
    cout << "n_beta_nodes: " << n_beta_nodes << endl;
+   cout << "n_total_hashed_pts: " << n_total_hashed_pts << endl;
+   cout << "n_rejected_as_too_close: " << n_rejected_as_too_close << endl;
 }

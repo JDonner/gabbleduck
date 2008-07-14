@@ -11,6 +11,9 @@ extern unsigned n_planelike_nodes;
 extern unsigned n_non_planelike_nodes;
 extern unsigned n_beta_nodes;
 
+extern unsigned n_total_hashed_pts;
+extern unsigned n_rejected_as_too_close;
+
 extern void dump_instrument_vars();
 
 #endif // INSTRUMENT_H

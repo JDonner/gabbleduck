@@ -1,4 +1,5 @@
 #include "spatial-hash.h"
+#include "instrument.h"
 #include <math.h>
 #include <assert.h>
 
@@ -38,14 +39,20 @@ void SpatialHash::addPt(PointType const& physPt)
 {
    Pts* pts = this->pts_at(physPt);
    pts->push_back(physPt);
+++n_total_hashed_pts;
 }
 
 bool SpatialHash::isWithinDistanceOfAnything(PointType const& physPt,
                                              double distance)
 {
+   // (save taking a lot of square roots)
+   double d2 = distance * distance;
+
    Index idx = index_of(physPt);
    Cells nbrs;
    get_neighbors(idx, nbrs);
+   // 27 = we include the center point itself, too.
+   assert(nbrs.size() <= 27);
    for (Cells::const_iterator itCells = nbrs.begin(), endCells = nbrs.end();
         itCells != endCells; ++itCells) {
       Pts const* pts = *itCells;
@@ -53,9 +60,9 @@ bool SpatialHash::isWithinDistanceOfAnything(PointType const& physPt,
          return false;
       }
       else {
-         for (Pts::const_iterator itPts = pts->begin(), endPts = (*itCells)->end();
+         for (Pts::const_iterator itPts = pts->begin(), endPts = pts->end();
               itPts != endPts; ++itPts) {
-            if ((*itPts).EuclideanDistanceTo<double>(physPt) < distance) {
+            if (itPts->SquaredEuclideanDistanceTo<double>(physPt) < d2) {
                return true;
             }
          }

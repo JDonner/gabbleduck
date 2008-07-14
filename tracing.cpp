@@ -68,25 +68,6 @@ cout << "image origin: " << image->GetOrigin() << endl;
         it != end; ++it) {
       PointType physPt;
 
-// ImageType::IndexType index = *it;
-// for (int i = -1; i <= 1; ++i) {
-// for (int j = -1; j <= 1; ++j) {
-// for (int k = -1; k <= 1; ++k) {
-// //if (i == 0 and j == 0 and k == 0) continue;
-// ImageType::IndexType t = index;
-// t[0] += i;
-// t[1] += j;
-// t[2] += k;
-// double dens = image->GetPixel(t);
-// cout << dens << '\t'
-//      << "i: " << i << "; "
-//      << "j: " << j << "; "
-//      << "k: " << k << "; "
-//      << endl;
-// }
-// }
-// }
-
       image->TransformIndexToPhysicalPoint(*it, physPt);
       possible_beta_points.push(physPt);
 //cout << __FILE__ << " seed: " << *it
@@ -98,11 +79,13 @@ cout << "image origin: " << image->GetOrigin() << endl;
       PointType physPt = possible_beta_points.front();
       possible_beta_points.pop();
 
-      bool bFarEnoughAway = not s_hash.isWithinDistanceOfAnything(
+      bool bTooNearAnotherPoint = s_hash.isWithinDistanceOfAnything(
          physPt, RequiredNewPointSeparation);
 
-      if (bFarEnoughAway) {
-         s_hash.addPt(physPt);
+      if (bTooNearAnotherPoint) {
+         ++n_rejected_as_too_close;
+      }
+      else {
          ++n_far_enough_away;
 
          EigenValues evals;
@@ -112,6 +95,7 @@ cout << "image origin: " << image->GetOrigin() << endl;
 
          if (PointIsBeta(physPt, evals, evecs, image)) {
             ++n_beta_nodes;
+            s_hash.addPt(physPt);
 
             // we don't need the machinery anymore, the point is enough
             PointType loCell, hiCell;
@@ -338,10 +322,10 @@ else {
 
    double length_of_comparable_density = fwd_length + -bkwd_length;
 
-if (0 < length_of_comparable_density) {
-cout << "non-zero length: " << length_of_comparable_density << endl;
-++n_non_zero_lengths;
-}
+// if (0 < length_of_comparable_density) {
+// cout << "non-zero length: " << length_of_comparable_density << endl;
+// ++n_non_zero_lengths;
+// }
 
    return length_of_comparable_density;
 }
@@ -370,20 +354,21 @@ bool MeetsBetaCondition(PointType const& physPt,
    double t2 = length_of_density(interpolator, physPt, initial_density, evec[1], sheetMax, increment);
    double t3 = length_of_density(interpolator, physPt, initial_density, evec[2], sheetMax, increment);
 
-cout << sheetMin << " <= " << t1 << " <= " << sheetMax << " ?" << endl;
-cout << "t1: " << t1 << "; t2: " << t2 << "; t3: " << t3 << endl;
-cout << "std::max(t1 / t2, t1 / t3) < std::min(t2 / t3, t3 / t2)\n"
-     << "\t" << std::max(t1 / t2, t1 / t3) << "\t\t"
-     << std::min(t2 / t3, t3 / t2) << endl;
+// cout << sheetMin << " <= " << t1 << " <= " << sheetMax << " ?" << endl;
+// cout << "t1: " << t1 << "; t2: " << t2 << "; t3: " << t3 << endl;
+// cout << "std::max(t1 / t2, t1 / t3) < std::min(t2 / t3, t3 / t2)\n"
+//      << "\t" << std::max(t1 / t2, t1 / t3) << "\t\t"
+//      << std::min(t2 / t3, t3 / t2) << endl;
+
    bool isBeta =
       sheetMin <= t1 and t1 <= sheetMax and
       std::max(t1 / t2, t1 / t3) < std::min(t2 / t3, t3 / t2);
 
-if (isBeta) {
-cout << "ACTUAL BETA" << endl;
-}
-else {
-cout << "failed beta" << endl;
-}
+// if (isBeta) {
+// cout << "ACTUAL BETA" << endl;
+// }
+// else {
+// cout << "failed beta" << endl;
+// }
    return isBeta;
 }

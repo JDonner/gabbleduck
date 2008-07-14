@@ -11,54 +11,52 @@
 
 
 // &&& Make it a function of the map resolution?
-const double BetaThickness = 5.0;
+extern double BetaThickness;
 
 // &&& unused, but needs to be
 // Should be the size of the feature to be detected, ie, BetaThickness.
-const double WindowSize = BetaThickness;
+extern double WindowSize;
 
 // &&& This 20% is arbitrary
-const double BetaThicknessFlex = 0.2;
+extern double BetaThicknessFlex;
 
-const double BetaMin = BetaThickness * (1.0 - BetaThicknessFlex);
-const double BetaMax = BetaThickness * (1.0 + BetaThicknessFlex);
-
-const double SkeletonMergeThreshold = BetaThickness;
+extern double BetaMin;
+extern double BetaMax;
+extern double SkeletonMergeThreshold;
 
 // Density, below which we don't even bother to check whether it's
 // a local maxima. As good as 0, in other words.
-const double ScrubDensity = 0.3;
+extern double ScrubDensity;
 
 // At what falloff, from a maximum, is it the end of the beta region?
 // We're saying, here, when it reaches half the highest density.
 // This is absolutely arbitrary and wants to be experimental.
-const double SeedDensityFalloff = 0.8;
+extern double SeedDensityFalloff;
 
 // A seed (local maxima)'s density must be at least 80% of the highest
 // seed density
-const double SeedDensityWorthinessThreshold = 0.8;
+extern double SeedDensityWorthinessThreshold;
 
 // Or, a binary search?
-const double LineIncrement = 0.25;
+extern double LineIncrement;
 
 // &&& don't know what this is. Should be BetaThickness, though, apparently.
-const double GaussianSupport = WindowSize;
+extern double GaussianSupport;
 
 
 // Not a physical constant; maybe belongs in instrument...
-const unsigned SnapshotIntervalBase = 500;
-const unsigned SnapshotIntervalPower = 2;
-const double FauxBetaPointDensity = 0.1;
-const unsigned ImageZoom = 4;
+extern unsigned SnapshotIntervalBase;
+extern unsigned SnapshotIntervalPower;
+// Beta points don't have an intensity but we want to use 3D density
+// methods to show them, so this is the density we give them.
+extern double FauxBetaPointDensity;
+extern unsigned ImageZoom;
 
 // Physical coordinates
-const double RequiredNewPointSeparation = 0.5;
+extern double RequiredNewPointSeparation;
 
-// Jing's recommendation on generating images
-// pdb2mrc a.pdb a.mrc res=10 apix=1.0 center
-
-//const MaxPoints = 10000;
-const unsigned FinalSnapshot = 1;
+extern unsigned MaxPoints;
+extern unsigned FinalSnapshot;
 
 /* Things to check / vary:
 
@@ -71,16 +69,9 @@ const unsigned FinalSnapshot = 1;
    get to grips with the formula!
    work on triangularization!
 
-   Get rid of the O(n^2) closeness checking!
-
  */
 
-/*
-   pt[0] (PointType) is x
-   image::SpacingType [0] is x (Guide, p41)
-   origin, [0] == x (probably - Guide, p41)
-
-   spatial grid, x (fastest-moving) == 2
- */
+// Jing's recommendation on generating images
+// pdb2mrc a.pdb a.mrc res=10 apix=1.0 center
 
 #endif // CONSTANTS_H

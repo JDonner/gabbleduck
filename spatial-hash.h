@@ -6,6 +6,7 @@
 #include "point.h"
 
 
+
 struct SpatialHash {
 public:
    // bunch of grouped points; grid cell. Cell /contents/, that is
@@ -64,5 +65,13 @@ private:
    unsigned n_cells_[Dimension];
    Cells cells_;
 };
+
+/*
+   pt[0] (PointType) is x
+   image::SpacingType [0] is x (Guide, p41)
+   origin, [0] == x (probably - Guide, p41)
+
+   spatial grid, x (fastest-moving) == 2
+ */
 
 #endif // SPATIAL_HASH_H
