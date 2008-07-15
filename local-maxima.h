@@ -6,11 +6,9 @@
 
 #include "types.h"
 
-typedef double      InputPixel;
 typedef bool        BeatenPixel;
 typedef BeatenPixel UncollectedPixel;
 
-typedef itk::Image< InputPixel, Dimension >       InputImage;
 typedef itk::Image< BeatenPixel, Dimension >      BeatenImage;
 
 // Seed locations are in pixels
@@ -28,7 +26,7 @@ typedef std::set<IndexType,
 
 typedef std::set<PointSet*> SeedRegionSet;
 
-void find_seeds(InputImage::Pointer image,
+void find_seeds(InputImageType::Pointer image,
                 double threshhold,
                 Seeds& outSeeds);
 

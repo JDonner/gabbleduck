@@ -11,17 +11,17 @@
 #include <assert.h>
 
 
-typedef itk::BinaryThresholdImageFilter< InputImage, BeatenImage > ThresholdFilter;
+typedef itk::BinaryThresholdImageFilter< InputImageType, BeatenImage > ThresholdFilter;
 
 typedef itk::ConstantBoundaryCondition<BeatenImage> BeatenConstantBoundaryCondition;
 typedef itk::NeighborhoodIterator<BeatenImage, BeatenConstantBoundaryCondition> BeatenNit;
 
-typedef itk::ConstantBoundaryCondition<InputImage> InputConstantBoundaryCondition;
+typedef itk::ConstantBoundaryCondition<InputImageType> InputConstantBoundaryCondition;
 // The boundary condition here shouldn't matter (image becomes 0
 // toward the edges) but if it did, we'd want the beyond pixels to
 // be 0).
 typedef itk::ConstNeighborhoodIterator<
-   InputImage, InputConstantBoundaryCondition> InputNit;
+   InputImageType, InputConstantBoundaryCondition> InputNit;
 
 typedef BeatenImage UncollectedImage;
 typedef BeatenNit   UncollectedNit;
@@ -53,7 +53,7 @@ unsigned g_n_snuffed = 0;
 // most, once.  So, ok.
 
 BeatenImage::Pointer
-   threshhold_phase(InputImage::Pointer input, double threshhold)
+   threshhold_phase(InputImageType::Pointer input, double threshhold)
 {
    ThresholdFilter::Pointer thresh = ThresholdFilter::New();
    thresh->SetInput(input);
@@ -70,7 +70,7 @@ cout << "threshhold: " << threshhold << endl;
 }
 
 
-void exploration_phase(InputImage::Pointer inputImage,
+void exploration_phase(InputImageType::Pointer inputImage,
                        BeatenImage::Pointer beatenImage)
 {
    assert(inputImage->GetBufferPointer());
@@ -141,7 +141,7 @@ void fully_explore(InputNit itIn,
 {
 ++g_n_explored;
    unsigned ctr = nNbrs / 2;
-   InputImage::PixelType ctrVal = itIn.GetCenterPixel();
+   InputImageType::PixelType ctrVal = itIn.GetCenterPixel();
    bool need_tie_pass = false;
    bool killing_ties = false;
 
@@ -150,7 +150,7 @@ void fully_explore(InputNit itIn,
          continue;
       // neighbor is not beaten
       if (itBt.GetPixel(i)) {
-         InputImage::PixelType nbrVal = itIn.GetPixel(i);
+         InputImageType::PixelType nbrVal = itIn.GetPixel(i);
          if (ctrVal < nbrVal) {
             // pixel is beaten, ie no longer candidate for local maximum
             itBt.SetCenterPixel(false);
@@ -163,7 +163,7 @@ void fully_explore(InputNit itIn,
          else if (ctrVal > nbrVal or killing_ties) {
             itBt.SetPixel(i, false);
 ++g_n_snuffed;
-            InputImage::IndexType nbrIdx = itIn.GetIndex(i);
+            InputImageType::IndexType nbrIdx = itIn.GetIndex(i);
             newly_beaten_queue.push(nbrIdx);
          }
          else {
@@ -248,7 +248,7 @@ void individual_seeds_from_regions(SeedRegionSet const& seedRegions,
 }
 
 
-void find_seeds(InputImage::Pointer image,
+void find_seeds(InputImageType::Pointer image,
                 double threshhold,
                 Seeds& outSeeds)
 {
@@ -291,7 +291,7 @@ int main(int argc, char** argv)
    reader->SetFileName(argv[0]);
    reader->Update();
 
-   InputImage::Pointer inputImage = reader->GetOutput();
+   InputImageType::Pointer inputImage = reader->GetOutput();
    SeedRegionSet seedRegions;
    find_seeds(inputImage, seedRegions, threshhold);
 cout << seedRegions.size() << " seed regions" << endl;

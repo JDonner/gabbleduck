@@ -22,11 +22,11 @@
 #include "settings.h"
 
 
-typedef double                                        InputPixelType;
+typedef float                                         InputPixelType;
 typedef InputPixelType                                PixelType;
 typedef PixelType                                     BetaPixelType;
 //typedef   unsigned char                                 OverlayPixelType;
-typedef double                                        InternalPrecisionType;
+typedef float                                         InternalPrecisionType;
 typedef InternalPrecisionType                         EigenComponentType;
 
 const unsigned Dimension = 3;
@@ -71,12 +71,12 @@ typedef  HessianImageType::PixelType                   HessianPixelType;
 ///////////////////////////////////////////////////////////////////
 
 // Set of 3 eigenvalues
-typedef  itk::FixedArray<double, HessianPixelType::Dimension>
+typedef  itk::FixedArray<EigenComponentType, HessianPixelType::Dimension>
    EigenValueArrayType;
 
-typedef  itk::Matrix<double,
-                      HessianPixelType::Dimension,
-                      HessianPixelType::Dimension>     EigenVectorMatrixType;
+typedef  itk::Matrix<EigenComponentType,
+                     HessianPixelType::Dimension,
+                     HessianPixelType::Dimension>     EigenVectorMatrixType;
 
 // 3, of 3
 typedef  itk::Image<EigenValueArrayType,
@@ -92,19 +92,19 @@ typedef  itk::TotalEigenImageFilter<HessianImageType, EigenValueImageType, Eigen
 
 // Reads off the eigenvalues
 typedef  itk::ImageAdaptor<EigenValueImageType,
-                               EigenvalueAccessor<EigenValueArrayType> > EValueImageAdaptorType;
+                           EigenvalueAccessor<EigenValueArrayType> > EValueImageAdaptorType;
 
 // Each eigenvalue is a 3D mesh? We have 3 of these, one each per eigenvalue
 // (which you'd never guess by the name).
 // -- yeah, it ends up being just a 3D array of float.
-typedef  itk::Image< EigenComponentType, Dimension > EachEigenValueImageType;
+typedef  itk::Image<EigenComponentType, Dimension>               EachEigenValueImageType;
 
 
 // extracts eigenvalues
 typedef  itk::CastImageFilter<
    EValueImageAdaptorType, EachEigenValueImageType>  EValueCastImageFilterType;
 
-typedef  itk::ResampleImageFilter<ImageType, ImageType, double> ResampleFilterType;
+//typedef  itk::ResampleImageFilter<ImageType, ImageType, double> ResampleFilterType;
 
 #if defined(GABBLE_INTERPOLATOR_IS_SPLINE) && (GABBLE_INTERPOLATOR_IS_SPLINE == 1)
   typedef  itk::BSplineInterpolateImageFunction<ImageType, PixelType> InterpolatorType;

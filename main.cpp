@@ -11,8 +11,9 @@
 #include <sstream>
 #include <fstream>
 #include <iomanip>
-#include <assert.h>
 #include <stdlib.h>
+#include <assert.h>
+#include <time.h>
 
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
@@ -20,8 +21,8 @@ namespace po = boost::program_options;
 
 
 
-typedef itk::ImageFileReader<InputImage> VolumeReaderType;
-typedef itk::ImageFileWriter<InputImage> WriterType;
+typedef itk::ImageFileReader<InputImageType> VolumeReaderType;
+typedef itk::ImageFileWriter<InputImageType> WriterType;
 
 using namespace std;
 
@@ -78,7 +79,7 @@ void take_snapshot(Nodes const& nodes, string fname)
       ImageType::IndexType index;
       g_snapshot_image->TransformPhysicalPointToIndex((*it)->pos(), index);
 
-      double density = g_snapshot_image->GetPixel(index);
+     PixelType density = g_snapshot_image->GetPixel(index);
       // There is no natural beta intensity (except maybe beta-like-ness,
       // which we don't keep)
       density += FauxBetaPointDensity;
@@ -103,10 +104,10 @@ void maybe_snap_image(unsigned n_betas, Nodes const& nodes)
 {
    static unsigned s_iSeries = 0;
    static unsigned s_snap_at = SnapshotIntervalBase;
+   static time_t s_then = ::time(0);
 
    if (n_betas == s_snap_at) {
       ++s_iSeries;
-      s_snap_at = SnapshotIntervalBase * unsigned(::pow(SnapshotIntervalPower, s_iSeries));
 
       ostringstream oss;
       oss << s_snapshot_basename << "." << n_betas << ".vtk";
@@ -115,6 +116,8 @@ void maybe_snap_image(unsigned n_betas, Nodes const& nodes)
            << "DUMPING IMAGE: " << s_snap_at << endl;
       take_snapshot(nodes, oss.str());
       cout << "==============================================================\n";
+
+      s_snap_at = SnapshotIntervalBase * unsigned(::pow(SnapshotIntervalPower, s_iSeries));
 
       // If <FinalSnapshot> == 0 indicates infinite
       if (FinalSnapshot and FinalSnapshot <= s_iSeries) {
@@ -133,8 +136,12 @@ void maybe_snap_image(unsigned n_betas, Nodes const& nodes)
       throw long_enough;
    }
 
-   if ((n_betas % 10) == 0) {
-      cout << "Progress: " << n_betas << " / " << MaxPoints << endl;
+   if ((n_betas % 1000) == 0) {
+      time_t now = ::time(0);
+      time_t elapsed = now - s_then;
+      cout << "Progress: " << n_betas << " / " << MaxPoints << "; "
+           << elapsed << "; secs" << endl;
+      s_then = now;
    }
 }
 
@@ -161,7 +168,7 @@ po::variables_map set_up_options(int argc, char** argv)
     "ScrubDensity")
    ("SeedDensityFalloff", po::value<double>(&SeedDensityFalloff)->default_value(0.8)->composing(),
     "SeedDensityFalloff")
-   ("SeedDensityWorthinessThreshold", po::value<double>(&SeedDensityWorthinessThreshold)->default_value(0.8)->composing(),
+   ("SeedDensityWorthinessThreshold", po::value<double>(&SeedDensityWorthinessThreshold)->default_value(0.01)->composing(),
     "SeedDensityWorthinessThreshold")
    ("LineIncrement", po::value<double>(&LineIncrement)->default_value(0.25)->composing(),
     "LineIncrement")

@@ -32,10 +32,10 @@ private:
 
 #define DEBUG_PRIVATE public
 DEBUG_PRIVATE:
-   typedef itk::ResampleImageFilter< ImageType, ImageType, double > ResampleFilterType;
+   typedef itk::ResampleImageFilter< ImageType, ImageType, InternalPrecisionType > ResampleFilterType;
    ResampleFilterType::Pointer resampler_;
 
-   typedef itk::TranslationTransform< PixelType, Dimension > TransformType;
+   typedef itk::TranslationTransform< InternalPrecisionType, Dimension > TransformType;
    TransformType::Pointer translation_;
 
    VectorType                   offset_;
