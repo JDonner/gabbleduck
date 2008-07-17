@@ -22,11 +22,11 @@
 #include "settings.h"
 
 
-typedef float                                         InputPixelType;
+typedef double                                         InputPixelType;
 typedef InputPixelType                                PixelType;
 typedef PixelType                                     BetaPixelType;
 //typedef   unsigned char                                 OverlayPixelType;
-typedef float                                         InternalPrecisionType;
+typedef double                                         InternalPrecisionType;
 typedef InternalPrecisionType                         EigenComponentType;
 
 const unsigned Dimension = 3;

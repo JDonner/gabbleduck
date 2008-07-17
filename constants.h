@@ -67,7 +67,7 @@ extern unsigned FinalSnapshot;
  - for speed, the degree of the interpolation.
 
    get to grips with the formula!
-   work on triangularization!
+   work on triangularization, skeletonization
 
  */
 

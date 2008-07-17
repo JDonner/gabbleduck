@@ -25,6 +25,7 @@ SET(SOURCES
       main.cpp
       node.cpp
       pipeline.cpp
+      settings.cpp
       spatial-hash.cpp
       tracing.cpp
       )

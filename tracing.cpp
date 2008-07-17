@@ -306,7 +306,7 @@ else {
    double fwd_length = 0.0;
    density = initial_density;
    for (int times = 1; initial_density * SeedDensityFalloff <= density; ++times) {
-      PointType test_pt = initial_pt + times * increment * direction;
+      PointType test_pt = initial_pt + direction * times * increment;
       density = interpolator->Evaluate(test_pt);
       fwd_length = times * increment;
    }
@@ -315,7 +315,7 @@ else {
    double bkwd_length = 0.0;
    density = initial_density;
    for (int times = -1; initial_density * SeedDensityFalloff <= density; --times) {
-      PointType test_pt = initial_pt + times * increment * direction;
+      PointType test_pt = initial_pt + direction * times * increment;
       density = interpolator->Evaluate(test_pt);
       bkwd_length = times * increment;
    }

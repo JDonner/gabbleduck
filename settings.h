@@ -2,6 +2,8 @@
 #define SETTINGS_H
 
 #include "constants.h"
+#include <boost/program_options.hpp>
+
 
 // Also, make the interpolation type changeable - degree for
 
@@ -42,5 +44,8 @@ const unsigned GabbleSplineOrder = 1;
 
 //#define WANT_GRID_BOUNDS_CHECKING 0
 #define WANT_GRID_BOUNDS_CHECKING 1
+
+namespace po = boost::program_options;
+extern po::variables_map set_up_options(int argc, char** argv);
 
 #endif // SETTINGS_H
