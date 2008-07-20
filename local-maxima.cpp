@@ -53,13 +53,12 @@ unsigned g_n_snuffed = 0;
 // most, once.  So, ok.
 
 BeatenImage::Pointer
-   threshhold_phase(InputImageType::Pointer input, double threshhold)
+   threshold_phase(InputImageType::Pointer input, double threshold)
 {
    ThresholdFilter::Pointer thresh = ThresholdFilter::New();
    thresh->SetInput(input);
-cout << "threshhold: " << threshhold << endl;
 
-   thresh->SetLowerThreshold(threshhold);
+   thresh->SetLowerThreshold(threshold);
    thresh->SetUpperThreshold(1.0e38);
    thresh->SetInsideValue(true);
    thresh->SetOutsideValue(false);
@@ -207,11 +206,11 @@ void collect_connected(UncollectedNit itFrom,
 
 
 // We collect 'regions' instead of leaving the points separate,
-// because we'd like to eventually choose one point to represent
-// the whole region, following the paper (not sure how difference
+// because we'd like to eventually choose one point to represent the
+// whole region, following the paper (not sure how much difference
 // that would make, though. The most important thing is whether a
-// point is beta-like, and whether we find it as a seed or not
-// doesn't seem like it should make much difference).
+// point is beta-like, and whether we find it as a seed or not doesn't
+// seem like it should make much difference).
 void collect_seed_regions(BeatenImage::Pointer beatenImage,
                           SeedRegionSet& outSeedRegions)
 {
@@ -222,10 +221,10 @@ void collect_seed_regions(BeatenImage::Pointer beatenImage,
    BeatenNit itBt(beatenRadius, beatenImage, beatenImage->GetLargestPossibleRegion());
    itBt.SetBoundaryCondition(beatenBoundaryCondition);
 
-   // hum, I guess I can destroy the bitmap while collecting the seeds..
+   // hmm, I guess I can destroy the bitmap while collecting the seeds..
    for (itBt.GoToBegin(); !itBt.IsAtEnd(); ++itBt) {
       if (itBt.GetCenterPixel()) {
-         // &&& Hey there, needs memory management
+         // &&& Hey, needs memory management
          PointSet* region = new PointSet;
          collect_connected(itBt, region);
          outSeedRegions.insert(region);
@@ -249,10 +248,10 @@ void individual_seeds_from_regions(SeedRegionSet const& seedRegions,
 
 
 void find_seeds(InputImageType::Pointer image,
-                double threshhold,
+                double threshold,
                 Seeds& outSeeds)
 {
-   BeatenImage::Pointer beaten_bitmap = threshhold_phase(image, threshhold);
+   BeatenImage::Pointer beaten_bitmap = threshold_phase(image, threshold);
    exploration_phase(image, beaten_bitmap);
 
    SeedRegionSet seedRegions;
@@ -282,9 +281,9 @@ int main(int argc, char** argv)
    --argc, ++argv;
    assert(1 <= argc);
 
-   double threshhold = 0.3;
+   double threshold = 0.3;
    if (2 <= argc) {
-      threshhold = atof(argv[1]);
+      threshold = atof(argv[1]);
    }
 
    VolumeReaderType::Pointer reader = VolumeReaderType::New();
@@ -293,7 +292,7 @@ int main(int argc, char** argv)
 
    InputImageType::Pointer inputImage = reader->GetOutput();
    SeedRegionSet seedRegions;
-   find_seeds(inputImage, seedRegions, threshhold);
+   find_seeds(inputImage, seedRegions, threshold);
 cout << seedRegions.size() << " seed regions" << endl;
 
 cout << "number explored: " << g_n_explored << endl;

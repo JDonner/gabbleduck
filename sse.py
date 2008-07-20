@@ -349,7 +349,8 @@ def show_density(fname, ren):
 
     skin = vtk.vtkActor()
     skin.SetMapper(skinMapper)
-    skin.GetProperty().SetDiffuseColor(1, .49, .25)
+    # Orangish, I guess?
+    skin.GetProperty().SetDiffuseColor(1, .49, 0.25)
     skin.GetProperty().SetSpecular(.3)
     skin.GetProperty().SetSpecularPower(20)
 

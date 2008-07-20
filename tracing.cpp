@@ -138,11 +138,11 @@ void CalcEigenStuff(Image::Pointer fullImage, PointType const& physPt,
    VectorType physShift;
    pt_shift(physPt, fullImage->GetSpacing(), physShift);
 
-   // &&& Wants to be WindowSize, in physical units (arg!)
-   int region_width = 7;
+//   // &&& Wants to be WindowSize, in physical units (arg!)
+//   int region_width = 5;
 
    // pipeline does resampling
-   BetaPipeline pipeline(fullImage, physPt, region_width);
+   BetaPipeline pipeline(fullImage, physPt, -1 /* &&& unused bogus region_width*/);
 
 // ImageType::IndexType indexUseless;
 // pipeline.resampler_->GetOutput()->TransformPhysicalPointToIndex(physPt, indexUseless);
@@ -151,16 +151,21 @@ void CalcEigenStuff(Image::Pointer fullImage, PointType const& physPt,
    PointType newPt = physPt + physShift;
    ImageType::IndexType index;
    bool isWithinImage = pipeline.resampler_->GetOutput()->TransformPhysicalPointToIndex(newPt, index);
-   assert(isWithinImage);
-
-//cout << __FILE__ << " (awkward) index: " << index << "; within?: " << isWithinImage << endl;
-
-   EigenValueImageType::Pointer evalImage = pipeline.eigValImage();
-   for (unsigned i = 0; i < Dimension; ++i) {
-      outEVals[i] = evalImage->GetPixel(index)[i];
+   if (not isWithinImage) {
+      cout << "origin: " << pipeline.resampler_->GetOutput()->GetOrigin() << "; "
+           << "other end: " << pipeline.resampler_->GetOutput()->GetSpacing() << "; "
+           << "size: " << pipeline.resampler_->GetOutput()->GetRequestedRegion().GetSize()
+           << endl;
+cout << "yoo! physical point: " << newPt << "; " << index << "; not within image" << endl;
    }
+   else {
+//cout << __FILE__ << " (awkward) index: " << index << "; within?: " << isWithinImage << endl;
+      EigenValueImageType::Pointer evalImage = pipeline.eigValImage();
+      for (unsigned i = 0; i < Dimension; ++i) {
+         outEVals[i] = evalImage->GetPixel(index)[i];
+      }
 
-   EigenVectorImageType::Pointer evecImage = pipeline.eigVecImage();
+      EigenVectorImageType::Pointer evecImage = pipeline.eigVecImage();
 EigenVectorImageType::RegionType eigDefinedRegion = evecImage->GetBufferedRegion();
 
 ImageType::RegionType snipDefinedRegion = fullImage->GetBufferedRegion();
@@ -171,8 +176,9 @@ ImageType::RegionType snipDefinedRegion = fullImage->GetBufferedRegion();
 // and index is way in the middle somewhere.
 //cout << __FILE__ << "\neig defined region: \n" << endl;
 //eigDefinedRegion.Print(cout);
-   for (unsigned i = 0; i < Dimension; ++i) {
-      outEVecs[i] = evecImage->GetPixel(index)[i];
+      for (unsigned i = 0; i < Dimension; ++i) {
+         outEVecs[i] = evecImage->GetPixel(index)[i];
+      }
    }
 }
 
@@ -278,8 +284,6 @@ double length_of_density(InterpolatorType::Pointer interpolator,
 // cout << "true dens: " << dens << endl;
 
    // useless; looks to be just a floating point version of the index
-//   itk::ContinuousIndex<double, Dimension> icindex;
-//   bool isWithin = image->TransformPhysicalPointToContinuousIndex(initial_pt, icindex);
 // cout << "initial_pt: " << initial_pt << "; "
 //      << "initial_density: " << initial_density << "; "
 //     << "cindex: " << cindex << "; "
@@ -292,8 +296,8 @@ double length_of_density(InterpolatorType::Pointer interpolator,
    VectorType vec = direction;
 
 
-if (initial_density < ScrubDensity) {
-//cout << "low density? " << initial_density << " < " << ScrubDensity << endl;
+if (initial_density < SeedDensityThreshold) {
+//cout << "low density? " << initial_density << " < " << SeedDensityThreshold << endl;
 ++n_lo_density_centers;
 return 0.0;
 }
@@ -343,16 +347,19 @@ bool MeetsBetaCondition(PointType const& physPt,
    InterpolatorType::Pointer interpolator = InterpolatorType::New();
 
 #if GABBLE_INTERPOLATOR_IS_SPLINE
-//cout << "yep it's spline, order: " << GabbleSplineOrder << endl;
+cout << "yep it's spline, order: " << GabbleSplineOrder << endl;
    // NOTE: order must come before image
    interpolator->SetSplineOrder(GabbleSplineOrder);
 #endif
    interpolator->SetInputImage(image);
    double initial_density = interpolator->Evaluate(physPt);
 
-   double t1 = length_of_density(interpolator, physPt, initial_density, evec[0], sheetMax, increment);
-   double t2 = length_of_density(interpolator, physPt, initial_density, evec[1], sheetMax, increment);
-   double t3 = length_of_density(interpolator, physPt, initial_density, evec[2], sheetMax, increment);
+   double t1 = length_of_density(interpolator, physPt, initial_density,
+                                 evec[0], sheetMax, increment);
+   double t2 = length_of_density(interpolator, physPt, initial_density,
+                                 evec[1], sheetMax, increment);
+   double t3 = length_of_density(interpolator, physPt, initial_density,
+                                 evec[2], sheetMax, increment);
 
 // cout << sheetMin << " <= " << t1 << " <= " << sheetMax << " ?" << endl;
 // cout << "t1: " << t1 << "; t2: " << t2 << "; t3: " << t3 << endl;

@@ -16,8 +16,6 @@ void BetaPipeline::set_up_resampler(ImageType::Pointer fullImage,
    resampler_ = ResampleFilterType::New();
 //   resampler_.SetInterpolator();
 
-   resampler_->DebugOff();
-
   /** Set the coordinate transformation.
    * Set the coordinate transform to use for resampling.  Note that
    * this must be in physical coordinates and it is the
@@ -44,6 +42,8 @@ void BetaPipeline::set_up_resampler(ImageType::Pointer fullImage,
 
 //   ImageType::RegionType region = fullImage->GetLargestPossibleRegion();
 
+   // As the Gaussian support type gets larger, we'll need more 'support'
+   // here probably
    ImageType::SizeType too_small;
    too_small[0] = too_small[1] = too_small[2] = 5;
    // &&& Ah, here's the place we need to change...
@@ -68,7 +68,8 @@ void BetaPipeline::set_up_resampler(ImageType::Pointer fullImage,
 // cout << "resampler (before update): " << endl;
 // resampler_->GetOutput()->Print(cout, 2);
 
-resampler_->Update();
+   resampler_->Update();
+
 //cout << "resampler (after update): " << endl;
 //resampler_->GetOutput()->Print(cout, 2);
 }

@@ -26,7 +26,7 @@ extern double SkeletonMergeThreshold;
 
 // Density, below which we don't even bother to check whether it's
 // a local maxima. As good as 0, in other words.
-extern double ScrubDensity;
+extern double SeedDensityThreshold;
 
 // At what falloff, from a maximum, is it the end of the beta region?
 // We're saying, here, when it reaches half the highest density.
@@ -60,18 +60,29 @@ extern unsigned FinalSnapshot;
 
 /* Things to check / vary:
 
-   Gaussian support
    Resolution
-   Line length (and whether to limit it at all, on t2,t3)
+   Line length (and whether to limit it at all, on t2,t3 -
+     but that's just a speed thing)
    density falloff
  - for speed, the degree of the interpolation.
 
    get to grips with the formula!
-   work on triangularization, skeletonization
+
+   How do I know I have the true local maximae? Is there another way,
+   how does the paper do it?
+
+   * Find way to tune Gaussian support. GaussianSupport, supposed to be
+     the same as the feature size.
+   * Work on triangularization, skeletonization
+     - because, this way I can automate the search for good parameters.
+   * Why isn't it exhausting?
+   * Look at their data
+   * translate the support for gaussian, from physical.
+      ('too_small') - ach, just give it a surviving size
 
  */
 
 // Jing's recommendation on generating images
-// pdb2mrc a.pdb a.mrc res=10 apix=1.0 center
+// pdb2mrc 2.pdb a.mrc res=10 apix=1.0 center
 
 #endif // CONSTANTS_H

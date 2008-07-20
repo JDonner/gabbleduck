@@ -27,7 +27,7 @@ typedef std::set<IndexType,
 typedef std::set<PointSet*> SeedRegionSet;
 
 void find_seeds(InputImageType::Pointer image,
-                double threshhold,
+                double threshold,
                 Seeds& outSeeds);
 
 #endif // LOCAL_MAXIMA_H

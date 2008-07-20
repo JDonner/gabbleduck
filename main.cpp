@@ -15,8 +15,6 @@
 #include <time.h>
 
 
-
-
 typedef itk::ImageFileReader<InputImageType> VolumeReaderType;
 typedef itk::ImageFileWriter<InputImageType> WriterType;
 
@@ -111,7 +109,6 @@ void maybe_snap_image(unsigned n_betas, Nodes const& nodes)
       cout << "==============================================================\n"
            << "DUMPING IMAGE: " << s_snap_at << endl;
       take_snapshot(nodes, oss.str());
-      cout << "==============================================================\n";
 
       s_snap_at = SnapshotIntervalBase * unsigned(::pow(SnapshotIntervalPower, s_iSeries));
 
@@ -136,7 +133,7 @@ void maybe_snap_image(unsigned n_betas, Nodes const& nodes)
       time_t now = ::time(0);
       time_t elapsed = now - s_then;
       cout << "Progress: " << n_betas << " / " << MaxPoints << "; "
-           << elapsed << "; secs" << endl;
+           << elapsed << " secs" << endl;
       s_then = now;
    }
 }
@@ -145,13 +142,13 @@ int main(int argc, char** argv)
 {
    cout << fixed << setprecision(3);
 
-   po::variables_map vm = set_up_options(argc, argv);
+   po::variables_map& vm = set_up_options(argc, argv);
 
    // if (argc < 1) {
    //    cout << "pass in the name of a file, to get the eigenvalue images" << endl;
    // }
 
-   // double threshhold = ScrubDensity;
+   // double threshold = SeedDensityThreshold;
    // if (2 <= argc) {
    //    threshhold = atof(argv[1]);
    // }
@@ -163,9 +160,13 @@ int main(int argc, char** argv)
    reader->Update();
 
    ImageType::Pointer image = reader->GetOutput();
+//image->Print(cout);
+
+
+dump_settings(g_vm, cout);
 
    Seeds allSeeds;
-   find_seeds(image, ScrubDensity, allSeeds);
+   find_seeds(image, SeedDensityThreshold, allSeeds);
 
    // find maximum seed density
    PixelType maxSeedDensity = -1.0;
@@ -190,7 +191,9 @@ int main(int argc, char** argv)
 //seeds.push_back(oneTestSeed);
 
 cout << "safe seeds: " << trueMaxSeeds.size()
-     << "; all seeds: " << allSeeds.size() << endl;
+     << "; all seeds: " << allSeeds.size()
+     << "; max seed density: " << maxSeedDensity
+     << endl;
 
    setup_snapshot_image(extract_basename(fname), image);
 
