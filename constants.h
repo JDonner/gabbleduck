@@ -41,7 +41,7 @@ extern double SeedDensityWorthinessThreshold;
 extern double LineIncrement;
 
 // &&& don't know what this is. Should be BetaThickness, though, apparently.
-extern double GaussianSupport;
+extern double SigmaOfGaussian;
 
 
 // Not a physical constant; maybe belongs in instrument...
@@ -71,7 +71,7 @@ extern unsigned FinalSnapshot;
    How do I know I have the true local maximae? Is there another way,
    how does the paper do it?
 
-   * Find way to tune Gaussian support. GaussianSupport, supposed to be
+   * Find way to tune Gaussian support. SigmaOfGaussian, supposed to be
      the same as the feature size.
    * Work on triangularization, skeletonization
      - because, this way I can automate the search for good parameters.

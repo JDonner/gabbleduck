@@ -33,8 +33,8 @@ po::variables_map& set_up_options(int argc, char** argv)
     "SeedDensityWorthinessThreshold")
    ("LineIncrement", po::value<double>(&LineIncrement)->default_value(0.25)->composing(),
     "LineIncrement")
-   ("GaussianSupport", po::value<double>(&GaussianSupport)->default_value(WindowSize)->composing(),
-    "GaussianSupport")
+   ("SigmaOfGaussian", po::value<double>(&SigmaOfGaussian)->default_value(WindowSize)->composing(),
+    "SigmaOfGaussian")
 
    ("SnapshotIntervalBase", po::value<unsigned>(&SnapshotIntervalBase)->default_value(0)->composing(),
     "SnapshotIntervalBase")
@@ -85,8 +85,8 @@ po::variables_map& set_up_options(int argc, char** argv)
       SkeletonMergeThreshold = g_vm["BetaThickness"].as<double>();
    }
 
-   if (not g_vm.count("GaussianSupport")) {
-      GaussianSupport = g_vm["WindowSize"].as<double>();
+   if (not g_vm.count("SigmaOfGaussian")) {
+      SigmaOfGaussian = g_vm["WindowSize"].as<double>();
    }
 
    BetaMin = BetaThickness * (1.0 - BetaThicknessFlex);
@@ -104,8 +104,8 @@ void dump_settings(po::variables_map const& vm, ostream& os)
       << "vm[WindowSize]: " << vm["WindowSize"].as<double>() << '\n'
       << "WindowSize: " << WindowSize << '\n'
       << '\n'
-      << "vm[GaussianSupport]: " << vm["GaussianSupport"].as<double>() << '\n'
-      << "GaussianSupport: " << GaussianSupport << '\n'
+      << "vm[SigmaOfGaussian]: " << vm["SigmaOfGaussian"].as<double>() << '\n'
+      << "SigmaOfGaussian: " << SigmaOfGaussian << '\n'
       << '\n'
       << "vm[BetaThickness]: " << vm["BetaThickness"].as<double>() << '\n'
       << "BetaThickness: " << BetaThickness << '\n'

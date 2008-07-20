@@ -27,6 +27,11 @@ string s_snapshot_basename;
 ImageType::Pointer g_snapshot_image;
 
 
+void set_nice_numeric_format(ostream& os)
+{
+   os << fixed << setprecision(3);
+}
+
 string extract_basename(string fname)
 {
    string::size_type dot_pos = fname.rfind(".");
@@ -61,7 +66,8 @@ void setup_snapshot_image(string basename, ImageType::Pointer model)
   s_snapshot_basename = basename;
 }
 
-void take_snapshot(Nodes const& nodes, string fname)
+
+void write_beta_point_image(Nodes const& nodes, string fname)
 {
    // clear it
    g_snapshot_image->FillBuffer(0);
@@ -93,6 +99,32 @@ void take_snapshot(Nodes const& nodes, string fname)
    }
 }
 
+// <basename> == eg, 1AGW
+string beta_point_image_name(string basename,
+                             unsigned n_points,
+                             double beta_thickness,
+                             double sigma,
+                             double window_width,
+                             double beta_falloff_factor,
+                             bool bExhausted
+                             )
+{
+   ostringstream oss;
+   set_nice_numeric_format(oss);
+   oss << basename
+       << ".pts=" << n_points
+       << ".ex=" << bExhausted
+       << ".bt=" << beta_thickness
+       << ".sig=" << sigma
+       << ".wnd=" << window_width
+       << ".bfal=" << beta_falloff_factor
+
+       << ".vtk"
+      ;
+
+   return oss.str();
+}
+
 
 void maybe_snap_image(unsigned n_betas, Nodes const& nodes)
 {
@@ -108,7 +140,7 @@ void maybe_snap_image(unsigned n_betas, Nodes const& nodes)
 
       cout << "==============================================================\n"
            << "DUMPING IMAGE: " << s_snap_at << endl;
-      take_snapshot(nodes, oss.str());
+      write_beta_point_image(nodes, oss.str());
 
       s_snap_at = SnapshotIntervalBase * unsigned(::pow(SnapshotIntervalPower, s_iSeries));
 
@@ -123,7 +155,7 @@ void maybe_snap_image(unsigned n_betas, Nodes const& nodes)
       ostringstream oss;
       oss << s_snapshot_basename << "." << n_betas << ".vtk";
 
-      take_snapshot(nodes, oss.str());
+      write_beta_point_image(nodes, oss.str());
 
       LongEnoughException long_enough;
       throw long_enough;
@@ -140,7 +172,7 @@ void maybe_snap_image(unsigned n_betas, Nodes const& nodes)
 
 int main(int argc, char** argv)
 {
-   cout << fixed << setprecision(3);
+   set_nice_numeric_format(cout);
 
    po::variables_map& vm = set_up_options(argc, argv);
 
@@ -195,17 +227,32 @@ cout << "safe seeds: " << trueMaxSeeds.size()
      << "; max seed density: " << maxSeedDensity
      << endl;
 
-   setup_snapshot_image(extract_basename(fname), image);
+   string basename = extract_basename(fname);
+   setup_snapshot_image(basename, image);
 
    Nodes betaNodes;
+   bool bExhaustedNaturally = true;
    try {
       FindBetaNodes(image, trueMaxSeeds, betaNodes);
    }
    catch (LongEnoughException const& long_enough) {
       cout << "... quitting at user-defined limit (not exhaustion)" << endl;
+      bExhaustedNaturally = false;
    }
 
-cout << "found: " << betaNodes.size() << " beta nodes" << endl;
+   // If we make it here, we've reached exhaustion
+   string outname = beta_point_image_name(
+      basename,
+      betaNodes.size(),
+      bExhaustedNaturally,
+      BetaThickness,
+      SigmaOfGaussian,
+      WindowSize,
+      SeedDensityFalloff);
+
+   write_beta_point_image(betaNodes, outname);
+
+//cout << "found: " << betaNodes.size() << " beta nodes" << endl;
 
 dump_instrument_vars();
 

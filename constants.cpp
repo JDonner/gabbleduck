@@ -14,7 +14,7 @@ double BetaMax = BetaThickness * (1.0 + BetaThicknessFlex);
 double WindowSize = BetaThickness;
 
 // &&& don't know what this is. Should be BetaThickness, though, apparently.
-double GaussianSupport = WindowSize;
+double SigmaOfGaussian = WindowSize;
 
 // Density, below which we don't even bother to check whether it's
 // a local maxima. As good as 0, in other words.
