@@ -39,8 +39,12 @@ class ThreadQueue(object):
 
 
 def spawnWork(fname, falloff, sigma):
-    subprocess.call(["gabble", "--SeedDensityFalloff=%s --FinalSnapshot=0 --SigmaOfGaussian=%s --MaxPoints=10000 %s" %
-                     (falloff, sigma, fname)])
+#    args = "--SeedDensityFalloff=%f" % falloff
+#    "--FinalSnapshot=0" "--SigmaOfGaussian=%f" % sigma "--MaxPoints=10000 %s" % fname
+    subprocess.call(["./gabble", "--FinalSnapshot=0",
+                                  "--SigmaOfGaussian=%f" % sigma,
+                                  "--MaxPoints=50000",
+                                  fname])
 
 
 def fakeSpawnWork(fname, falloff, sigma):
@@ -56,7 +60,7 @@ def runThread(tq):
             # we're done; we'll be collected
         else:
             (fname, falloff, sigma) = work
-            fakeSpawnWork(fname, falloff, sigma)
+            spawnWork(fname, falloff, sigma)
 
 
 def queue_up_work(tq, n_threads):

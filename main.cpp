@@ -79,7 +79,7 @@ void write_beta_point_image(Nodes const& nodes, string fname)
       ImageType::IndexType index;
       g_snapshot_image->TransformPhysicalPointToIndex((*it)->pos(), index);
 
-     PixelType density = g_snapshot_image->GetPixel(index);
+      PixelType density = g_snapshot_image->GetPixel(index);
       // There is no natural beta intensity (except maybe beta-like-ness,
       // which we don't keep)
       density += FauxBetaPointDensity;
@@ -102,11 +102,11 @@ void write_beta_point_image(Nodes const& nodes, string fname)
 // <basename> == eg, 1AGW
 string beta_point_image_name(string basename,
                              unsigned n_points,
+                             bool bExhausted,
                              double beta_thickness,
                              double sigma,
                              double window_width,
-                             double beta_falloff_factor,
-                             bool bExhausted
+                             double beta_falloff_factor
                              )
 {
    ostringstream oss;
@@ -152,10 +152,10 @@ void maybe_snap_image(unsigned n_betas, Nodes const& nodes)
    }
 
    if (MaxPoints and MaxPoints <= n_betas) {
-      ostringstream oss;
-      oss << s_snapshot_basename << "." << n_betas << ".vtk";
+//      ostringstream oss;
+//      oss << s_snapshot_basename << "." << n_betas << ".vtk";
 
-      write_beta_point_image(nodes, oss.str());
+//      write_beta_point_image(nodes, oss.str());
 
       LongEnoughException long_enough;
       throw long_enough;

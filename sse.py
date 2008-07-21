@@ -6,9 +6,6 @@
 # typical of most VTK programs.
 #
 
-import psyco
-psyco.full()
-
 #
 # First we include the VTK Python packages that will make available
 # all of the VTK commands to Python.
