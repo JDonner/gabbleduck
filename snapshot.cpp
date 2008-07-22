@@ -57,8 +57,6 @@ void add_seeds_to_snapshot(Seeds const& seeds,
 
 // <basename> == eg, 1AGW
 string beta_point_image_name(string basename,
-                             unsigned n_points,
-                             bool bExhausted,
                              double beta_thickness,
                              double sigma,
                              double window_width,
@@ -68,8 +66,6 @@ string beta_point_image_name(string basename,
    ostringstream oss;
    set_nice_numeric_format(oss);
    oss << basename
-       << ".pts=" << n_points
-       << ".ex=" << bExhausted
        << ".bt=" << beta_thickness
        << ".sig=" << sigma
        << ".wnd=" << window_width
@@ -156,8 +152,8 @@ void maybe_snap_image(unsigned n_betas, Nodes const& nodes)
    if ((n_betas % 1000) == 0) {
       time_t now = ::time(0);
       time_t elapsed = now - s_then;
-      cout << "Progress: " << n_betas << " / " << MaxPoints << "; "
-           << elapsed << " secs" << endl;
+      g_log << "Progress: " << n_betas << " / " << MaxPoints << "; "
+            << elapsed << " secs" << endl;
       s_then = now;
    }
 }

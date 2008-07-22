@@ -35,12 +35,12 @@ SET(SOURCES
 ADD_EXECUTABLE(gabble ${SOURCES})
 
 # -pg
-SET_SOURCE_FILES_PROPERTIES(${SOURCES} PROPERTIES COMPILE_FLAGS "-g -pg -Wall -W -march=k8 -fmessage-length=60")
+SET_SOURCE_FILES_PROPERTIES(${SOURCES} PROPERTIES COMPILE_FLAGS "-g -Wall -W -march=k8 -fmessage-length=60")
 
 # -lc_p brings in profiled C libs
 #SET(LINK_FLAGS -pg -lc_p)
 
-SET_TARGET_PROPERTIES(gabble PROPERTIES LINK_FLAGS "-pg")
+#SET_TARGET_PROPERTIES(gabble PROPERTIES LINK_FLAGS "-pg")
 
 # Huh - I guess it knows internally where to find the ITK libs
 TARGET_LINK_LIBRARIES(

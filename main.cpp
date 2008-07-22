@@ -11,6 +11,7 @@
 #include <iostream>
 #include <sstream>
 #include <stdlib.h>
+#include <stdio.h>
 #include <assert.h>
 #include <time.h>
 
@@ -20,14 +21,11 @@ typedef itk::ImageFileReader<InputImageType> VolumeReaderType;
 using namespace std;
 
 
-ofstream g_log;
-
 
 string extract_basename(string fname)
 {
    string::size_type dot_pos = fname.rfind(".");
    string base = fname.substr(0, dot_pos);
-cout << "base: " << base << endl;
    return base;
 }
 
@@ -47,6 +45,7 @@ int main(int argc, char** argv)
    // }
 
    string fname = vm["input-file"].as<string>();
+   string basename = extract_basename(fname);
 
    VolumeReaderType::Pointer reader = VolumeReaderType::New();
    reader->SetFileName(fname.c_str());
@@ -55,8 +54,18 @@ int main(int argc, char** argv)
    ImageType::Pointer image = reader->GetOutput();
 //image->Print(cout);
 
+   string out_basename = beta_point_image_name(
+      basename,
+      BetaThickness,
+      SigmaOfGaussian,
+      WindowSize,
+      SeedDensityFalloff);
 
-dump_settings(g_vm, cout);
+   string log_fname = out_basename + ".log";
+   g_log.open(log_fname.c_str());
+   set_nice_numeric_format(g_log);
+
+dump_settings(g_vm, g_log);
 
    Seeds allSeeds;
    find_seeds(image, SeedDensityThreshold, allSeeds);
@@ -83,12 +92,11 @@ dump_settings(g_vm, cout);
 //seeds.clear();
 //seeds.push_back(oneTestSeed);
 
-cout << "safe seeds: " << trueMaxSeeds.size()
-     << "; all seeds: " << allSeeds.size()
-     << "; max seed density: " << maxSeedDensity
-     << endl;
+g_log << "safe seeds: " << trueMaxSeeds.size()
+      << "; all seeds: " << allSeeds.size()
+      << "; max seed density: " << maxSeedDensity
+      << endl;
 
-   string basename = extract_basename(fname);
    setup_snapshot_image(basename, image);
 
    Nodes betaNodes;
@@ -97,27 +105,23 @@ cout << "safe seeds: " << trueMaxSeeds.size()
       FindBetaNodes(image, trueMaxSeeds, betaNodes);
    }
    catch (LongEnoughException const& long_enough) {
-      cout << "... quitting at user-defined limit (not exhaustion)" << endl;
+      g_log << "... quitting at user-defined limit (not exhaustion)" << endl;
       bExhaustedNaturally = false;
    }
 
-   string out_basename = beta_point_image_name(
-      basename,
-      betaNodes.size(),
-      bExhaustedNaturally,
-      BetaThickness,
-      SigmaOfGaussian,
-      WindowSize,
-      SeedDensityFalloff);
-
    snapshot_beta_points(betaNodes);
 
+   // &&& could make this separate image...
    add_seeds_to_snapshot(trueMaxSeeds, image, g_vm["SeedsEmphFactor"].as<double>());
 
-   write_snapshot_image(out_basename + ".vtk");
+   string temp_name = out_basename + ".vtk";
+   write_snapshot_image(temp_name);
 
-   string log_fname = out_basename + ".log";
-   g_log.open(log_fname.c_str());
+   // rename file, now that we know how it turned out
+   ostringstream oss;
+   oss << out_basename << ".ex=" << bExhaustedNaturally << ".pts=" << betaNodes.size() << ".vtk";
+
+   ::rename(temp_name.c_str(), oss.str().c_str());
 
 //cout << "found: " << betaNodes.size() << " beta nodes" << endl;
 

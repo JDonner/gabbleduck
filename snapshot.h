@@ -12,8 +12,6 @@ extern void add_seeds_to_snapshot(Seeds const& seeds,
                            double seeds_emph_factor);
 extern std::string beta_point_image_name(
    std::string basename,
-   unsigned n_points,
-   bool bExhausted,
    double beta_thickness,
    double sigma,
    double window_width,
