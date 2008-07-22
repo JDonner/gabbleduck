@@ -47,5 +47,6 @@ unsigned MaxPoints = 10000;
 // Beta points don't have an intensity but we want to use 3D density
 // methods to show them, so this is the density we give them.
 double FauxBetaPointDensity = 0.1;
+double SeedsEmphFactor;
 
 unsigned ImageZoom = 2;

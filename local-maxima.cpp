@@ -221,7 +221,7 @@ void collect_seed_regions(BeatenImage::Pointer beatenImage,
    BeatenNit itBt(beatenRadius, beatenImage, beatenImage->GetLargestPossibleRegion());
    itBt.SetBoundaryCondition(beatenBoundaryCondition);
 
-   // hmm, I guess I can destroy the bitmap while collecting the seeds..
+   // hmm, I guess I can destroy the bitmap while collecting the seeds.
    for (itBt.GoToBegin(); !itBt.IsAtEnd(); ++itBt) {
       if (itBt.GetCenterPixel()) {
          // &&& Hey, needs memory management

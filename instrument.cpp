@@ -15,19 +15,20 @@ unsigned n_beta_nodes = 0;
 unsigned n_total_hashed_pts = 0;
 unsigned n_rejected_as_too_close = 0;
 
-void dump_instrument_vars()
+void dump_instrument_vars(ostream& os)
 {
-   cout << "n_total_visited: " << n_total_visited << endl;
+   os << "n_total_visited: " << n_total_visited << '\n'
 
-   cout << "lo densities: " << n_lo_density_centers << endl;
-   cout << "ok densities: " << n_ok_density_centers << endl;
+      << "lo densities: " << n_lo_density_centers << '\n'
+      << "ok densities: " << n_ok_density_centers << '\n'
 
-   cout << "n_non_zero_lengths: " << n_non_zero_lengths << endl;
+      << "n_non_zero_lengths: " << n_non_zero_lengths << '\n'
 
-   cout << "n_far_enough_away: " << n_far_enough_away << endl;
-   cout << "n_planelike_nodes: " << n_planelike_nodes << endl;
-   cout << "n_non_planelike_nodes: " << n_non_planelike_nodes << endl;
-   cout << "n_beta_nodes: " << n_beta_nodes << endl;
-   cout << "n_total_hashed_pts: " << n_total_hashed_pts << endl;
-   cout << "n_rejected_as_too_close: " << n_rejected_as_too_close << endl;
+      << "n_far_enough_away: " << n_far_enough_away << '\n'
+      << "n_planelike_nodes: " << n_planelike_nodes << '\n'
+      << "n_non_planelike_nodes: " << n_non_planelike_nodes << '\n'
+      << "n_beta_nodes: " << n_beta_nodes << '\n'
+      << "n_total_hashed_pts: " << n_total_hashed_pts << '\n'
+      << "n_rejected_as_too_close: " << n_rejected_as_too_close
+      << endl;
 }

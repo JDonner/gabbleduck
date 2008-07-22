@@ -1,36 +1,27 @@
 #include <itkImageFileReader.h>
-#include <itkImageFileWriter.h>
 
 #include "tracing.h"
 #include "local-maxima.h"
 #include "node.h"
 #include "settings.h"
 #include "instrument.h"
+#include "snapshot.h"
+#include "util.h"
 
 #include <iostream>
 #include <sstream>
-#include <iomanip>
 #include <stdlib.h>
 #include <assert.h>
 #include <time.h>
 
 
 typedef itk::ImageFileReader<InputImageType> VolumeReaderType;
-typedef itk::ImageFileWriter<InputImageType> WriterType;
 
 using namespace std;
 
-struct LongEnoughException {};
 
+ofstream g_log;
 
-string s_snapshot_basename;
-ImageType::Pointer g_snapshot_image;
-
-
-void set_nice_numeric_format(ostream& os)
-{
-   os << fixed << setprecision(3);
-}
 
 string extract_basename(string fname)
 {
@@ -38,136 +29,6 @@ string extract_basename(string fname)
    string base = fname.substr(0, dot_pos);
 cout << "base: " << base << endl;
    return base;
-}
-
-void setup_snapshot_image(string basename, ImageType::Pointer model)
-{
-  ImageType::SpacingType spacing = model->GetSpacing();
-  spacing[0] /= ImageZoom;
-  spacing[1] /= ImageZoom;
-  spacing[2] /= ImageZoom;
-
-  g_snapshot_image = ImageType::New();
-  g_snapshot_image->SetSpacing( spacing );
-  g_snapshot_image->SetOrigin( model->GetOrigin() );
-
-  ImageType::RegionType const& region = model->GetLargestPossibleRegion();
-  ImageType::RegionType::SizeType size = region.GetSize();
-
-  // size is in pixels
-  ImageType::SizeType doubled_size(size);
-  doubled_size[0] *= ImageZoom;
-  doubled_size[1] *= ImageZoom;
-  doubled_size[2] *= ImageZoom;
-  g_snapshot_image->SetRegions( doubled_size );
-
-  g_snapshot_image->Allocate();
-
-  s_snapshot_basename = basename;
-}
-
-
-void write_beta_point_image(Nodes const& nodes, string fname)
-{
-   // clear it
-   g_snapshot_image->FillBuffer(0);
-
-   for (Nodes::const_iterator it = nodes.begin(), end = nodes.end();
-        it != end; ++it) {
-
-      // &&& Hmm, maybe we can do better than this; make it truly sparse.
-      ImageType::IndexType index;
-      g_snapshot_image->TransformPhysicalPointToIndex((*it)->pos(), index);
-
-      PixelType density = g_snapshot_image->GetPixel(index);
-      // There is no natural beta intensity (except maybe beta-like-ness,
-      // which we don't keep)
-      density += FauxBetaPointDensity;
-      g_snapshot_image->SetPixel(index, density);
-   }
-
-   WriterType::Pointer writer = WriterType::New();
-   writer->SetFileName(fname.c_str());
-   writer->SetInput(g_snapshot_image);
-   try {
-      writer->Update();
-   }
-   catch (itk::ExceptionObject &err) {
-      std::cout << "ExceptionObject caught !" << std::endl;
-      std::cout << err << std::endl;
-      assert(false);
-   }
-}
-
-// <basename> == eg, 1AGW
-string beta_point_image_name(string basename,
-                             unsigned n_points,
-                             bool bExhausted,
-                             double beta_thickness,
-                             double sigma,
-                             double window_width,
-                             double beta_falloff_factor
-                             )
-{
-   ostringstream oss;
-   set_nice_numeric_format(oss);
-   oss << basename
-       << ".pts=" << n_points
-       << ".ex=" << bExhausted
-       << ".bt=" << beta_thickness
-       << ".sig=" << sigma
-       << ".wnd=" << window_width
-       << ".bfal=" << beta_falloff_factor
-
-       << ".vtk"
-      ;
-
-   return oss.str();
-}
-
-
-void maybe_snap_image(unsigned n_betas, Nodes const& nodes)
-{
-   static unsigned s_iSeries = 0;
-   static unsigned s_snap_at = SnapshotIntervalBase;
-   static time_t s_then = ::time(0);
-
-   if (n_betas == s_snap_at) {
-      ++s_iSeries;
-
-      ostringstream oss;
-      oss << s_snapshot_basename << "." << n_betas << ".vtk";
-
-      cout << "==============================================================\n"
-           << "DUMPING IMAGE: " << s_snap_at << endl;
-      write_beta_point_image(nodes, oss.str());
-
-      s_snap_at = SnapshotIntervalBase * unsigned(::pow(SnapshotIntervalPower, s_iSeries));
-
-      // If <FinalSnapshot> == 0 indicates infinite
-      if (FinalSnapshot and FinalSnapshot <= s_iSeries) {
-         LongEnoughException long_enough;
-         throw long_enough;
-      }
-   }
-
-   if (MaxPoints and MaxPoints <= n_betas) {
-//      ostringstream oss;
-//      oss << s_snapshot_basename << "." << n_betas << ".vtk";
-
-//      write_beta_point_image(nodes, oss.str());
-
-      LongEnoughException long_enough;
-      throw long_enough;
-   }
-
-   if ((n_betas % 1000) == 0) {
-      time_t now = ::time(0);
-      time_t elapsed = now - s_then;
-      cout << "Progress: " << n_betas << " / " << MaxPoints << "; "
-           << elapsed << " secs" << endl;
-      s_then = now;
-   }
 }
 
 int main(int argc, char** argv)
@@ -240,8 +101,7 @@ cout << "safe seeds: " << trueMaxSeeds.size()
       bExhaustedNaturally = false;
    }
 
-   // If we make it here, we've reached exhaustion
-   string outname = beta_point_image_name(
+   string out_basename = beta_point_image_name(
       basename,
       betaNodes.size(),
       bExhaustedNaturally,
@@ -250,11 +110,18 @@ cout << "safe seeds: " << trueMaxSeeds.size()
       WindowSize,
       SeedDensityFalloff);
 
-   write_beta_point_image(betaNodes, outname);
+   snapshot_beta_points(betaNodes);
+
+   add_seeds_to_snapshot(trueMaxSeeds, image, g_vm["SeedsEmphFactor"].as<double>());
+
+   write_snapshot_image(out_basename + ".vtk");
+
+   string log_fname = out_basename + ".log";
+   g_log.open(log_fname.c_str());
 
 //cout << "found: " << betaNodes.size() << " beta nodes" << endl;
 
-dump_instrument_vars();
+dump_instrument_vars(g_log);
 
    return 0;
 }

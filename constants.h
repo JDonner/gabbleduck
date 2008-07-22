@@ -50,6 +50,7 @@ extern unsigned SnapshotIntervalPower;
 // Beta points don't have an intensity but we want to use 3D density
 // methods to show them, so this is the density we give them.
 extern double FauxBetaPointDensity;
+extern double SeedsEmphFactor;
 extern unsigned ImageZoom;
 
 // Physical coordinates
@@ -79,6 +80,8 @@ extern unsigned FinalSnapshot;
    * Look at their data
    * translate the support for gaussian, from physical.
       ('too_small') - ach, just give it a surviving size
+
+   * The big time-saver would be to convert from double to float.
 
  */
 

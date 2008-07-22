@@ -45,6 +45,8 @@ po::variables_map& set_up_options(int argc, char** argv)
 
    ("FauxBetaPointDensity", po::value<double>(&FauxBetaPointDensity)->default_value(0.1)->composing(),
     "FauxBetaPointDensity")
+   ("SeedsEmphFactor", po::value<double>(&SeedsEmphFactor)->default_value(2.0)->composing(),
+    "SeedsEmphFactor")
    ("ImageZoom", po::value<unsigned>(&ImageZoom)->default_value(2)->composing(),
     "ImageZoom")
    ("MaxPoints", po::value<unsigned>(&MaxPoints)->default_value(10000)->composing(),
@@ -137,6 +139,8 @@ void dump_settings(po::variables_map const& vm, ostream& os)
       << '\n'
       << "vm[FauxBetaPointDensity]: " << vm["FauxBetaPointDensity"].as<double>() << '\n'
       << "FauxBetaPointDensity: " << FauxBetaPointDensity << '\n'
+      << "vm[SeedsEmphFactor]: " << vm["SeedsEmphFactor"].as<double>() << '\n'
+      << "SeedsEmphFactor: " << SeedsEmphFactor << '\n'
       << '\n'
       << "vm[ImageZoom]: " << vm["ImageZoom"].as<unsigned>() << '\n'
       << "ImageZoom: " << ImageZoom << '\n'
