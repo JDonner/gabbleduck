@@ -54,15 +54,15 @@ int main(int argc, char** argv)
    ImageType::Pointer image = reader->GetOutput();
 //image->Print(cout);
 
-   string out_basename = beta_point_image_name(
+   string temp_basename = beta_point_image_name(
       basename,
       BetaThickness,
       SigmaOfGaussian,
       WindowSize,
       SeedDensityFalloff);
 
-   string log_fname = out_basename + ".log";
-   g_log.open(log_fname.c_str());
+   string temp_logname = temp_basename + ".log";
+   g_log.open(temp_logname.c_str());
    set_nice_numeric_format(g_log);
 
 dump_settings(g_vm, g_log);
@@ -97,7 +97,7 @@ g_log << "safe seeds: " << trueMaxSeeds.size()
       << "; max seed density: " << maxSeedDensity
       << endl;
 
-   setup_snapshot_image(basename, image);
+   setup_snapshot_image(temp_basename, image);
 
    Nodes betaNodes;
    bool bExhaustedNaturally = true;
@@ -114,14 +114,14 @@ g_log << "safe seeds: " << trueMaxSeeds.size()
    // &&& could make this separate image...
    add_seeds_to_snapshot(trueMaxSeeds, image, g_vm["SeedsEmphFactor"].as<double>());
 
-   string temp_name = out_basename + ".vtk";
-   write_snapshot_image(temp_name);
-
    // rename file, now that we know how it turned out
    ostringstream oss;
-   oss << out_basename << ".ex=" << bExhaustedNaturally << ".pts=" << betaNodes.size() << ".vtk";
+   oss << temp_basename << ".ex=" << bExhaustedNaturally << ".pts=" << betaNodes.size();
+   string final_basename = oss.str();
+   write_snapshot_image(final_basename + ".vtk");
 
-   ::rename(temp_name.c_str(), oss.str().c_str());
+   string final_logname = final_basename + ".log";
+   ::rename(temp_logname.c_str(), final_logname.c_str());
 
 //cout << "found: " << betaNodes.size() << " beta nodes" << endl;
 

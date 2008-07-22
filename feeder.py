@@ -45,7 +45,7 @@ def spawnWork(fname, falloff, sigma):
                      "--FinalSnapshot=0",
                      "--SigmaOfGaussian=%f" % sigma,
                      "--SeedDensityFalloff=%f" % falloff,
-                     "--MaxPoints=50000",
+                     "--MaxPoints=0",
                      fname])
 
 
