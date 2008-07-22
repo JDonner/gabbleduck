@@ -42,6 +42,8 @@ void SpatialHash::addPt(PointType const& physPt)
 ++n_total_hashed_pts;
 }
 
+// The strategy here is, though this is n^2, it's a very small n, just
+// finely-spaced adjacent cells.
 bool SpatialHash::isWithinDistanceOfAnything(PointType const& physPt,
                                              double distance)
 {
@@ -51,15 +53,12 @@ bool SpatialHash::isWithinDistanceOfAnything(PointType const& physPt,
    Index idx = index_of(physPt);
    Cells nbrs;
    get_neighbors(idx, nbrs);
-   // 27 = we include the center point itself, too.
+   // 27 = we include the center cell itself, too.
    assert(nbrs.size() <= 27);
    for (Cells::const_iterator itCells = nbrs.begin(), endCells = nbrs.end();
         itCells != endCells; ++itCells) {
       Pts const* pts = *itCells;
-      if (not pts) {
-         return false;
-      }
-      else {
+      if (pts) {
          for (Pts::const_iterator itPts = pts->begin(), endPts = pts->end();
               itPts != endPts; ++itPts) {
             if (itPts->SquaredEuclideanDistanceTo<double>(physPt) < d2) {
