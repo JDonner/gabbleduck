@@ -83,6 +83,8 @@ extern unsigned FinalSnapshot;
 
    * The big time-saver would be to convert from double to float.
 
+   * subtract out the alphas' contributions!
+
  */
 
 // Jing's recommendation on generating images
