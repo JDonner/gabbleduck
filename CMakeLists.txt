@@ -23,7 +23,6 @@ SET(SOURCES
       geometry.cpp
       local-maxima.cpp
       main.cpp
-      node.cpp
       pipeline.cpp
       settings.cpp
       snapshot.cpp
@@ -35,7 +34,7 @@ SET(SOURCES
 ADD_EXECUTABLE(gabble ${SOURCES})
 
 # -pg
-SET_SOURCE_FILES_PROPERTIES(${SOURCES} PROPERTIES COMPILE_FLAGS "-g -Wall -W -march=athlon-xp -fmessage-length=60")
+SET_SOURCE_FILES_PROPERTIES(${SOURCES} PROPERTIES COMPILE_FLAGS "-g -Wall -W -march=k8 -fmessage-length=60")
 
 # -lc_p brings in profiled C libs
 #SET(LINK_FLAGS -pg -lc_p)

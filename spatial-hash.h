@@ -35,16 +35,16 @@ public:
 
    void addPt(PointType const& pt);
 
-   bool isWithinDistanceOfAnything(PointType const& pt, double distance);
+   bool isWithinDistanceOfAnything(PointType const& pt, double distance) const;
 
-   unsigned offset_of(Index const& idx);
-   Index index_of(PointType const& pt);
+   unsigned offset_of(Index const& idx) const;
+   Index index_of(PointType const& pt) const;
 
    Pts* pts_at(PointType const& pt);
    Pts* pts_at(Index idx);
    Pts* pts_at(int offset);
 
-   void get_neighbors(Index ctr, Cells& neighbors);
+   void get_neighbors(Index ctr, Cells& neighbors) const;
 
 private:
    PointType zero_offset_based(PointType const& physPt) const {

@@ -45,7 +45,7 @@ void SpatialHash::addPt(PointType const& physPt)
 // The strategy here is, though this is n^2, it's a very small n, just
 // finely-spaced adjacent cells.
 bool SpatialHash::isWithinDistanceOfAnything(PointType const& physPt,
-                                             double distance)
+                                             double distance) const
 {
    // (save taking a lot of square roots)
    double d2 = distance * distance;
@@ -70,7 +70,7 @@ bool SpatialHash::isWithinDistanceOfAnything(PointType const& physPt,
    return false;
 }
 
-SpatialHash::Index SpatialHash::index_of(PointType const& physPt)
+SpatialHash::Index SpatialHash::index_of(PointType const& physPt) const
 {
    Index idx;
    PointType zeroed = zero_offset_based(physPt);
@@ -85,7 +85,7 @@ SpatialHash::Index SpatialHash::index_of(PointType const& physPt)
    return idx;
 }
 
-unsigned SpatialHash::offset_of(Index const& idx)
+unsigned SpatialHash::offset_of(Index const& idx) const
 {
 #if WANT_GRID_BOUNDS_CHECKING
    assert(0 <= idx[0] and idx[0] < (int)this->n_cells_[0]);
@@ -126,7 +126,7 @@ SpatialHash::Pts* SpatialHash::pts_at(Index idx)
    return pts_at(offset_of(idx));
 }
 
-void SpatialHash::get_neighbors(Index ctr, Cells& neighbors)
+void SpatialHash::get_neighbors(Index ctr, Cells& neighbors) const
 {
    Index idx;
    for (int k = -1; k <= 1; ++k) {
