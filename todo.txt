@@ -1,0 +1,35 @@
+check 'support' area for structure tensor
+line threshholds; falloff.
+
+1AGW's true sample resolution. it's fineness could be a source of slowness, as well.
+
+/* Things to check / vary:
+
+   Resolution
+   Line length (and whether to limit it at all, on t2,t3 -
+     but that's just a speed thing)
+   density falloff
+ - for speed, the degree of the interpolation.
+
+   get to grips with the formula!
+
+   How do I know I have the true local maximae? Is there another way,
+   how does the paper do it?
+
+   * Find way to tune Gaussian support. SigmaOfGaussian, supposed to be
+     the same as the feature size.
+   * Look at their data
+   * translate the support for gaussian, from physical.
+      ('too_small') - ach, just give it a surviving size
+
+   * The big time-saver would be to convert from double to float.
+
+   * Work on triangularization, skeletonization
+     - because, this way I can automate the search for good parameters.
+
+   * subtract out the alphas' contributions!
+
+ */
+
+// Jing's recommendation on generating images
+// pdb2mrc 2.pdb a.mrc res=10 apix=1.0 center
