@@ -5,7 +5,7 @@
 #include "point.h"
 #include "polygon.h"
 
-// This type we know is specific to this pipeline
+// The ITK filters pipelined together
 
 struct BetaPipeline
 {
@@ -45,19 +45,19 @@ DEBUG_PRIVATE:
    EigenAnalysisFilterType::Pointer
       totalEigenFilter_;
 
-   // &&& What's the difference between an adaptor and an accessor?
-   // Eigenvalue
-   // Create an adaptor and plug the output to the parametric space
-   EValueImageAdaptorType::Pointer
-      eValueAdaptor1_,
-      eValueAdaptor2_,
-      eValueAdaptor3_;
+   // // &&& What's the difference between an adaptor and an accessor?
+   // // Eigenvalue
+   // // Create an adaptor and plug the output to the parametric space
+   // EValueImageAdaptorType::Pointer
+   //    eValueAdaptor1_,
+   //    eValueAdaptor2_,
+   //    eValueAdaptor3_;
 
-   // Eigenvector
-   EigenVectorImageAdaptorType::Pointer
-      eVectorAdaptor1_,
-      eVectorAdaptor2_,
-      eVectorAdaptor3_;
+   // // Eigenvector
+   // EigenVectorImageAdaptorType::Pointer
+   //    eVectorAdaptor1_,
+   //    eVectorAdaptor2_,
+   //    eVectorAdaptor3_;
 
    EigenvalueAccessor< EigenValueArrayType >
       valAccessor1_,
@@ -69,9 +69,8 @@ DEBUG_PRIVATE:
       vecAccessor2_,
       vecAccessor3_;
 
-   // eValueCastfilter1 will give the eigenvalues with the maximum
-   // eigenvalue. eValueCastfilter3 will give the eigenvalues with
-   // the minimum eigenvalue.
+   // eValueCastfilter1 is the eigenvalues with the maximum eigenvalue.
+   // eValueCastfilter3 is the eigenvalues with the minimum eigenvalue.
    EValueCastImageFilterType::Pointer
       eValueCastFilter1_,
       eValueCastFilter2_,

@@ -13,9 +13,6 @@
 #include <itkBSplineInterpolateImageFunction.h>
 #include <itkLinearInterpolateImageFunction.h>
 
-//#include <itkMesh.h>
-//#include <itkPolygonCell.h>
-
 #include "PixelAccessors.h"
 #include "jgdTotalEigenImageFilter.h"
 
@@ -25,7 +22,6 @@
 typedef double                                         InputPixelType;
 typedef InputPixelType                                PixelType;
 typedef PixelType                                     BetaPixelType;
-//typedef   unsigned char                                 OverlayPixelType;
 typedef double                                         InternalPrecisionType;
 typedef InternalPrecisionType                         EigenComponentType;
 
@@ -53,10 +49,7 @@ typedef  ImageType                                     Image;
 typedef  InputImageType                                BetaImageType;
 typedef  itk::ImageRegion<Dimension>                   ImageRegion;
 typedef  itk::Image< VectorType, Dimension >           VectorImageType;
-// just an experiment
-//typedef  itk::Image< CovariantVectorType, Dimension >  CovariantVectorImageType;
 
-//   typedef  itk::ImageFileReader< InputImageType >        VolumeReaderType;
 typedef  itk::TranslationTransform<InternalPrecisionType, Dimension> TranslationTransform;
 
 
@@ -141,16 +134,4 @@ typedef  itk::CastImageFilter<
 // This same types works for all images
 typedef itk::Index<Dimension> IndexType;
 
-
-// typedef  itk::ImageFileWriter<EValueCastImageFilterType::OutputImageType> WriterType;
-
-// typedef  itk::ImageFileWriter<EValueCastImageFilterType::OutputImageType> EigenValueWriterType;
-// typedef  itk::ImageFileWriter<EigenVectorCastImageFilterType::OutputImageType> EigenVectorWriterType;
-
-// typedef  itk::Image< OverlayPixelType, Dimension > OverlayImageType;
-// typedef  itk::ImageFileWriter< OverlayImageType > OverlayWriterType;
-
-//typedef  HessianFilterType::RealType     RealType;
-
-// A totally free point in space.
 #endif // GABBLE_TYPES_H
