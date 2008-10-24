@@ -115,8 +115,8 @@ cout << "image origin: " << image->GetOrigin() << endl;
             planes_intersection_with_box(normal, physPt,
                                          loCell, hiCell,
                                          intersections);
-            Polygon polygon;
-            MakePolygon(normal, intersections, polygon);
+            TriangleBunch triangles;
+            MakeTriangles(normal, intersections, triangles);
 
             for (Points::const_iterator it = intersections.begin(),
                     end = intersections.end();
@@ -124,7 +124,7 @@ cout << "image origin: " << image->GetOrigin() << endl;
 //cout << "adding a pt " << endl;
                possible_beta_points.push(*it);
             }
-            outNodes.push_back(new Node(physPt, polygon));
+            outNodes.push_back(new Node(physPt, triangles));
 
 maybe_snap_image(n_beta_nodes, outNodes);
          }

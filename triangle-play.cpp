@@ -32,11 +32,37 @@ GetNumberOfIds
   polygon->GetPointIds()->SetId(2,2);
   polygon->GetPointIds()->SetId(3,3);
 
+vtkPoints *points = vtkPoints::New();
+
   polygon->GetPoints()->SetNumberOfPoints(4);
   polygon->GetPoints()->SetPoint(0, 0.0, 0.0, 0.0);
   polygon->GetPoints()->SetPoint(1, 1.0, 0.0, 0.0);
   polygon->GetPoints()->SetPoint(2, 1.0, 1.0, 0.0);
   polygon->GetPoints()->SetPoint(3, 0.0, 1.0, 0.0);
+// Look for 'Cell' example; it has more detail
+// - Could we possibly use Marching Cubes, where it calculates 'density'
+// at our few points? Probably not. Or, could I make my own?
+// ITK doesn't have one, I'd have to use VTK.
+
+
+    this->Polygon->PointIds->SetNumberOfIds(numVerts);
+    this->Polygon->Points->SetNumberOfPoints(numVerts);
+
+    this->AllocatePointIds(cell->GetNumberOfBoundaries(0));
+    cell->GetPointIds(this->PointIds);
+    double *pcoords=cell->GetParametricCoords();
+
+    int i=0;
+    while(i<numVerts)
+      {
+      this->Polygon->PointIds->SetId(i,i); // this->PointIds[i]
+      this->Polygon->Points->SetPoint(i, pcoords+3*faceVerts[i]); // should be global?
+      ++i;
+      }
+
+    this->Polygon->Triangulate(this->TriangleIds);
+
+/opt/src/mkvtk/VTK/Graphics/vtkDelaunay2D.cxx
 
 void MakePolygon(VectorType const& /*normal*/,
                  Points const& planar_points,
@@ -83,12 +109,14 @@ void MakePolygon(VectorType const& /*normal*/,
    // 0 angle with itself
    vertices.insert(std::make_pair(0.0, 0));
 
+vtkPoints *coords
+
    // VTK setup
+   // The polygon points to, somehow, the
    polygon->GetPointIds()->SetNumberOfIds(planar_points.size());
    for (unsigned i = 0, size = planar_points.size(); i < size; ++i) {
       polygon->GetPointIds()->SetId(i,i);
    }
-
 
    for (unsigned iPt = 1; iPt < planar_points.size(); ++iPt) {
       VectorType vi = planar_points[iPt] - ctr;

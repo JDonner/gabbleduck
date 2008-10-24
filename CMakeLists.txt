@@ -1,6 +1,16 @@
 PROJECT(gabble)
 
-SET(ITK_DIR /usr/local/itk-3.6/lib/InsightToolkit/)
+SET(ITK_DIR /usr/local/itk-3.8/lib/InsightToolkit/)
+
+FIND_PACKAGE(Boost)
+
+#IF(Boost_FOUND)
+#ELSE(Boost_FOUND)
+#  MESSAGE(FATAL_ERROR
+#          "Boost Not found.")
+#  SET(BOOST_INCLUDEDIR /usr/local/boost/include/boost-1_36)
+#  SET(BOOST_LIBRARYDIR /usr/local/boost/lib)
+#ENDIF(Boost_FOUND)
 
 FIND_PACKAGE(ITK)
 IF(ITK_FOUND)
@@ -15,6 +25,7 @@ INCLUDE_DIRECTORIES(
         ${ITK_SOURCE_DIR}/Code/IO
         ${ITK_SOURCE_DIR}/Code/BasicFilters
         ${ITK_SOURCE_DIR}/Code/Algorithms
+        ${BOOST_INCLUDE_DIR}
 )
 
 SET(SOURCES
@@ -30,6 +41,10 @@ SET(SOURCES
       tracing.cpp
       util.cpp
       )
+
+link_directories(
+        ${BOOST_LIBRARY_DIR}
+)
 
 ADD_EXECUTABLE(gabble ${SOURCES})
 

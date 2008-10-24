@@ -120,6 +120,8 @@ g_log << "safe seeds: " << trueMaxSeeds.size()
    string final_basename = oss.str();
    write_snapshot_image(final_basename + ".vtk");
 
+   write_vertices(betaNodes, final_basename + ".vertices");
+
    string final_logname = final_basename + ".log";
    ::rename(temp_logname.c_str(), final_logname.c_str());
 

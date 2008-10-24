@@ -157,3 +157,15 @@ void maybe_snap_image(unsigned n_betas, Nodes const& nodes)
       s_then = now;
    }
 }
+
+void write_vertices(Nodes const& nodes, string vertex_filename)
+{
+   ofstream of(vertex_filename.c_str());
+
+   for (Nodes::const_iterator it = nodes.begin(), end = nodes.end();
+        it != end; ++it) {
+      of << (*it)->pos()[0] << " "
+         << (*it)->pos()[1] << " "
+         << (*it)->pos()[2] << endl;
+   }
+}

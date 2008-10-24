@@ -1,6 +1,7 @@
 #include "types.h"
 #include "pipeline.h"
 #include "polygon.h"
+#include "triangle.h"
 
 #include <algorithm>
 #include <set>
@@ -9,9 +10,9 @@
 
 using namespace std;
 
-void MakePolygon(VectorType const& /*normal*/,
-                 Points const& planar_points,
-                 Polygon& outPolygon)
+void MakeTriangles(VectorType const& /*normal*/,
+                   Points const& planar_points,
+                   TriangleBunch& outTriangles)
 {
    // We don't use the normal, but we might, for
    // find centroid -- needn't be centroid, just center-of-bounds
@@ -22,6 +23,7 @@ void MakePolygon(VectorType const& /*normal*/,
    for (unsigned i = 0; i < Dimension; ++i) {
       lo[i] =  1e38, hi[i] = -1e38;
    }
+   // find bounds
    for (unsigned pt = 0; pt < planar_points.size(); ++pt) {
       for (unsigned dim = 0; dim < Dimension; ++dim) {
          if (planar_points[pt][dim] < lo[dim]) {
@@ -33,6 +35,7 @@ void MakePolygon(VectorType const& /*normal*/,
       }
    }
 
+   // Find a 'center', so that we can order the rest of the points.
    // &&& Not sure this is on the plane! The bounds would define
    // a rectangle no (if they're all truly co-planar) and the ctr
    // would be on it, surely. Yah, should be ok.
@@ -41,6 +44,7 @@ void MakePolygon(VectorType const& /*normal*/,
       ctr[i] = (hi[i] + lo[i]) / 2.0;
    }
 
+   // &&& 'pair'? Shouldn't it be 3D?
    typedef std::set<std::pair<InternalPrecisionType, unsigned> > VertexSet;
    // use for insertion sort
    VertexSet vertices;
@@ -54,7 +58,7 @@ void MakePolygon(VectorType const& /*normal*/,
    // 0 angle with itself
    vertices.insert(std::make_pair(0.0, 0));
 
-   for (unsigned iPt = 1; iPt < planar_points.size(); ++iPt) {
+   for (unsigned iPt = 1, sz = planar_points.size(); iPt < sz; ++iPt) {
       VectorType vi = planar_points[iPt] - ctr;
       // dot product
       InternalPrecisionType cos_alpha = v0 * vi;
@@ -66,10 +70,13 @@ void MakePolygon(VectorType const& /*normal*/,
       vertices.insert(std::make_pair(angle_with_first, iPt));
    }
 
-//   copy(vertices.begin(), vertices.end(), back_insert_iterator<Polygon>(outPolygon));
    for (VertexSet::const_iterator it = vertices.begin(), end = vertices.end();
         it != end; ++it) {
-      outPolygon.push_back(planar_points[it->second]);
+      outTriangles.add_point(planar_points[it->second]);
+   }
+
+   for (unsigned i = 2, e = vertices.size() - 2; i <= e; ++i) {
+      outTriangles.add_triangle(0, i - 1, i);
    }
 }
 

@@ -3,16 +3,16 @@
 
 #include "types.h"
 #include "point.h"
-#include "polygon.h"
+#include "triangle.h"
 
 #include <vector>
 
 class Node
 {
 public:
-   Node(PointType const& pos, Polygon const& polygon)
+   Node(PointType const& pos, TriangleBunch const& triangles)
    : pos_(pos)
-   , polygon_(polygon)
+   , triangles_(triangles)
    {}
 
    PointType const& pos() const { return pos_; }
@@ -22,11 +22,11 @@ private:
    PointType pos_;
 
    // (or triangle list)
-   Polygon polygon_;
+   TriangleBunch triangles_;
 
    ImageType::Pointer source_;
-   typedef std::vector<Node*> Nodes;
-   Nodes children_;
+//   typedef std::vector<Node*> Nodes;
+//   Nodes children_;
 };
 
 typedef std::vector<Node*> Nodes;
