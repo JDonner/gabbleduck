@@ -87,7 +87,7 @@ extern unsigned FinalSnapshot;
 
  */
 
-// Jing's recommendation on generating images
+// Dr He's recommendation on generating images
 // pdb2mrc 2.pdb a.mrc res=10 apix=1.0 center
 
 #endif // CONSTANTS_H
