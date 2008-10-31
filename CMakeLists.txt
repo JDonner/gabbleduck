@@ -1,16 +1,9 @@
-PROJECT(gabble)
+PROJECT(find-sheets)
 
-SET(ITK_DIR /usr/local/itk-3.8/lib/InsightToolkit/)
+SET(ITK_DIR /usr/local/itk-rel/lib/InsightToolkit/)
+#SET(ITK_DIR /usr/local/itk-dbg/lib/InsightToolkit/)
 
 FIND_PACKAGE(Boost)
-
-#IF(Boost_FOUND)
-#ELSE(Boost_FOUND)
-#  MESSAGE(FATAL_ERROR
-#          "Boost Not found.")
-#  SET(BOOST_INCLUDEDIR /usr/local/boost/include/boost-1_36)
-#  SET(BOOST_LIBRARYDIR /usr/local/boost/lib)
-#ENDIF(Boost_FOUND)
 
 FIND_PACKAGE(ITK)
 IF(ITK_FOUND)
@@ -46,7 +39,7 @@ link_directories(
         ${BOOST_LIBRARY_DIR}
 )
 
-ADD_EXECUTABLE(gabble ${SOURCES})
+ADD_EXECUTABLE(find-sheets ${SOURCES})
 
 # -pg
 SET_SOURCE_FILES_PROPERTIES(${SOURCES} PROPERTIES COMPILE_FLAGS "-g -Wall -W -march=k8 -fmessage-length=60")
@@ -54,11 +47,11 @@ SET_SOURCE_FILES_PROPERTIES(${SOURCES} PROPERTIES COMPILE_FLAGS "-g -Wall -W -ma
 # -lc_p brings in profiled C libs
 #SET(LINK_FLAGS -pg -lc_p)
 
-#SET_TARGET_PROPERTIES(gabble PROPERTIES LINK_FLAGS "-pg")
+#SET_TARGET_PROPERTIES(find-sheets PROPERTIES LINK_FLAGS "-pg")
 
 # Huh - I guess it knows internally where to find the ITK libs
 TARGET_LINK_LIBRARIES(
-        gabble
+        find-sheets
         boost_program_options
         ITKCommon
         ITKIO

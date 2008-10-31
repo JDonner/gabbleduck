@@ -15,7 +15,7 @@ atom_defs_by_id = {}
 sheet_defs = []
 helix_defs = []
 res_atoms_by_resid = {}
-# sorted_residues = (resid, (x,y,z))
+# sorted_residues == (resid, (x,y,z))
 sorted_residues = []
 
 
@@ -55,20 +55,11 @@ def residue_index(res0, res1):
     return (first, last)
 
 
-# def calculate_res_pos(atoms):
-#     (x, y, z) = (0.0, 0.0, 0.0)
-#     for a in atoms:
-#         x += a.x
-#         y += a.y
-#         z += a.z
-#     x /= atoms.length()
-#     y /= atoms.length()
-#     z /= atoms.length()
-#     return (x,y,z)
-
+# Keep chainno separate from resno
 def make_resid(chainno, resno):
 #    print "chainno: ", chainno, "resno:", resno
     return "%3.3s:%5.5s" % (chainno, resno)
+
 
 #SHEET    2   A 5 ILE 1 184  ARG 1 190 -1  N  LEU 1 186   O  ILE 1 223
 def load_helix_def(line):
@@ -78,6 +69,7 @@ def load_helix_def(line):
     end_res_no = tok_at(line, 34, 37)
     end_res_id = make_resid(chain, end_res_no)
     return (start_res_id, end_res_id)
+
 
 def load_sheet_def(line):
     chain = tok_at(line, 22, 22)
@@ -127,7 +119,7 @@ def load_pdb(file):
             # tup[1] is a non-unique residue id
             res_atoms_by_resid.setdefault(tup[1], []).append(tup)
 
-    print "pdb: %d atoms, %d helix lines, %d sheet lines" % (nAtoms, nHelixLines, nSheetLines)
+    print >> sys.stderr, "pdb: %d atoms, %d helix lines, %d sheet lines" % (nAtoms, nHelixLines, nSheetLines)
 
     process_residues()
 
@@ -148,7 +140,7 @@ def process_residues():
         sorted_residues.append((resid, (x, y, z)))
     # sort by id ([0])
     sorted_residues.sort(key=lambda r: r[0])
-    print "min: %f, %f, %f; max: %f, %f, %f" % (xmin, ymin, zmin, xmax, ymax, zmax)
+    print >> sys.stderr, "min res: %f, %f, %f; max res: %f, %f, %f" % (xmin, ymin, zmin, xmax, ymax, zmax)
 
 
 def euclidean_dist(one, two):
@@ -164,10 +156,11 @@ def euclidean_dist(one, two):
     return dx + dy + dz
 
 
+# Big, fat n^2
 def SFX(ys, xs):
     # 1st elt is distance, 2nd is index of winning vertex
     x_closest_y = [i for i in itertools.repeat(None, len(ys))]
-    print "%d ys, %d xs" % (len(ys), len(xs))
+    print >> sys.stderr, "%d ys, %d xs" % (len(ys), len(xs))
     for (iy, y) in enumerate(ys):
         nearest_d2 = 1.0e38
         for (ix, x) in enumerate(xs):
@@ -181,7 +174,6 @@ def SFX(ys, xs):
     return sfx
 
 
-# Big, fat n^2
 def SFN(carbons, vertices):
     sfn = SFX(carbons, vertices)
     return sfn
@@ -194,11 +186,11 @@ def SFP(vertices, carbons):
 
 # ATOM is: (atomid, resid, (x, y, z), symbol)
 def extract_carbons():
-    print "%d atoms..." % len(atom_defs_by_id.values())
+    print >> sys.stderr, "%d atoms..." % len(atom_defs_by_id.values())
 #    print "some...", "\n".join(str(atom_defs_by_id.values()[0:5]))
     carbons = [atom[2] for atom in atom_defs_by_id.values() if atom[3] == 'C']
-    print "carbons[0]:", carbons[0]
-    print "carbons[0][0]:", carbons[0][0]
+    print >> sys.stderr, "carbons[0]:", carbons[0]
+    print >> sys.stderr, "carbons[0][0]:", carbons[0][0]
     assert isinstance(carbons[0][0], float)
     return carbons
 
@@ -209,15 +201,14 @@ def read_vertices(fname):
         for line in f:
             (x, y, z) = line.split()
             vertices.append((float(x),float(y),float(z)))
-    print "vertices[0]:", vertices[0]
-    print "vertices[0][0]:", vertices[0][0]
+    print >> sys.stderr, "vertices[0]:", vertices[0]
+    print >> sys.stderr, "vertices[0][0]:", vertices[0][0]
     assert isinstance(vertices[0][0], float)
     return vertices
 
 
 # -- &&& how do I know that the axes are even the same 'handedness'?
 # -- (can see them trying at least, if pitifully, with sse.py)
-# eg, 1AGW, [vol, laplace]
 def main(args):
     pdb_fname = args[0]
     vertices_fname = args[1]
@@ -226,15 +217,13 @@ def main(args):
     carbons = extract_carbons()
     vertices = read_vertices(vertices_fname)
 
-    print "%d carbons" % len(carbons)
-    print "%d vertices" % len(vertices)
+    print >> sys.stderr, "%d carbons" % len(carbons)
+    print >> sys.stderr, "%d vertices" % len(vertices)
 
     sfp = SFP(vertices, carbons)
     sfn = SFN(carbons, vertices)
 
-    print "SFP %f" % sfp
-    print "SFN %f" % sfn
-
+    print "SFN %f SFP %f" % (sfn, sfp)
 
 if __name__ == "__main__":
     args = sys.argv[1:]

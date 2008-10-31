@@ -128,8 +128,8 @@ unsigned top_level = 0, n_unbeaten = 0;
          }
       }
    }
-cout << "top level: " << top_level << endl
-     << "unbeat: " << n_unbeaten << endl;
+//cout << "top level: " << top_level << endl
+//     << "unbeat: " << n_unbeaten << endl;
 }
 
 

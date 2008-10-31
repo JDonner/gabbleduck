@@ -106,7 +106,7 @@ BetaPipeline::BetaPipeline(ImageType::Pointer fullImage,
    hessian_ = HessianFilterType::New();
    // 1.0 is default sigma value. Units are image's physical units
    // (see itkGaussianDerivativeImageFunction, which all the rest use).
-   hessian_->SetSigma(SigmaOfGaussian);
+   hessian_->SetSigma(constants::SigmaOfGaussian);
    hessian_->SetInput(resampler_->GetOutput());
 
    // file:///big/common/software/insight/install/html/classitk_1_1SymmetricEigenAnalysisImageFilter.html

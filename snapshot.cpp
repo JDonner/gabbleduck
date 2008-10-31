@@ -13,9 +13,9 @@ ImageType::Pointer g_snapshot_image;
 void setup_snapshot_image(string basename, ImageType::Pointer model)
 {
    ImageType::SpacingType spacing = model->GetSpacing();
-   spacing[0] /= ImageZoom;
-   spacing[1] /= ImageZoom;
-   spacing[2] /= ImageZoom;
+   spacing[0] /= constants::ImageZoom;
+   spacing[1] /= constants::ImageZoom;
+   spacing[2] /= constants::ImageZoom;
 
    g_snapshot_image = ImageType::New();
    g_snapshot_image->SetSpacing( spacing );
@@ -26,9 +26,9 @@ void setup_snapshot_image(string basename, ImageType::Pointer model)
 
    // size is in pixels
    ImageType::SizeType doubled_size(size);
-   doubled_size[0] *= ImageZoom;
-   doubled_size[1] *= ImageZoom;
-   doubled_size[2] *= ImageZoom;
+   doubled_size[0] *= constants::ImageZoom;
+   doubled_size[1] *= constants::ImageZoom;
+   doubled_size[2] *= constants::ImageZoom;
    g_snapshot_image->SetRegions( doubled_size );
 
    g_snapshot_image->Allocate();
@@ -56,20 +56,21 @@ void add_seeds_to_snapshot(Seeds const& seeds,
 
 
 // <basename> == eg, 1AGW
-string beta_point_image_name(string basename,
-                             double beta_thickness,
-                             double sigma,
-                             double window_width,
-                             double beta_falloff_factor
-                             )
+string beta_output_name(string basename,
+                        double beta_thickness,
+                        double sigma,
+                        double window_width,
+                        double beta_falloff_factor
+                        )
 {
    ostringstream oss;
    set_nice_numeric_format(oss);
+   // &&& Maybe resolution as well, from the file itself.
    oss << basename
-       << ".bt=" << beta_thickness
-       << ".sig=" << sigma
-       << ".wnd=" << window_width
-       << ".bfal=" << beta_falloff_factor
+       << "-bt=" << beta_thickness
+       << "-sig=" << sigma
+       << "-wnd=" << window_width
+       << "-bfal=" << beta_falloff_factor
       ;
 
    return oss.str();
@@ -91,7 +92,7 @@ void snapshot_beta_points(Nodes const& nodes)
       PixelType density = g_snapshot_image->GetPixel(index);
       // There is no natural beta intensity (except maybe beta-like-ness,
       // which we don't keep)
-      density += FauxBetaPointDensity;
+      density += constants::FauxBetaPointDensity;
       g_snapshot_image->SetPixel(index, density);
    }
 }
@@ -116,7 +117,7 @@ void write_snapshot_image(string fname)
 void maybe_snap_image(unsigned n_betas, Nodes const& nodes)
 {
    static unsigned s_iSeries = 0;
-   static unsigned s_snap_at = SnapshotIntervalBase;
+   static unsigned s_snap_at = constants::SnapshotIntervalBase;
    static time_t s_then = ::time(0);
 
    if (n_betas == s_snap_at) {
@@ -130,16 +131,16 @@ void maybe_snap_image(unsigned n_betas, Nodes const& nodes)
       snapshot_beta_points(nodes);
       write_snapshot_image(s_snapshot_basename + ".vtk");
 
-      s_snap_at = SnapshotIntervalBase * unsigned(::pow(SnapshotIntervalPower, s_iSeries));
+      s_snap_at = constants::SnapshotIntervalBase * unsigned(::pow(constants::SnapshotIntervalPower, s_iSeries));
 
       // If <FinalSnapshot> == 0 indicates infinite
-      if (FinalSnapshot and FinalSnapshot <= s_iSeries) {
+      if (constants::FinalSnapshot and constants::FinalSnapshot <= s_iSeries) {
          LongEnoughException long_enough;
          throw long_enough;
       }
    }
 
-   if (MaxPoints and MaxPoints <= n_betas) {
+   if (constants::MaxPoints and constants::MaxPoints <= n_betas) {
       //      ostringstream oss;
       //      oss << s_snapshot_basename << "." << n_betas << ".vtk";
 
@@ -152,7 +153,7 @@ void maybe_snap_image(unsigned n_betas, Nodes const& nodes)
    if ((n_betas % 1000) == 0) {
       time_t now = ::time(0);
       time_t elapsed = now - s_then;
-      g_log << "Progress: " << n_betas << " / " << MaxPoints << "; "
+      g_log << "Progress: " << n_betas << " / " << constants::MaxPoints << "; "
             << elapsed << " secs" << endl;
       s_then = now;
    }

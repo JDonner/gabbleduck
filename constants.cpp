@@ -1,5 +1,8 @@
 #include "constants.h"
 
+namespace constants
+{
+
 // &&& Make it a function of the map resolution?
 double BetaThickness = 5.0;
 
@@ -35,7 +38,7 @@ double SeedDensityFalloff = 0.8;
 // Or, a binary search?
 double LineIncrement = 0.25;
 
-double SkeletonMergeThreshold = BetaThickness;
+// double SkeletonMergeThreshold = BetaThickness;
 
 // Not a physical constant; maybe belongs in instrument...
 unsigned SnapshotIntervalBase = 500;
@@ -50,3 +53,5 @@ double FauxBetaPointDensity = 0.1;
 double SeedsEmphFactor;
 
 unsigned ImageZoom = 2;
+
+} // namespace constants

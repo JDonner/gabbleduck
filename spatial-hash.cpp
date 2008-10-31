@@ -32,7 +32,10 @@ void SpatialHash::init(ImageType::PointType origin,
 
    this->stride_1_ = this->n_cells_[2];
    this->stride_0_ = this->stride_1_ * this->n_cells_[1];
-   this->cells_.resize(this->n_cells_[0] * this->n_cells_[1] * this->n_cells_[2], 0);
+   assert(this->cells_.empty());
+   unsigned final_size = this->n_cells_[0] * this->n_cells_[1] * this->n_cells_[2];
+   assert(this->cells_.capacity() < final_size);
+   this->cells_.resize(final_size, 0);
 }
 
 void SpatialHash::addPt(PointType const& physPt)
@@ -53,7 +56,7 @@ bool SpatialHash::isWithinDistanceOfAnything(PointType const& physPt,
    Index idx = index_of(physPt);
    Cells nbrs;
    get_neighbors(idx, nbrs);
-   // 27 = we include the center cell itself, too.
+   // 27 <= we include the center cell itself, too.
    assert(nbrs.size() <= 27);
    for (Cells::const_iterator itCells = nbrs.begin(), endCells = nbrs.end();
         itCells != endCells; ++itCells) {
@@ -78,10 +81,10 @@ SpatialHash::Index SpatialHash::index_of(PointType const& physPt) const
       idx[i] = unsigned(zeroed[i] / this->cell_phys_extent_[i]);
    }
 #if WANT_GRID_BOUNDS_CHECKING
-      assert(0 <= idx[0] and idx[0] < (int)this->n_cells_[0]);
-      assert(0 <= idx[1] and idx[1] < (int)this->n_cells_[1]);
-      assert(0 <= idx[2] and idx[2] < (int)this->n_cells_[2]);
-#endif // WANT_GRID_BOUNDS_CHECKING
+   assert(0 <= idx[0] and idx[0] < (int)this->n_cells_[0]);
+   assert(0 <= idx[1] and idx[1] < (int)this->n_cells_[1]);
+   assert(0 <= idx[2] and idx[2] < (int)this->n_cells_[2]);
+#endif
    return idx;
 }
 
@@ -91,7 +94,7 @@ unsigned SpatialHash::offset_of(Index const& idx) const
    assert(0 <= idx[0] and idx[0] < (int)this->n_cells_[0]);
    assert(0 <= idx[1] and idx[1] < (int)this->n_cells_[1]);
    assert(0 <= idx[2] and idx[2] < (int)this->n_cells_[2]);
-#endif // WANT_GRID_BOUNDS_CHECKING
+#endif
 
    unsigned offset =
       idx[0] * this->stride_0_ +
@@ -110,7 +113,7 @@ SpatialHash::Pts* SpatialHash::pts_at(int offset)
 {
 #if WANT_GRID_BOUNDS_CHECKING
    assert(0 <= offset and offset < (int)this->cells_.size());
-#endif // WANT_GRID_BOUNDS_CHECKING
+#endif
 
    Pts* cell = this->cells_[offset];
    if (not cell) {

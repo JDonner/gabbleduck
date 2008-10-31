@@ -9,6 +9,8 @@
   For an 8 Angstrom resolution map, 5 Angstroms is about right (pg 13)
 *********************************************************************/
 
+namespace constants
+{
 
 // &&& Make it a function of the map resolution?
 extern double BetaThickness;
@@ -22,7 +24,7 @@ extern double BetaThicknessFlex;
 
 extern double BetaMin;
 extern double BetaMax;
-extern double SkeletonMergeThreshold;
+//extern double SkeletonMergeThreshold;
 
 // Density, below which we don't even bother to check whether it's
 // a local maxima. As good as 0, in other words.
@@ -47,6 +49,7 @@ extern double SigmaOfGaussian;
 // Not a physical constant; maybe belongs in instrument...
 extern unsigned SnapshotIntervalBase;
 extern unsigned SnapshotIntervalPower;
+
 // Beta points don't have an intensity but we want to use 3D density
 // methods to show them, so this is the density we give them.
 extern double FauxBetaPointDensity;
@@ -76,7 +79,6 @@ extern unsigned FinalSnapshot;
      the same as the feature size.
    * Work on triangularization, skeletonization
      - because, this way I can automate the search for good parameters.
-   * Why isn't it exhausting?
    * Look at their data
    * translate the support for gaussian, from physical.
       ('too_small') - ach, just give it a surviving size
@@ -84,10 +86,11 @@ extern unsigned FinalSnapshot;
    * The big time-saver would be to convert from double to float.
 
    * subtract out the alphas' contributions!
-
  */
 
 // Dr He's recommendation on generating images
 // pdb2mrc 2.pdb a.mrc res=10 apix=1.0 center
+
+} // namespace constants
 
 #endif // CONSTANTS_H

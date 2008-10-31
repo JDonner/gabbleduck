@@ -3,6 +3,7 @@
 import collections
 import threading
 import subprocess
+import glob
 
 
 class ThreadQueue(object):
@@ -32,42 +33,46 @@ class ThreadQueue(object):
         for i in range(self.n_threads):
             self.thread_objs[i].start()
 
-    def wait_to_finish(self):
+    def wait_for_threads_to_finish(self):
         for i in range(self.n_threads):
-            # a bit inelegant, but we don't care
+            # not inelegant (reaps in fixed order)
             self.thread_objs[i].join()
 
 
 def spawnWork(fname, falloff, sigma):
-#    args = "--SeedDensityFalloff=%f" % falloff
-#    "--FinalSnapshot=0" "--SigmaOfGaussian=%f" % sigma "--MaxPoints=10000 %s" % fname
-    subprocess.call(["./gabble",
-                     "--FinalSnapshot=0",
-                     "--SigmaOfGaussian=%f" % sigma,
-                     "--SeedDensityFalloff=%f" % falloff,
-                     "--RequiredNewPointSeparation=0.25",
-                     "--MaxPoints=0",
-                     fname])
+    cmd_line_parts = ["./find-sheets",
+                      "--FinalSnapshot=0",
+                      "--SigmaOfGaussian=%f" % sigma,
+                      "--SeedDensityFalloff=%f" % falloff,
+                      "--RequiredNewPointSeparation=0.25",
+                      "--MaxPoints=0",
+                      fname]
+
+    print "running: ", ' '.join(cmd_line_parts)
+
+    subprocess.call(cmd_line_parts)
 
 
+# (for debugging)
 def fakeSpawnWork(fname, falloff, sigma):
-    print "executing gabble %s, %f, %f" % (fname, falloff, sigma)
-    subprocess.call(["sleep", "10"])
+    print "pretending to execute gabble %s, %f, %f" % (fname, falloff, sigma)
+    subprocess.call(["sleep", "1"])
 
 
+# What each 'thread' runs
 def runThread(tq):
     while True:
         work = tq.dequeue()
         if work is None:
-            break
+            exit()
             # we're done; we'll be collected
         else:
             (fname, falloff, sigma) = work
             spawnWork(fname, falloff, sigma)
 
 
-def queue_up_work(tq, n_threads):
-    for fname in ["1AGW.mrc", "1CID.mrc"]:
+def queue_up_work(tq, n_threads, mrc_files):
+    for fname in mrc_files:
         for falloff in [0.1, 0.3, 0.5, 0.7, 0.9, 1.0]:
             # 9 & 11 are not very good
             for sigma in [1.0, 2.0, 3.0, 4.0, 5.0, 7.0, 9.0]:
@@ -79,10 +84,15 @@ def queue_up_work(tq, n_threads):
 
 
 def main():
-    tq = ThreadQueue(4)
+    num_processors = 4
+    tq = ThreadQueue(num_processors)
     tq.start()
-    queue_up_work(tq, 4)
-    tq.wait_to_finish()
+    # Apply to all .mrc files in current directory
+    mrc_files = glob.glob('*.mrc')
+    print "using %d processors" % num_processors
+    print "Files: ", ", ".join(mrc_files)
+    queue_up_work(tq, num_processors, mrc_files)
+    tq.wait_for_threads_to_finish()
 
 
 if __name__ == "__main__":

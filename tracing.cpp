@@ -14,9 +14,6 @@
 
 using namespace std;
 
-typedef queue<PointType> PointQueue;
-
-
 
 void CalcEigenStuff(Image::Pointer fullImage, PointType const& physPt,
                     EigenValues& outEVals, EigenVectors& outEVecs);
@@ -50,18 +47,20 @@ void FindBetaNodes(ImageType::Pointer image,
    unsigned nPixels[Dimension];
    double physSpacing[Dimension];
    ImageType::PointType image_origin = image->GetOrigin();
-   // ImageType::SizeType's indexes are fastest-moving first, in ours, they're last. So, we reverse them.
+   // ImageType::SizeType's indexes are fastest-moving first, in ours,
+   // they're last. So, we reverse them.
    for (unsigned i = 0; i < Dimension; ++i) {
       nPixels[i] = size[Dimension - 1 - i];
       // I assume 'fastest-moving' == 0 here, too...
       physSpacing[i] = spacing[Dimension - 1 - i];
    }
 
-   s_hash.init(image_origin, RequiredNewPointSeparation, nPixels, physSpacing);
+   s_hash.init(image_origin, constants::RequiredNewPointSeparation, nPixels, physSpacing);
 
+   typedef queue<PointType> PointQueue;
    PointQueue possible_beta_points;
 
-cout << "image origin: " << image->GetOrigin() << endl;
+//cout << "image origin: " << image->GetOrigin() << endl;
 
    // Load possible betas
    for (Seeds::const_iterator it = seeds.begin(), end = seeds.end();
@@ -70,17 +69,15 @@ cout << "image origin: " << image->GetOrigin() << endl;
 
       image->TransformIndexToPhysicalPoint(*it, physPt);
       possible_beta_points.push(physPt);
-//cout << __FILE__ << " seed: " << *it
-//     << "; physPt: " << physPt << endl;
    }
 
-   for (; not possible_beta_points.empty(); ) {
+   while (not possible_beta_points.empty()) {
       ++n_total_visited;
       PointType physPt = possible_beta_points.front();
       possible_beta_points.pop();
 
       bool bTooNearAnotherPoint = s_hash.isWithinDistanceOfAnything(
-         physPt, RequiredNewPointSeparation);
+         physPt, constants::RequiredNewPointSeparation);
 
       if (bTooNearAnotherPoint) {
          ++n_rejected_as_too_close;
@@ -121,7 +118,6 @@ cout << "image origin: " << image->GetOrigin() << endl;
             for (Points::const_iterator it = intersections.begin(),
                     end = intersections.end();
                  it != end; ++it) {
-//cout << "adding a pt " << endl;
                possible_beta_points.push(*it);
             }
             outNodes.push_back(new Node(physPt, triangles));
@@ -193,16 +189,11 @@ bool PointIsBeta(PointType const& physPt,
    bool isBeta = false;
    if (PointIsPlanelike(evals)) {
 ++n_planelike_nodes;
-      isBeta = MeetsBetaCondition(physPt, evals, evecs, image, BetaMin, BetaMax);
+      isBeta = MeetsBetaCondition(physPt, evals, evecs, image, constants::BetaMin, constants::BetaMax);
    }
    else {
 ++n_non_planelike_nodes;
    }
-
-   // &&& This is where things get tougher
-//    double sheetMin, sheetMax;
-//    double t1 = v1.GetNorm(), t2 = v2.GetNorm(), t3 = v3.GetNorm();
-// cout << "vx: " << v1 << "; " << v2 << "; " << v3 << endl;
 
    return isBeta;
 }
@@ -237,16 +228,6 @@ void new_pt(PointType const& pt,
 }
 
 
-// void new_pt_index(PointType const& pt,
-//                   Image::SpacingType const& spacing,
-//                   ImageType::IndexType& newIndex)
-// {
-//    for (unsigned i = 0; i < Dimension; ++i) {
-//       newIndex[i] = int(pt[i] + spacing[i] / 2.0);
-//       assert(0 <= newPt[i]);
-//    }
-// }
-
 // Seeds are in pixels, no sense in anything else.
 // We want to resample (for a new image) against the original image,
 // for fidelity's sake. The shift is in physical coords.
@@ -265,38 +246,11 @@ double length_of_density(InterpolatorType::Pointer interpolator,
                          VectorType const& direction,
                          double max_dist, double increment)
 {
-
-// /big/common/software/insight-3.6/InsightToolkit-3.6.0/Testing/Code/BasicFilters/itkBSplineInterpolateImageFunctionTest.cxx
-
-//cout << "image size: " << image->GetBufferedRegion().GetSize() << endl;
-//interpolator->DebugOn();
-//   InterpolatorType::ContinuousIndexType cindex;
-//   cindex.CastFrom(initial_pt);
-// double pt_density = interpolator->Evaluate(initial_pt);
-// ImageType::IndexType index;
-// image->TransformPhysicalPointToIndex(initial_pt, index);
-// double index_density = interpolator->EvaluateAtIndex(index);
-// cout << "index_density: " << index_density
-//      << "pt_density: " << pt_density
-//      << endl;
-
-// double dens = image->GetPixel(index);
-// cout << "true dens: " << dens << endl;
-
-   // useless; looks to be just a floating point version of the index
-// cout << "initial_pt: " << initial_pt << "; "
-//      << "initial_density: " << initial_density << "; "
-//     << "cindex: " << cindex << "; "
-//     << "icindex: " << icindex << "; "
-//     << "dir: " << direction << "; "
-//     << "within: " << isWithin << "; "
-//     << endl;
-
    double density;
    VectorType vec = direction;
 
 
-if (initial_density < SeedDensityThreshold) {
+if (initial_density < constants::SeedDensityThreshold) {
 //cout << "low density? " << initial_density << " < " << SeedDensityThreshold << endl;
 ++n_lo_density_centers;
 return 0.0;
@@ -309,7 +263,7 @@ else {
    // forwards
    double fwd_length = 0.0;
    density = initial_density;
-   for (int times = 1; initial_density * SeedDensityFalloff <= density; ++times) {
+   for (int times = 1; initial_density * constants::SeedDensityFalloff <= density; ++times) {
       PointType test_pt = initial_pt + direction * times * increment;
       density = interpolator->Evaluate(test_pt);
       fwd_length = times * increment;
@@ -318,7 +272,7 @@ else {
    // backwards
    double bkwd_length = 0.0;
    density = initial_density;
-   for (int times = -1; initial_density * SeedDensityFalloff <= density; --times) {
+   for (int times = -1; initial_density * constants::SeedDensityFalloff <= density; --times) {
       PointType test_pt = initial_pt + direction * times * increment;
       density = interpolator->Evaluate(test_pt);
       bkwd_length = times * increment;
@@ -341,7 +295,7 @@ bool MeetsBetaCondition(PointType const& physPt,
                         ImageType::Pointer image,
                         double sheetMin, double sheetMax)
 {
-   double increment = LineIncrement * image->GetSpacing()[0];
+   double increment = constants::LineIncrement * image->GetSpacing()[0];
 //cout << "increment: " << increment << endl;
 
    InterpolatorType::Pointer interpolator = InterpolatorType::New();
@@ -371,11 +325,5 @@ cout << "yep it's spline, order: " << GabbleSplineOrder << endl;
       sheetMin <= t1 and t1 <= sheetMax and
       std::max(t1 / t2, t1 / t3) < std::min(t2 / t3, t3 / t2);
 
-// if (isBeta) {
-// cout << "ACTUAL BETA" << endl;
-// }
-// else {
-// cout << "failed beta" << endl;
-// }
    return isBeta;
 }

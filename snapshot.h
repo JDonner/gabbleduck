@@ -10,7 +10,7 @@ extern void setup_snapshot_image(std::string basename, ImageType::Pointer model)
 extern void add_seeds_to_snapshot(Seeds const& seeds,
                            ImageType::Pointer original_image,
                            double seeds_emph_factor);
-extern std::string beta_point_image_name(
+extern std::string beta_output_name(
    std::string basename,
    double beta_thickness,
    double sigma,

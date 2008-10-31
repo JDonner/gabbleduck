@@ -6,7 +6,6 @@
 #include "point.h"
 
 
-
 struct SpatialHash {
 public:
    // bunch of grouped points; grid cell. Cell /contents/, that is
@@ -42,7 +41,7 @@ public:
 
    Pts* pts_at(PointType const& pt);
    Pts* pts_at(Index idx);
-   Pts* pts_at(int offset);
+   Pts* pts_at(int offset /* int so we can check too-large numbers */);
 
    void get_neighbors(Index ctr, Cells& neighbors) const;
 

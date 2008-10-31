@@ -528,7 +528,10 @@ if __name__ == "__main__":
 #    basename = sys.argv[1]
 #    parms = sys.argv[2:]
     args = sys.argv[1:]
-    pairs = make_pairs(args)
-    print pairs
-    # eg laplace, gradient, whatever else
-    main(pairs)
+    if (len(args) % 2) != 0:
+        print "Need pairs, of op (eg vol, or beta) then file"
+    else:
+        pairs = make_pairs(args)
+        print pairs
+        # eg laplace, gradient, whatever else
+        main(pairs)
