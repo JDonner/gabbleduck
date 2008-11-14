@@ -13,9 +13,9 @@ ImageType::Pointer g_snapshot_image;
 void setup_snapshot_image(string basename, ImageType::Pointer model)
 {
    ImageType::SpacingType spacing = model->GetSpacing();
-   spacing[0] /= constants::ImageZoom;
-   spacing[1] /= constants::ImageZoom;
-   spacing[2] /= constants::ImageZoom;
+   spacing[0] /= constants::SnapshotImageZoom;
+   spacing[1] /= constants::SnapshotImageZoom;
+   spacing[2] /= constants::SnapshotImageZoom;
 
    g_snapshot_image = ImageType::New();
    g_snapshot_image->SetSpacing( spacing );
@@ -26,9 +26,9 @@ void setup_snapshot_image(string basename, ImageType::Pointer model)
 
    // size is in pixels
    ImageType::SizeType doubled_size(size);
-   doubled_size[0] *= constants::ImageZoom;
-   doubled_size[1] *= constants::ImageZoom;
-   doubled_size[2] *= constants::ImageZoom;
+   doubled_size[0] *= constants::SnapshotImageZoom;
+   doubled_size[1] *= constants::SnapshotImageZoom;
+   doubled_size[2] *= constants::SnapshotImageZoom;
    g_snapshot_image->SetRegions( doubled_size );
 
    g_snapshot_image->Allocate();
@@ -58,9 +58,11 @@ void add_seeds_to_snapshot(Seeds const& seeds,
 // <basename> == eg, 1AGW
 string beta_output_name(string basename,
                         double beta_thickness,
+                        double thickness_flex,
                         double sigma,
                         double window_width,
-                        double beta_falloff_factor
+                        double beta_falloff_factor,
+                        double point_sep
                         )
 {
    ostringstream oss;
@@ -68,9 +70,11 @@ string beta_output_name(string basename,
    // &&& Maybe resolution as well, from the file itself.
    oss << basename
        << "-bt=" << beta_thickness
+       << "-bflex=" << thickness_flex
        << "-sig=" << sigma
        << "-wnd=" << window_width
        << "-bfal=" << beta_falloff_factor
+       << "-sep=" << point_sep
       ;
 
    return oss.str();

@@ -10,6 +10,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <exception>
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
@@ -20,11 +21,14 @@ typedef itk::ImageFileReader<InputImageType> VolumeReaderType;
 
 using namespace std;
 
-// From 'base' from 'base.ext'
+// From 'base' from 'path/base.ext'
 string extract_basename(string fname)
 {
    string::size_type dot_pos = fname.rfind(".");
-   string base = fname.substr(0, dot_pos);
+   string::size_type slash_pos = fname.rfind("/");
+   string::size_type base_start = (slash_pos == string::npos) ? 0
+      : slash_pos + 1;
+   string base = fname.substr(base_start, dot_pos - base_start);
    return base;
 }
 
@@ -50,13 +54,19 @@ int main(int argc, char** argv)
    string temp_basepath = beta_output_name(
       basepath,
       constants::BetaThickness,
+      constants::BetaThicknessFlex,
       constants::SigmaOfGaussian,
       constants::WindowSize,
-      constants::SeedDensityFalloff);
-
+      constants::SeedDensityFalloff,
+      constants::RequiredNewPointSeparation);
 
    string temp_logname = temp_basepath + ".log";
    g_log.open(temp_logname.c_str());
+   if (not g_log.good()) {
+      ostringstream oss;
+      oss << "Problem opening: [" << temp_logname << "]";
+      throw runtime_error(oss.str().c_str());
+   }
    set_nice_numeric_format(g_log);
 
 dump_settings(g_vm, g_log);
@@ -107,7 +117,7 @@ g_log << "safe seeds: " << trueMaxSeeds.size()
 #endif
 
 //   // &&& could make this separate image...
-//   add_seeds_to_snapshot(trueMaxSeeds, image, g_vm["SeedsEmphFactor"].as<double>());
+//   add_seeds_to_snapshot(trueMaxSeeds, image, g_vm["SeedsDisplayEmphFactor"].as<double>());
 
    // rename file, now that we know how it turned out
    ostringstream oss;

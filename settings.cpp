@@ -1,6 +1,8 @@
 #include "settings.h"
 #include <string>
 #include <fstream>
+// For debugging...
+#include <iostream>
 
 using namespace std;
 
@@ -15,50 +17,52 @@ po::variables_map& set_up_options(int argc, char** argv)
    // in config file
    po::options_description config("Configuration");
    config.add_options()
+      // Descriptions, in particular:
+      // http://www.boost.org/doc/libs/1_35_0/doc/html/program_options/overview.html#id1251632
       ("help", "show options")
       ("BetaThickness", po::value<double>(&constants::BetaThickness)->default_value(5.0)->composing(),
-       "BetaThickness")
+       "BetaThickness; the number (in what units?) of the expected beta thickness")
       ("WindowSize", po::value<double>(&constants::WindowSize)->default_value(constants::BetaThickness)->composing(),
-       "WindowSize")
+       "WindowSize - heck if I know. I think it's the sampling window or something.")
       ("BetaThicknessFlex", po::value<double>(&constants::BetaThicknessFlex)->default_value(0.2)->composing(),
-       "BetaThicknessFlex")
+       "BetaThicknessFlex - How flexible to be, to count a piece as being beta (&&& when though?)")
       ("RequiredNewPointSeparation", po::value<double>(&constants::RequiredNewPointSeparation)->default_value(0.5)->composing(),
-       "RequiredNewPointSeparation")
-      // ("SkeletonMergeThreshold", po::value<double>(&constants::SkeletonMergeThreshold)->default_value(constants::BetaThickness)->composing(),
-      //  "SkeletonMergeThreshold")
+       "RequiredNewPointSeparation - I think this is the grid distance. Lower means finer, but more work.")
       // &&& Don't we want this to be based on statistics...? A couple std deviations
       // below the mean or something?
       ("SeedDensityThreshold", po::value<double>(&constants::SeedDensityThreshold)->default_value(0.1)->composing(),
-       "SeedDensityThreshold")
+       "SeedDensityThreshold. Value below which, though a seed may be a local maximum, we're still not interested. &&& Should be relative, bottom third or something.")
       ("SeedDensityFalloff", po::value<double>(&constants::SeedDensityFalloff)->default_value(0.8)->composing(),
-       "SeedDensityFalloff")
+       "SeedDensityFalloff - &&& Eh?")
       ("SeedDensityWorthinessThreshold", po::value<double>(&constants::SeedDensityWorthinessThreshold)->default_value(0.01)->composing(),
-       "SeedDensityWorthinessThreshold")
+       "SeedDensityWorthinessThreshold - &&& oops, what DensityThreshold then?")
       ("LineIncrement", po::value<double>(&constants::LineIncrement)->default_value(0.25)->composing(),
-       "LineIncrement")
+       "LineIncrement - we (&&& crudely) check for thickness by making constant-length advances along a line, to probe the end of a beta sheet. This is that constant. Wants binary search instead most likely.")
       ("SigmaOfGaussian", po::value<double>(&constants::SigmaOfGaussian)->default_value(constants::WindowSize)->composing(),
-       "SigmaOfGaussian")
+       "SigmaOfGaussian - &&& Hrm, need to remember")
 
       ("SnapshotIntervalBase", po::value<unsigned>(&constants::SnapshotIntervalBase)->default_value(0)->composing(),
-       "SnapshotIntervalBase")
+       "SnapshotIntervalBase - when you're debugging and want to see the progress of the algorithm incrementally, this is the base of base ^ power, in the number of points, that you make snapshots at")
       ("SnapshotIntervalPower", po::value<unsigned>(&constants::SnapshotIntervalPower)->default_value(2)->composing(),
        "SnapshotIntervalPower")
       ("FinalSnapshot", po::value<unsigned>(&constants::FinalSnapshot)->default_value(0)->composing(),
-       "FinalSnapshot")
+       "FinalSnapshot - after how many snapshots, to quit. 0=go to natural exhaustion (defunct - needed for old bug)")
 
       ("FauxBetaPointDensity", po::value<double>(&constants::FauxBetaPointDensity)->default_value(0.1)->composing(),
-       "FauxBetaPointDensity")
-      ("SeedsEmphFactor", po::value<double>(&constants::SeedsEmphFactor)->default_value(2.0)->composing(),
-       "SeedsEmphFactor")
-      ("ImageZoom", po::value<unsigned>(&constants::ImageZoom)->default_value(2)->composing(),
-       "ImageZoom")
+       "FauxBetaPointDensity - &&& I think this has to do with display")
+      ("SeedsDisplayEmphFactor", po::value<double>(&constants::SeedsDisplayEmphFactor)->default_value(2.0)->composing(),
+       "SeedsDisplayEmphFactor - when we're highlighting the original seeds, what emphasis of their original intensity should they have?")
+      ("SnapshotImageZoom", po::value<unsigned>(&constants::SnapshotImageZoom)->default_value(2)->composing(),
+       "SnapshotImageZoom - Magnifies the snapshots. Why I wanted to do this I don't recall.")
       ("MaxPoints", po::value<unsigned>(&constants::MaxPoints)->default_value(10000)->composing(),
-       "MaxPoints")
+       "MaxPoints - if the thing runs forever, cut it off at this number of points (defunct, needed for old bug)")
       ("OutputDir", po::value<string>()->default_value("output"), "output directory")
       ;
 
    // Hidden options, will be allowed both on command line and
    // in config file, but will not be shown to the user.
+   // A filename given without an option (eg ./find-seeds 1AGW.mrc)
+   // well, this <input-file> gets that implicitly.
    po::options_description hidden("Present, but to the user, implicit");
    hidden.add_options()
       ("input-file", po::value<string>(), "input file")
@@ -85,6 +89,7 @@ po::variables_map& set_up_options(int argc, char** argv)
    // dependent values, not user-settable
 
    if (not g_vm.count("WindowSize")) {
+      cout << "WindowSize not specified!" << endl;
       constants::WindowSize = g_vm["BetaThickness"].as<double>();
    }
 
@@ -93,6 +98,7 @@ po::variables_map& set_up_options(int argc, char** argv)
    // }
 
    if (not g_vm.count("SigmaOfGaussian")) {
+      cout << "Sigma not specified!" << endl;
       constants::SigmaOfGaussian = g_vm["WindowSize"].as<double>();
    }
 
@@ -133,9 +139,6 @@ void dump_settings(po::variables_map const& vm, ostream& os)
       << "vm[SeedDensityWorthinessThreshold]: " << vm["SeedDensityWorthinessThreshold"].as<double>() << '\n'
       << "SeedDensityWorthinessThreshold: " << constants::SeedDensityWorthinessThreshold << '\n'
       << '\n'
-      // << "vm[SkeletonMergeThreshold]: " << vm["SkeletonMergeThreshold"].as<double>() << '\n'
-      // << "SkeletonMergeThreshold: " << constants::SkeletonMergeThreshold << '\n'
-      // << '\n'
       << "vm[SnapshotIntervalBase]: " << vm["SnapshotIntervalBase"].as<unsigned>() << '\n'
       << "SnapshotIntervalBase: " << constants::SnapshotIntervalBase << '\n'
       << "vm[SnapshotIntervalPower]: " << vm["SnapshotIntervalPower"].as<unsigned>() << '\n'
@@ -145,11 +148,11 @@ void dump_settings(po::variables_map const& vm, ostream& os)
       << '\n'
       << "vm[FauxBetaPointDensity]: " << vm["FauxBetaPointDensity"].as<double>() << '\n'
       << "FauxBetaPointDensity: " << constants::FauxBetaPointDensity << '\n'
-      << "vm[SeedsEmphFactor]: " << vm["SeedsEmphFactor"].as<double>() << '\n'
-      << "SeedsEmphFactor: " << constants::SeedsEmphFactor << '\n'
+      << "vm[SeedsDisplayEmphFactor]: " << vm["SeedsDisplayEmphFactor"].as<double>() << '\n'
+      << "SeedsDisplayEmphFactor: " << constants::SeedsDisplayEmphFactor << '\n'
       << '\n'
-      << "vm[ImageZoom]: " << vm["ImageZoom"].as<unsigned>() << '\n'
-      << "ImageZoom: " << constants::ImageZoom << '\n'
+      << "vm[SnapshotImageZoom]: " << vm["SnapshotImageZoom"].as<unsigned>() << '\n'
+      << "SnapshotImageZoom: " << constants::SnapshotImageZoom << '\n'
       << '\n'
       << "vm[MaxPoints]: " << vm["MaxPoints"].as<unsigned>() << '\n'
       << "MaxPoints: " << constants::MaxPoints << '\n'

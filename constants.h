@@ -53,8 +53,8 @@ extern unsigned SnapshotIntervalPower;
 // Beta points don't have an intensity but we want to use 3D density
 // methods to show them, so this is the density we give them.
 extern double FauxBetaPointDensity;
-extern double SeedsEmphFactor;
-extern unsigned ImageZoom;
+extern double SeedsDisplayEmphFactor;
+extern unsigned SnapshotImageZoom;
 
 // Physical coordinates
 extern double RequiredNewPointSeparation;

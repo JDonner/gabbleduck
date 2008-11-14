@@ -67,7 +67,13 @@ void FindBetaNodes(ImageType::Pointer image,
         it != end; ++it) {
       PointType physPt;
 
-      image->TransformIndexToPhysicalPoint(*it, physPt);
+      IndexType seed = *it;
+      // &&& Could be stricter; none of the seeds should be 0,
+      // ie around the edge
+      assert(not (seed[0] == 0 or seed[1] == 0 or seed[2] == 0));
+      // &&& - we transform idx seed to physPt, and later we transform
+      // physPt back to an idx
+      image->TransformIndexToPhysicalPoint(seed, physPt);
       possible_beta_points.push(physPt);
    }
 
