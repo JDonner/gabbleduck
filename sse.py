@@ -64,7 +64,6 @@ def float_at(line, start, end):
 def int_at(line, start, end):
     return int(tok_at(line, start, end))
 
-# God this sucks; Python lacks.
 def residue_index(res0, res1):
     global sorted_residues
 
@@ -96,7 +95,6 @@ def make_resid(chainno, resno):
 #    print "chainno: ", chainno, "resno:", resno
     return "%3.3s:%5.5s" % (chainno, resno)
 
-#SHEET    2   A 5 ILE 1 184  ARG 1 190 -1  N  LEU 1 186   O  ILE 1 223
 def load_helix_def(line):
     chain = tok_at(line, 20, 20)
     start_res_no = tok_at(line, 23, 26)
@@ -105,7 +103,10 @@ def load_helix_def(line):
     end_res_id = make_resid(chain, end_res_no)
     return (start_res_id, end_res_id)
 
+# 42+ is for registration
+#SHEET    2   A 5 ILE 1 184  ARG 1 190 -1  N  LEU 1 186   O  ILE 1 223
 def load_sheet_def(line):
+    # 12-14 sheet id
     chain = tok_at(line, 22, 22)
     start_res_no = tok_at(line, 23, 26)
     start_res_id = make_resid(chain, start_res_no)

@@ -6,6 +6,9 @@ import sys
 
 def main(args):
     fname = args[0]
+    top_n = int(args[1])
+
+    print "looking at [%s], top [%d]" % (fname, top_n)
 
     # eg {'1AGW':[vals1, vals2, ...], 'BVPP':[vals1, vals2, ...], ...}
     valses_by_protein = {}
@@ -23,7 +26,8 @@ def main(args):
     ordered_valses_by_protein = sort_by_best(valses_by_protein)
 
     for protein, valses in ordered_valses_by_protein.items():
-        for i in range(5):
+        # print the parms with the few best fits (lowest sfn x sfp)
+        for i in range(top_n):
             print protein, "\t".join(["%s:%0.3f" %
                                       (pair[0], pair[1])
                                       for pair in valses[i].items()])
@@ -47,4 +51,8 @@ def sort_by_best(valses_by_protein):
 
 if __name__ == "__main__":
     args = sys.argv[1:]
+    if len(args) < 1:
+        args.append("stats.txt")
+    if len(args) < 2:
+        args.append(5)
     main(args)

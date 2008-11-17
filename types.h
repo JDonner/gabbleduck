@@ -5,6 +5,7 @@
 
 #include <itkImage.h>
 #include <itkTranslationTransform.h>
+// Discussed in section 6.5.1 (page 158) of the itk Software Guide pdf.
 #include <itkHessianRecursiveGaussianImageFilter.h>
 
 #include <itkImageAdaptor.h>

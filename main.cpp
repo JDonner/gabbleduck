@@ -56,7 +56,6 @@ int main(int argc, char** argv)
       constants::BetaThickness,
       constants::BetaThicknessFlex,
       constants::SigmaOfGaussian,
-      constants::WindowSize,
       constants::SeedDensityFalloff,
       constants::RequiredNewPointSeparation);
 
@@ -97,7 +96,6 @@ g_log << "safe seeds: " << trueMaxSeeds.size()
       << "; max seed density: " << maxSeedDensity
       << endl;
 
-
 #if WANT_SNAPSHOTS
    setup_snapshot_image(temp_basepath, image);
 #endif
@@ -116,8 +114,9 @@ g_log << "safe seeds: " << trueMaxSeeds.size()
    snapshot_beta_points(betaNodes);
 #endif
 
-//   // &&& could make this separate image...
-//   add_seeds_to_snapshot(trueMaxSeeds, image, g_vm["SeedsDisplayEmphFactor"].as<double>());
+   if (constants::ShowSeeds) {
+      add_seeds_to_snapshot(trueMaxSeeds, image, g_vm["SeedsDisplayEmphFactor"].as<double>());
+   }
 
    // rename file, now that we know how it turned out
    ostringstream oss;

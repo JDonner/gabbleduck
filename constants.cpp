@@ -12,23 +12,19 @@ double BetaThicknessFlex = 0.2;
 double BetaMin = BetaThickness * (1.0 - BetaThicknessFlex);
 double BetaMax = BetaThickness * (1.0 + BetaThicknessFlex);
 
-// &&& unused, but needs to be
-// Should be the size of the feature to be detected, ie, BetaThickness.
-double WindowSize = BetaThickness;
-
-// &&& don't know what this is. Should be BetaThickness, though, apparently.
-double SigmaOfGaussian = WindowSize;
-
-// Density, below which we don't even bother to check whether it's
-// a local maxima. As good as 0, in other words.
-double SeedDensityThreshold = 0.1;
+// from equation (7) from paper.
+double SigmaOfGaussian = BetaThickness;
 
 // Physical coordinates
 double RequiredNewPointSeparation = 0.5;
 
-// A seed (local maxima)'s density must be at least 80% of the highest
-// seed density
-double SeedDensityWorthinessThreshold = 0.8;
+// Density in the original image, below which we don't even bother to
+// check whether it's a local maxima. As good as 0, in other words.
+double SeedDensityThreshold = 0.05;
+
+// A seed (local maxima)'s density must be at least this % (x 100 of
+// course) of the highest seed density.
+double SeedDensityWorthinessThreshold = 0.7;
 
 // At what falloff, from a maximum, is it the end of the beta region?
 // We're saying, here, when it reaches half the highest density.
@@ -49,8 +45,9 @@ unsigned MaxPoints = 10000;
 
 // Beta points don't have an intensity but we want to use 3D density
 // methods to show them, so this is the density we give them.
-double FauxBetaPointDensity = 0.1;
-double SeedsDisplayEmphFactor;
+double BetaPointFakeDensity = 0.1;
+bool ShowSeeds = false;
+double SeedsDisplayEmphFactor = 2.0;
 
 unsigned SnapshotImageZoom = 2;
 

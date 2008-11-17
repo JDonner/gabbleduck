@@ -60,7 +60,6 @@ string beta_output_name(string basename,
                         double beta_thickness,
                         double thickness_flex,
                         double sigma,
-                        double window_width,
                         double beta_falloff_factor,
                         double point_sep
                         )
@@ -72,7 +71,6 @@ string beta_output_name(string basename,
        << "-bt=" << beta_thickness
        << "-bflex=" << thickness_flex
        << "-sig=" << sigma
-       << "-wnd=" << window_width
        << "-bfal=" << beta_falloff_factor
        << "-sep=" << point_sep
       ;
@@ -96,7 +94,7 @@ void snapshot_beta_points(Nodes const& nodes)
       PixelType density = g_snapshot_image->GetPixel(index);
       // There is no natural beta intensity (except maybe beta-like-ness,
       // which we don't keep)
-      density += constants::FauxBetaPointDensity;
+      density += constants::BetaPointFakeDensity;
       g_snapshot_image->SetPixel(index, density);
    }
 }

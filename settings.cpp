@@ -22,8 +22,6 @@ po::variables_map& set_up_options(int argc, char** argv)
       ("help", "show options")
       ("BetaThickness", po::value<double>(&constants::BetaThickness)->default_value(5.0)->composing(),
        "BetaThickness; the number (in what units?) of the expected beta thickness")
-      ("WindowSize", po::value<double>(&constants::WindowSize)->default_value(constants::BetaThickness)->composing(),
-       "WindowSize - heck if I know. I think it's the sampling window or something.")
       ("BetaThicknessFlex", po::value<double>(&constants::BetaThicknessFlex)->default_value(0.2)->composing(),
        "BetaThicknessFlex - How flexible to be, to count a piece as being beta (&&& when though?)")
       ("RequiredNewPointSeparation", po::value<double>(&constants::RequiredNewPointSeparation)->default_value(0.5)->composing(),
@@ -38,7 +36,7 @@ po::variables_map& set_up_options(int argc, char** argv)
        "SeedDensityWorthinessThreshold - &&& oops, what DensityThreshold then?")
       ("LineIncrement", po::value<double>(&constants::LineIncrement)->default_value(0.25)->composing(),
        "LineIncrement - we (&&& crudely) check for thickness by making constant-length advances along a line, to probe the end of a beta sheet. This is that constant. Wants binary search instead most likely.")
-      ("SigmaOfGaussian", po::value<double>(&constants::SigmaOfGaussian)->default_value(constants::WindowSize)->composing(),
+      ("SigmaOfGaussian", po::value<double>(&constants::SigmaOfGaussian)->default_value(constants::BetaThickness)->composing(),
        "SigmaOfGaussian - &&& Hrm, need to remember")
 
       ("SnapshotIntervalBase", po::value<unsigned>(&constants::SnapshotIntervalBase)->default_value(0)->composing(),
@@ -48,10 +46,14 @@ po::variables_map& set_up_options(int argc, char** argv)
       ("FinalSnapshot", po::value<unsigned>(&constants::FinalSnapshot)->default_value(0)->composing(),
        "FinalSnapshot - after how many snapshots, to quit. 0=go to natural exhaustion (defunct - needed for old bug)")
 
-      ("FauxBetaPointDensity", po::value<double>(&constants::FauxBetaPointDensity)->default_value(0.1)->composing(),
-       "FauxBetaPointDensity - &&& I think this has to do with display")
+      ("BetaPointFakeDensity", po::value<double>(&constants::BetaPointFakeDensity)->default_value(0.1)->composing(),
+       "BetaPointFakeDensity - the fake density value to use for beta points, to let us see them in a density image")
+
+      ("ShowSeeds", po::value<bool>(&constants::ShowSeeds)->default_value(false)->composing(),
+       "ShowSeeds")
       ("SeedsDisplayEmphFactor", po::value<double>(&constants::SeedsDisplayEmphFactor)->default_value(2.0)->composing(),
        "SeedsDisplayEmphFactor - when we're highlighting the original seeds, what emphasis of their original intensity should they have?")
+
       ("SnapshotImageZoom", po::value<unsigned>(&constants::SnapshotImageZoom)->default_value(2)->composing(),
        "SnapshotImageZoom - Magnifies the snapshots. Why I wanted to do this I don't recall.")
       ("MaxPoints", po::value<unsigned>(&constants::MaxPoints)->default_value(10000)->composing(),
@@ -88,18 +90,9 @@ po::variables_map& set_up_options(int argc, char** argv)
    ///////////////////////////////////////////////
    // dependent values, not user-settable
 
-   if (not g_vm.count("WindowSize")) {
-      cout << "WindowSize not specified!" << endl;
-      constants::WindowSize = g_vm["BetaThickness"].as<double>();
-   }
-
-   // if (not g_vm.count("SkeletonMergeThreshold")) {
-   //    constants::SkeletonMergeThreshold = g_vm["BetaThickness"].as<double>();
-   // }
-
    if (not g_vm.count("SigmaOfGaussian")) {
       cout << "Sigma not specified!" << endl;
-      constants::SigmaOfGaussian = g_vm["WindowSize"].as<double>();
+      constants::SigmaOfGaussian = g_vm["BetaThickness"].as<double>();
    }
 
    constants::BetaMin = constants::BetaThickness * (1.0 - constants::BetaThicknessFlex);
@@ -114,9 +107,6 @@ void dump_settings(po::variables_map const& vm, ostream& os)
    os
       << "vm[SeedDensityThreshold]: " << vm["SeedDensityThreshold"].as<double>() << '\n'
       << "SeedDensityThreshold: " << constants::SeedDensityThreshold << '\n'
-      << '\n'
-      << "vm[WindowSize]: " << vm["WindowSize"].as<double>() << '\n'
-      << "WindowSize: " << constants::WindowSize << '\n'
       << '\n'
       << "vm[SigmaOfGaussian]: " << vm["SigmaOfGaussian"].as<double>() << '\n'
       << "SigmaOfGaussian: " << constants::SigmaOfGaussian << '\n'
@@ -146,8 +136,8 @@ void dump_settings(po::variables_map const& vm, ostream& os)
       << "vm[FinalSnapshot]: " << vm["FinalSnapshot"].as<unsigned>() << '\n'
       << "FinalSnapshot: " << constants::FinalSnapshot << '\n'
       << '\n'
-      << "vm[FauxBetaPointDensity]: " << vm["FauxBetaPointDensity"].as<double>() << '\n'
-      << "FauxBetaPointDensity: " << constants::FauxBetaPointDensity << '\n'
+      << "vm[BetaPointFakeDensity]: " << vm["BetaPointFakeDensity"].as<double>() << '\n'
+      << "BetaPointFakeDensity: " << constants::BetaPointFakeDensity << '\n'
       << "vm[SeedsDisplayEmphFactor]: " << vm["SeedsDisplayEmphFactor"].as<double>() << '\n'
       << "SeedsDisplayEmphFactor: " << constants::SeedsDisplayEmphFactor << '\n'
       << '\n'

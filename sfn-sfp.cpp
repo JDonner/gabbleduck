@@ -2,6 +2,10 @@
 #include <iostream>
 #include <vector>
 #include <limits>
+#include <cmath>
+
+// (take out, or use your own appropriate '-march')
+// g++ -W -Wall -O2 -march=barcelona -o sfn-sfp sfn-sfp.cpp
 
 using namespace std;
 
@@ -20,43 +24,49 @@ void load_pts(ifstream& in, Pts& pts)
    while (in) {
       // It doesn't actually matter what they are, as long as we're
       // consistent.
-      in >> pts.x >> pts.y >> pts.z;
+      in >> pt.x >> pt.y >> pt.z;
+      pts.push_back(pt);
    }
 }
 
 
-# Big, fat n^2
+
+// Big, fat n^2
 float SFX(Pts const& ys, Pts const& xs)
 {
-    # 1st elt is distance, 2nd is index of winning vertex
-    x_closest_y = [i for i in itertools.repeat(None, len(ys))]
-    print >> sys.stderr, "%d ys, %d xs" % (len(ys), len(xs))
-    for (Pts::const_iterator ity = ys.begin, endy = ys.end();
-         ity != endy; ++ity) {
-    for (iy, y) in enumerate(ys):
-        nearest_d2 = numeric_limits<float>::max;
-        for (Pts::const_iterator itx = xs.begin, endx = xs.end();
-            itx != endx; ++itx) {
+   float sum_ds = 0.0;
+   for (Pts::const_iterator ity = ys.begin(), endy = ys.end();
+        ity != endy; ++ity) {
+      float nearest_dist2 = numeric_limits<float>::max();
+      for (Pts::const_iterator itx = xs.begin(), endx = xs.end();
+           itx != endx; ++itx) {
+         float dx = ity->x - itx->x,
+            dy = ity->y - itx->y,
+            dz = ity->z - itx->z;
+         float dist2 = dx * dx + dy * dy + dz * dz;
+         if (dist2 < nearest_dist2) {
+            nearest_dist2 = dist2;
+         }
+      }
+      sum_ds += sqrtf(nearest_dist2);
+   }
 
-        for (ix, x) in enumerate(xs):
-            d2 = euclidean_dist_2(y, x)
-            if (d2 < nearest_d2):
-                x_closest_y[iy] = d2
-                nearest_d2 = d2
-    # ... something...
-    sfx = sum(map(math.sqrt, x_closest_y))
-    sfx /= len(x_closest_y)
-    return sfx
-                   }
-
-def SFN(carbons, vertices):
-    sfn = SFX(carbons, vertices)
-    return sfn
+   return sum_ds / ys.size();
+}
 
 
-def SFP(vertices, carbons):
-    sfp = SFX(vertices, carbons)
-    return sfp
+// false negatives, ie betas that are in PDB but are undetected
+float SFN(Pts const& carbons, Pts const& vertices)
+{
+   float sfn = SFX(carbons, vertices);
+   return sfn;
+}
+
+float SFP(Pts const& vertices, Pts const& carbons)
+{
+   float sfp = SFX(vertices, carbons);
+   return sfp;
+}
 
 
 int main(int argc, char* argv[])
@@ -68,4 +78,9 @@ int main(int argc, char* argv[])
 
    ifstream vertices_in(argv[1]);
    load_pts(vertices_in, vertices);
+
+   float sfn = SFN(carbons, vertices);
+   float sfp = SFP(vertices, carbons);
+
+   cout << "SFN " << sfn << " SFP " << sfp << endl;
 }

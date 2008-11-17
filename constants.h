@@ -2,8 +2,6 @@
 #define CONSTANTS_H
 
 /*********************************************************************
-  Page 13 of Yu and Bajaj.
-
   Between 2.5 and 15 Angstroms! Page 13 of Yu and Bajaj.
 
   For an 8 Angstrom resolution map, 5 Angstroms is about right (pg 13)
@@ -15,9 +13,10 @@ namespace constants
 // &&& Make it a function of the map resolution?
 extern double BetaThickness;
 
-// &&& unused, but needs to be
+// &&& don't know what this is. Should be BetaThickness, though, apparently.
 // Should be the size of the feature to be detected, ie, BetaThickness.
-extern double WindowSize;
+// AKA the 'window size'
+extern double SigmaOfGaussian;
 
 // &&& This 20% is arbitrary
 extern double BetaThicknessFlex;
@@ -30,29 +29,25 @@ extern double BetaMax;
 // a local maxima. As good as 0, in other words.
 extern double SeedDensityThreshold;
 
+// Once we've got the seed, this is the
+extern double SeedDensityWorthinessThreshold;
+
 // At what falloff, from a maximum, is it the end of the beta region?
 // We're saying, here, when it reaches half the highest density.
 // This is absolutely arbitrary and wants to be experimental.
 extern double SeedDensityFalloff;
 
-// A seed (local maxima)'s density must be at least 80% of the highest
-// seed density
-extern double SeedDensityWorthinessThreshold;
-
-// Or, a binary search?
+// &&& Or, a binary search?
 extern double LineIncrement;
-
-// &&& don't know what this is. Should be BetaThickness, though, apparently.
-extern double SigmaOfGaussian;
-
 
 // Not a physical constant; maybe belongs in instrument...
 extern unsigned SnapshotIntervalBase;
 extern unsigned SnapshotIntervalPower;
 
 // Beta points don't have an intensity but we want to use 3D density
-// methods to show them, so this is the density we give them.
-extern double FauxBetaPointDensity;
+// methods to show them, so we give them this fake value.
+extern double BetaPointFakeDensity;
+extern bool ShowSeeds;
 extern double SeedsDisplayEmphFactor;
 extern unsigned SnapshotImageZoom;
 
@@ -68,7 +63,8 @@ extern unsigned FinalSnapshot;
    Line length (and whether to limit it at all, on t2,t3 -
      but that's just a speed thing)
    density falloff
- - for speed, the degree of the interpolation.
+
+ - for speed, lower the degree of the interpolation perhaps.
 
    get to grips with the formula!
 

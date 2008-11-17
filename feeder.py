@@ -7,17 +7,17 @@ import sys, os, stat
 import datetime
 
 # parameter ranges. We do every combination...!
-g_BetaThicknesses = [4.0, 5.0, 6.0]
+g_BetaThicknesses = [5.0, 5.5, 6.0]
 
 # These are in % of beta_thickness; min = beta - 10%, max = beta + 10% etc
-# ie, 10%, 20%, 30%
-g_ThicknessFlexes = [0.1, 0.2, 0.3]
+# ie, 25%, 30%
+g_ThicknessFlexes = [0.25, 0.3]
 
 # ie, at what proportion of
-g_ThicknessFalloffs = [0.5, 0.65, 0.7, 0.75, 0.9, 1.0]
+g_ThicknessFalloffs = [0.65, 0.7, 0.75]
 
-# 9 & 11 are not very good
-g_Sigmas = [2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0]
+# In Angstroms, or rather, the same units as that of the image itself.
+g_Sigmas = [3.0, 4.5]
 
 
 class ThreadQueue(object):

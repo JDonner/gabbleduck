@@ -7,6 +7,7 @@
 #include <queue>
 #include <set>
 #include <iostream>
+#include <limits>
 
 #include <assert.h>
 
@@ -59,12 +60,12 @@ BeatenImage::Pointer
    thresh->SetInput(input);
 
    thresh->SetLowerThreshold(threshold);
-   thresh->SetUpperThreshold(1.0e38);
+   thresh->SetUpperThreshold(numeric_limits<float>::max());
    thresh->SetInsideValue(true);
    thresh->SetOutsideValue(false);
 
    thresh->Update();
-   // go!
+
    return thresh->GetOutput();
 }
 

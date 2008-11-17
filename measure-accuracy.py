@@ -19,22 +19,22 @@ res_atoms_by_resid = {}
 sorted_residues = []
 
 
-# 1-based, to make easier to match to spec
+# 1-based, to make it easier to match to spec
 def text_at(line, start, end):
     text = line[start - 1:end - 1 + 1]
     return text
 
-# 1-based, to make easier to match to spec
+# 1-based, to make it easier to match to spec
 def tok_at(line, start, end):
 #    print "line: %s, (%s)%d - (%s)%d" % (line, type(start), start, type(end), end)
     return line[start - 1: end - 1 + 1].strip()
 
-# 1-based, to make easier to match to spec
+# 1-based, to make it easier to match to spec
 def float_at(line, start, end):
 #    print "line:\n%s, %d - %d" % (line, start, end)
     return float(tok_at(line, start, end))
 
-# 1-based, to make easier to match to spec
+# 1-based, to make it easier to match to spec
 def int_at(line, start, end):
     return int(tok_at(line, start, end))
 
