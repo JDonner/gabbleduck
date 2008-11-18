@@ -22,6 +22,8 @@ po::variables_map& set_up_options(int argc, char** argv)
       ("help", "show options")
       ("BetaThickness", po::value<double>(&constants::BetaThickness)->default_value(5.0)->composing(),
        "BetaThickness; the number (in what units?) of the expected beta thickness")
+      ("SigmaOfFeatureGaussian", po::value<double>(&constants::SigmaOfFeatureGaussian)->default_value(constants::BetaThickness)->composing(),
+       "SigmaOfFeatureGaussian - 'smear' sigma, shoudl be ~ feature size, ie beta thickness")
       ("BetaThicknessFlex", po::value<double>(&constants::BetaThicknessFlex)->default_value(0.2)->composing(),
        "BetaThicknessFlex - How flexible to be, to count a piece as being beta (&&& when though?)")
       ("RequiredNewPointSeparation", po::value<double>(&constants::RequiredNewPointSeparation)->default_value(0.5)->composing(),
@@ -92,7 +94,7 @@ po::variables_map& set_up_options(int argc, char** argv)
 
    if (not g_vm.count("SigmaOfDerivativeGaussian")) {
       cout << "Sigma not specified!" << endl;
-      constants::SigmaOfDerivativeGaussian = g_vm["BetaThickness"].as<double>();
+      constants::SigmaOfDerivativeGaussian = 1.0;
    }
 
    constants::BetaMin = constants::BetaThickness * (1.0 - constants::BetaThicknessFlex);

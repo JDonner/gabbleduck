@@ -105,11 +105,11 @@ void write_snapshot_image(string fname)
    WriterType::Pointer writer = WriterType::New();
 
    writer->SetFileName(fname.c_str());
-   give_wide_permissions(fname.c_str());
 
    writer->SetInput(g_snapshot_image);
    try {
       writer->Update();
+      give_wide_permissions(fname.c_str());
    }
    catch (itk::ExceptionObject &err) {
       std::cout << "ExceptionObject caught !" << std::endl;

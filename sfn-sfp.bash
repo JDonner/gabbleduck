@@ -5,7 +5,7 @@
 # Would rather in fact do it from some shell script.
 
 
-rm "stats.txt"
+rm -f "stats.txt"
 
 for vfile in output/*.vertices
 do

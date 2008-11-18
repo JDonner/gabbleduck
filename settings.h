@@ -45,8 +45,8 @@ const unsigned GabbleSplineOrder = 1;
 #define WANT_GRID_BOUNDS_CHECKING 0
 //#define WANT_GRID_BOUNDS_CHECKING 1
 
-//#define WANT_SNAPSHOTS 0
-#define WANT_SNAPSHOTS 1
+#define WANT_SNAPSHOTS 0
+//#define WANT_SNAPSHOTS 1
 
 namespace po = boost::program_options;
 extern po::variables_map g_vm;

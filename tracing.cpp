@@ -165,9 +165,9 @@ cout << "yoo! physical point: " << newPt << "; " << index << "; not within image
       EigenValueImageType::Pointer evalImage = pipeline.eigValImage();
       for (unsigned i = 0; i < Dimension; ++i) {
          outEVals[i] = evalImage->GetPixel(index)[i];
-cout << outEVals[i] << " ";
+//cout << outEVals[i] << " ";
       }
-cout << endl;
+//cout << endl;
 
       EigenVectorImageType::Pointer evecImage = pipeline.eigVecImage();
 EigenVectorImageType::RegionType eigDefinedRegion = evecImage->GetBufferedRegion();
@@ -263,8 +263,8 @@ double length_of_density(InterpolatorType::Pointer interpolator,
 
 if (initial_density < constants::SeedDensityThreshold) {
    // Shouldn't happen at this point in the processing
-   cout << "low density? " << initial_density << " < " << constants::SeedDensityThreshold
-        << " shouldn't happen, how did it become a seed?" << '\n';
+//   cout << "low density? " << initial_density << " < " << constants::SeedDensityThreshold
+//        << " shouldn't happen, how did it become a seed?" << '\n';
 ++n_lo_density_centers;
 return 0.0;
 }
