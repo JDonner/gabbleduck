@@ -119,13 +119,6 @@ typedef  itk::CastImageFilter<
 typedef  itk::ImageAdaptor<EigenVectorImageType,
                            EigenvectorAccessor<EigenVectorMatrixType, EigenVector> > EigenVectorImageAdaptorType;
 
-// Each eigenvector is a 3D mesh? We have 3 of these, one each per eigenvector
-// (which you'd never guess by the name).
-// -- yeah, it ends up being just a 3D array of float.
-// &&& HEY HERE'S THE SOURCE OF MUCH TROUBLE
-// &&& Why are we going to 'mesh' in the first place? Why not just
-// an image of a vector row? Let's go fix adaptors.
-
 typedef  itk::Image<EigenVector, Dimension>           EachEigenVectorImageType;
 
 // extracts eigenvectors

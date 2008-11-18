@@ -103,7 +103,10 @@ void snapshot_beta_points(Nodes const& nodes)
 void write_snapshot_image(string fname)
 {
    WriterType::Pointer writer = WriterType::New();
+
    writer->SetFileName(fname.c_str());
+   give_wide_permissions(fname.c_str());
+
    writer->SetInput(g_snapshot_image);
    try {
       writer->Update();
@@ -164,6 +167,7 @@ void maybe_snap_image(unsigned n_betas, Nodes const& nodes)
 void write_vertices(Nodes const& nodes, string vertex_filename)
 {
    ofstream of(vertex_filename.c_str());
+   give_wide_permissions(vertex_filename.c_str());
 
    for (Nodes::const_iterator it = nodes.begin(), end = nodes.end();
         it != end; ++it) {

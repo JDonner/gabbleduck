@@ -2,10 +2,6 @@
 
 namespace constants
 {
-
-// &&& Make it a function of the map resolution?
-double BetaThickness = 5.0;
-
 // &&& This 20% is arbitrary
 double BetaThicknessFlex = 0.2;
 
@@ -13,7 +9,12 @@ double BetaMin = BetaThickness * (1.0 - BetaThicknessFlex);
 double BetaMax = BetaThickness * (1.0 + BetaThicknessFlex);
 
 // from equation (7) from paper.
-double SigmaOfGaussian = BetaThickness;
+double SigmaOfDerivativeGaussian = BetaThickness;
+
+
+double BetaThickness = 5.0;
+// paper's recommended value (as compromise between speed and accuracy)
+double SigmaOfFeatureGaussian = 3.0;
 
 // Physical coordinates
 double RequiredNewPointSeparation = 0.5;

@@ -1,0 +1,44 @@
+I just split FeatureSigma from DerivativeSigma. DerivativeSigma is for the
+HessianRecursiveGaussianImageFilter, it's a parameter unrelated to
+beta finding (I think). FeatureSigma is related to beta finding, it's
+the smear in the second step.
+
+You run it, standalone, like (eg):
+
+./find-sheets 1AGW.mrc
+
+and it'll write output (with the output's name full of parms) into
+./output.
+
+To run it in bulk, do ./feeder.py, it runs over all the files, and
+several sets of parameters that you give.
+
+Somewhere before this point, you need to run make-carbons.bash which
+extracts the carbons from the .pdb files. These are what we measure
+the goodness of fit against the vertices, with.
+
+You then do:
+
+sfn-sfp.bash which takes the .vertices file, uses the same name,
+compares the vertex positions against the carbon atoms', find sfn,
+sfp, and writes a line to stats.txt.
+
+'look.py' then goes through stats.txt and finds the 5 (or so) best
+fits.
+
+
+This was abandoned, because I realized that
+HessianRecursiveGaussianImageFilter /just/ does the Hessian, it does
+not do the convolution despite its name. Somewhere along the line I
+knew this, but forgot it or got confused.
+
+So. The right way, is to take the Hessian but split it into 9 images,
+one for each elt, smear each of those images with a Gaussian function
+(plain old GaussianBlurImageFunction looks good at the moment), then
+take the eigenvalues / vectors of the 9 regrouped images. I think you
+have to do that by hand, I don't see anything in ITK that 'adapts' or
+merges serveral separate images back into the 9 (well 6) -component,
+single tensor image (and a question regarding this went unanswered on
+the ITK user's list (2008-11-17). But I think I'm right). But that's
+just the first pass. As we start getting off the grid we have to
+resample and do the same again. Though, it is just more of the same.

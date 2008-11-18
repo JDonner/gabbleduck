@@ -483,6 +483,69 @@ def show_beta_sheets_wrapper(fname, ren):
     show_beta_sheets(ren)
 
 
+def show_axes(ren):
+    # Create the axes and the associated mapper and actor.
+    axes = vtk.vtkAxes()
+    axes.SetOrigin(0, 0, 0)
+    # length - hardwired for our images, which are usually 80 on a side
+    # (80/2 = 40)
+    AxisLength = 35.0
+    TextScale = 1.5
+    TextR = 0.4
+    TextG = 0.4
+    TextB = 0.8
+
+    axes.SetScaleFactor(AxisLength)
+
+    axesMapper = vtk.vtkPolyDataMapper()
+    axesMapper.SetInputConnection(axes.GetOutputPort())
+    axesActor = vtk.vtkActor()
+    axesActor.SetMapper(axesMapper)
+
+    # Label the axes
+    XText = vtk.vtkVectorText()
+    XText.SetText("X")
+
+    XTextMapper = vtk.vtkPolyDataMapper()
+    XTextMapper.SetInputConnection(XText.GetOutputPort())
+
+    XActor = vtk.vtkFollower()
+    XActor.SetMapper(XTextMapper)
+    XActor.SetScale(TextScale, TextScale, TextScale)
+    XActor.SetPosition(AxisLength, 0.0, 0.0)
+    XActor.GetProperty().SetColor(TextR, TextG, TextB)
+
+    YText = vtk.vtkVectorText()
+    YText.SetText("Y")
+
+    YTextMapper = vtk.vtkPolyDataMapper()
+    YTextMapper.SetInputConnection(YText.GetOutputPort())
+
+    YActor = vtk.vtkFollower()
+    YActor.SetMapper(YTextMapper)
+    YActor.SetScale(TextScale, TextScale, TextScale)
+    YActor.SetPosition(0.0, AxisLength, 0.0)
+    YActor.GetProperty().SetColor(TextR, TextG, TextB)
+
+    ZText = vtk.vtkVectorText()
+    ZText.SetText("Z")
+
+    ZTextMapper = vtk.vtkPolyDataMapper()
+    ZTextMapper.SetInputConnection(ZText.GetOutputPort())
+
+    ZActor = vtk.vtkFollower()
+    ZActor.SetMapper(ZTextMapper)
+    ZActor.SetScale(TextScale, TextScale, TextScale)
+    ZActor.SetPosition(0.0, 0.0, AxisLength)
+    ZActor.GetProperty().SetColor(TextR, TextG, TextB)
+
+
+    ren.AddActor(axesActor)
+    ren.AddActor(XActor)
+    ren.AddActor(YActor)
+    ren.AddActor(ZActor)
+
+
 def make_pairs(lst):
     if not lst:
         return []
@@ -506,6 +569,8 @@ def main(pairs):
         else:
             handler(fname, renderer)
 
+    show_axes(renderer)
+
     # Create the usual rendering stuff.
     renWin = vtk.vtkRenderWindow()
     renWin.AddRenderer(renderer)
@@ -515,6 +580,7 @@ def main(pairs):
     iren.SetInteractorStyle(style)
     iren.SetRenderWindow(renWin)
 
+    # color
     renderer.SetBackground(.1, .2, .4)
 
     # Render the scene and start interaction.

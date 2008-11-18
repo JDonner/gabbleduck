@@ -28,7 +28,7 @@ po::variables_map& set_up_options(int argc, char** argv)
        "RequiredNewPointSeparation - I think this is the grid distance. Lower means finer, but more work.")
       // &&& Don't we want this to be based on statistics...? A couple std deviations
       // below the mean or something?
-      ("SeedDensityThreshold", po::value<double>(&constants::SeedDensityThreshold)->default_value(0.1)->composing(),
+      ("SeedDensityThreshold", po::value<double>(&constants::SeedDensityThreshold)->default_value(0.05)->composing(),
        "SeedDensityThreshold. Value below which, though a seed may be a local maximum, we're still not interested. &&& Should be relative, bottom third or something.")
       ("SeedDensityFalloff", po::value<double>(&constants::SeedDensityFalloff)->default_value(0.8)->composing(),
        "SeedDensityFalloff - &&& Eh?")
@@ -36,8 +36,8 @@ po::variables_map& set_up_options(int argc, char** argv)
        "SeedDensityWorthinessThreshold - &&& oops, what DensityThreshold then?")
       ("LineIncrement", po::value<double>(&constants::LineIncrement)->default_value(0.25)->composing(),
        "LineIncrement - we (&&& crudely) check for thickness by making constant-length advances along a line, to probe the end of a beta sheet. This is that constant. Wants binary search instead most likely.")
-      ("SigmaOfGaussian", po::value<double>(&constants::SigmaOfGaussian)->default_value(constants::BetaThickness)->composing(),
-       "SigmaOfGaussian - &&& Hrm, need to remember")
+      ("SigmaOfDerivativeGaussian", po::value<double>(&constants::SigmaOfDerivativeGaussian)->default_value(constants::BetaThickness)->composing(),
+       "SigmaOfDerivativeGaussian - &&& Hrm, need to remember")
 
       ("SnapshotIntervalBase", po::value<unsigned>(&constants::SnapshotIntervalBase)->default_value(0)->composing(),
        "SnapshotIntervalBase - when you're debugging and want to see the progress of the algorithm incrementally, this is the base of base ^ power, in the number of points, that you make snapshots at")
@@ -90,9 +90,9 @@ po::variables_map& set_up_options(int argc, char** argv)
    ///////////////////////////////////////////////
    // dependent values, not user-settable
 
-   if (not g_vm.count("SigmaOfGaussian")) {
+   if (not g_vm.count("SigmaOfDerivativeGaussian")) {
       cout << "Sigma not specified!" << endl;
-      constants::SigmaOfGaussian = g_vm["BetaThickness"].as<double>();
+      constants::SigmaOfDerivativeGaussian = g_vm["BetaThickness"].as<double>();
    }
 
    constants::BetaMin = constants::BetaThickness * (1.0 - constants::BetaThicknessFlex);
@@ -108,8 +108,11 @@ void dump_settings(po::variables_map const& vm, ostream& os)
       << "vm[SeedDensityThreshold]: " << vm["SeedDensityThreshold"].as<double>() << '\n'
       << "SeedDensityThreshold: " << constants::SeedDensityThreshold << '\n'
       << '\n'
-      << "vm[SigmaOfGaussian]: " << vm["SigmaOfGaussian"].as<double>() << '\n'
-      << "SigmaOfGaussian: " << constants::SigmaOfGaussian << '\n'
+      << "vm[SigmaOfDerivativeGaussian]: " << vm["SigmaOfDerivativeGaussian"].as<double>() << '\n'
+      << "SigmaOfDerivativeGaussian: internal, for taking 2nd derivative" << constants::SigmaOfDerivativeGaussian << '\n'
+      << '\n'
+      << "vm[SigmaOfFeatureGaussian]: " << vm["SigmaOfFeatureGaussian"].as<double>() << '\n'
+      << "SigmaOfFeatureGaussian: Window size of gaussian spread of 2nd derivative" << constants::SigmaOfFeatureGaussian << '\n'
       << '\n'
       << "vm[BetaThickness]: " << vm["BetaThickness"].as<double>() << '\n'
       << "BetaThickness: " << constants::BetaThickness << '\n'

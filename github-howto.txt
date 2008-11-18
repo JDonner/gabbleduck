@@ -1,0 +1,10 @@
+git push github # push to github
+
+see .git/config
+
+I think it's
+
+  git push github
+
+  git fetch github
+

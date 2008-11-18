@@ -101,12 +101,10 @@ BetaPipeline::BetaPipeline(ImageType::Pointer fullImage,
 
    set_up_resampler(fullImage, physCenter);
 
-   // file:///big/common/software/insight/install/html/classitk_1_1HessianRecursiveGaussianImageFilter.html
-
    hessian_ = HessianFilterType::New();
    // 1.0 is default sigma value. Units are image's physical units
    // (see itkGaussianDerivativeImageFunction, which all the rest use).
-   hessian_->SetSigma(constants::SigmaOfGaussian);
+   hessian_->SetSigma(constants::SigmaOfDerivativeGaussian);
    hessian_->SetInput(resampler_->GetOutput());
 
    // file:///big/common/software/insight/install/html/classitk_1_1SymmetricEigenAnalysisImageFilter.html

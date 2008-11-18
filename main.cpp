@@ -55,12 +55,14 @@ int main(int argc, char** argv)
       basepath,
       constants::BetaThickness,
       constants::BetaThicknessFlex,
-      constants::SigmaOfGaussian,
+      constants::SigmaOfFeatureGaussian,
       constants::SeedDensityFalloff,
       constants::RequiredNewPointSeparation);
 
    string temp_logname = temp_basepath + ".log";
    g_log.open(temp_logname.c_str());
+   give_wide_permissions(temp_logname.c_str());
+
    if (not g_log.good()) {
       ostringstream oss;
       oss << "Problem opening: [" << temp_logname << "]";
@@ -131,6 +133,7 @@ g_log << "safe seeds: " << trueMaxSeeds.size()
 
    string final_logname = final_basepath + ".log";
    ::rename(temp_logname.c_str(), final_logname.c_str());
+   give_wide_permissions(final_logname.c_str());
 
 //cout << "found: " << betaNodes.size() << " beta nodes" << endl;
 

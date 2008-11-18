@@ -5,6 +5,10 @@
 #include "point.h"
 #include "polygon.h"
 
+
+// After:
+//    http://www.itk.org/pipermail/insight-users/2006-May/017729.html
+
 // The ITK filters pipelined together
 
 struct BetaPipeline
@@ -33,17 +37,16 @@ private:
 #define DEBUG_PRIVATE public
 DEBUG_PRIVATE:
    typedef itk::ResampleImageFilter< ImageType, ImageType, InternalPrecisionType > ResampleFilterType;
-   ResampleFilterType::Pointer resampler_;
+   ResampleFilterType::Pointer         resampler_;
 
    typedef itk::TranslationTransform< InternalPrecisionType, Dimension > TransformType;
-   TransformType::Pointer translation_;
+   TransformType::Pointer              translation_;
 
-   VectorType                   offset_;
+   VectorType                          offset_;
 
-   HessianFilterType::Pointer hessian_;
+   HessianFilterType::Pointer          hessian_;
 
-   EigenAnalysisFilterType::Pointer
-      totalEigenFilter_;
+   EigenAnalysisFilterType::Pointer    totalEigenFilter_;
 
    // // &&& What's the difference between an adaptor and an accessor?
    // // Eigenvalue

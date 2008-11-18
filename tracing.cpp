@@ -26,7 +26,6 @@ bool MeetsBetaCondition(PointType const& physPt,
                         EigenVectors const& evec,
                         ImageType::Pointer image,
                         double sheetMin, double sheetMax);
-bool PointIsPlanelike(EigenValues const& evals);
 void new_pt(PointType const& pt, Image::SpacingType const& spacing,
             PointType& newPt);
 void new_pt_index(PointType const& pt, Image::SpacingType const& spacing,
@@ -105,7 +104,7 @@ void FindBetaNodes(ImageType::Pointer image,
 
             // point is at center of cell
             for (unsigned i = 0; i < Dimension; ++i) {
-               // yes inefficient but looks cleaner
+               // Inefficient but looks cleaner
                ImageType::SpacingType spacing = image->GetSpacing();
                loCell[i] = physPt[i] - spacing[i] / 2.0;
                hiCell[i] = physPt[i] + spacing[i] / 2.0;
@@ -118,6 +117,7 @@ void FindBetaNodes(ImageType::Pointer image,
             planes_intersection_with_box(normal, physPt,
                                          loCell, hiCell,
                                          intersections);
+
             TriangleBunch triangles;
             MakeTriangles(normal, intersections, triangles);
 
@@ -165,7 +165,9 @@ cout << "yoo! physical point: " << newPt << "; " << index << "; not within image
       EigenValueImageType::Pointer evalImage = pipeline.eigValImage();
       for (unsigned i = 0; i < Dimension; ++i) {
          outEVals[i] = evalImage->GetPixel(index)[i];
+cout << outEVals[i] << " ";
       }
+cout << endl;
 
       EigenVectorImageType::Pointer evecImage = pipeline.eigVecImage();
 EigenVectorImageType::RegionType eigDefinedRegion = evecImage->GetBufferedRegion();
@@ -192,34 +194,38 @@ bool PointIsBeta(PointType const& physPt,
                  EigenValues const& evals, EigenVectors const& evecs,
                  ImageType::Pointer image)
 {
-   bool isBeta = false;
-   if (PointIsPlanelike(evals)) {
-++n_planelike_nodes;
-      isBeta = MeetsBetaCondition(physPt, evals, evecs, image, constants::BetaMin, constants::BetaMax);
-   }
-   else {
-++n_non_planelike_nodes;
-   }
-
+   bool isBeta = MeetsBetaCondition(physPt, evals, evecs, image, constants::BetaMin, constants::BetaMax);
    return isBeta;
 }
 
 
-// u_x are eigenvalues
-bool PointIsPlanelike(EigenValues const& evals)
-{
-   EigenValue u1 = evals[0];
-   EigenValue u2 = evals[1];
-   EigenValue u3 = evals[2];
+// // u_x are eigenvalues
+// bool PointIsPlanelike(EigenValues const& evals)
+// {
+//    EigenValue u1 = evals[0];
+//    EigenValue u2 = evals[1];
+//    EigenValue u3 = evals[2];
 
-   double p1 = (u1 - u2) / u1;
-   double p2 = (u2 - u3) / u1;
-   double p3 = u3 / u1;
+//    double p1 = (u1 - u2) / u1;
+//    double p2 = (u2 - u3) / u1;
+//    double p3 = u3 / u1;
 
-   bool planelike = p1 > p2 and p1 > p3;
+// #ifdef TALK
+// cout << " u1:\t" << u1
+//      << " u2:\t" << u2
+//      << " u3:\t" << u3
+//      << endl;
 
-   return planelike;
-}
+// cout << " p1:\t" << p1
+//      << " p2:\t" << p2
+//      << " p3:\t" << p3
+//      << endl;
+// #endif
+
+//    bool planelike = p1 > p2 and p1 > p3;
+
+//    return planelike;
+// }
 
 
 void new_pt(PointType const& pt,
@@ -255,9 +261,10 @@ double length_of_density(InterpolatorType::Pointer interpolator,
    double density;
    VectorType vec = direction;
 
-
 if (initial_density < constants::SeedDensityThreshold) {
-//cout << "low density? " << initial_density << " < " << SeedDensityThreshold << endl;
+   // Shouldn't happen at this point in the processing
+   cout << "low density? " << initial_density << " < " << constants::SeedDensityThreshold
+        << " shouldn't happen, how did it become a seed?" << '\n';
 ++n_lo_density_centers;
 return 0.0;
 }
@@ -266,7 +273,7 @@ else {
 ++n_ok_density_centers;
 }
 
-   // forwards
+   // forward
    double fwd_length = 0.0;
    density = initial_density;
    for (int times = 1; initial_density * constants::SeedDensityFalloff <= density; ++times) {
@@ -275,7 +282,7 @@ else {
       fwd_length = times * increment;
    }
 
-   // backwards
+   // backward
    double bkwd_length = 0.0;
    density = initial_density;
    for (int times = -1; initial_density * constants::SeedDensityFalloff <= density; --times) {
@@ -321,7 +328,7 @@ cout << "yep it's spline, order: " << GabbleSplineOrder << endl;
    double t3 = length_of_density(interpolator, physPt, initial_density,
                                  evec[2], sheetMax, increment);
 
-// cout << sheetMin << " <= " << t1 << " <= " << sheetMax << " ?" << endl;
+// cout << sheetMin << " <=? " << t1 << " <=? " << sheetMax << " ?" << endl;
 // cout << "t1: " << t1 << "; t2: " << t2 << "; t3: " << t3 << endl;
 // cout << "std::max(t1 / t2, t1 / t3) < std::min(t2 / t3, t3 / t2)\n"
 //      << "\t" << std::max(t1 / t2, t1 / t3) << "\t\t"
