@@ -46,7 +46,7 @@ link_directories(
 ADD_EXECUTABLE(find-sheets ${SOURCES})
 
 # -pg
-SET_SOURCE_FILES_PROPERTIES(${SOURCES} PROPERTIES COMPILE_FLAGS "-g -Wall -W -fmessage-length=60")
+SET_SOURCE_FILES_PROPERTIES(${SOURCES} PROPERTIES COMPILE_FLAGS "-g -Wall -W")
 
 # -lc_p brings in profiled C libs
 #SET(LINK_FLAGS -pg -lc_p)
