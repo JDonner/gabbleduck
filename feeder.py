@@ -91,16 +91,19 @@ def spawnWork(fname, beta_thickness, thickness_flex, falloff, sigma):
 #                      "--FinalSnapshot=0",
                       "--BetaThickness=%0.3f" % beta_thickness,
                       "--BetaThicknessFlex=%0.3f" % thickness_flex,
-                      "--SigmaOfGaussian=%0.3f" % sigma,
+                      "--SigmaOfFeatureGaussian=%0.3f" % sigma,
                       "--SeedDensityFalloff=%0.3f" % falloff,
                       "--RequiredNewPointSeparation=0.5",
                       "--OutputDir=output",
+                      "--ShowSeeds=true",
 #                      "--MaxPoints=0",
                       fname]
 
     print "running: ", ' '.join(cmd_line_parts)
 
-    subprocess.call(cmd_line_parts)
+    retcode = subprocess.call(cmd_line_parts)
+    if retcode != 0:
+        print "CRASHed!"
 
 
 # (for debugging)

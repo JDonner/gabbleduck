@@ -8,7 +8,7 @@
 
 using namespace std;
 
-// /big/common/software/insight/InsightToolkit-3.4.0/Testing/Code/Common/itkTranslationTransformTest.cxx
+// /Testing/Code/Common/itkTranslationTransformTest.cxx
 
 BetaPipeline::BetaPipeline(ImageType::Pointer fullImage,
                            PointType const& physCenter,
@@ -53,11 +53,9 @@ BetaPipeline::BetaPipeline(ImageType::Pointer fullImage,
       gaussian_maker_[i]->SetInput(hess_component_adaptor_[i]);
 //      gaussian_maker_[i]->SetUseImageSpacing(false);
       // physical ('world') coordinates
-      gaussian_maker_[i]->SetSigma(2.0);
-      gaussian_maker_[i]->Update();
+      gaussian_maker_[i]->SetSigma(3.0);
    }
 
-   // file:///big/common/software/insight/install/html/classitk_1_1SymmetricEigenAnalysisImageFilter.html
    // Compute eigenvalues.. order them in descending order
    totalEigenFilter_ = EigenAnalysisFilterType::New();
    totalEigenFilter_->SetDimension( Dimension );
@@ -152,19 +150,35 @@ void BetaPipeline::set_up_resampler(ImageType::Pointer fullImage,
 void BetaPipeline::update()
 {
    if (not bStructureTensorUpdated_) {
-      hessian_maker_->Update();
-      HessianImageType::Pointer hessian = hessian_maker_->GetOutput();
-      typedef itk::ImageDuplicator<HessianImageType> DuplicatorType;
-      DuplicatorType::Pointer duplicator = DuplicatorType::New();
-      duplicator->SetInputImage(hessian.GetPointer());
-      duplicator->Update();
-      HessianImageType::Pointer gaussianed_hessian_ = duplicator->GetOutput();
+      bStructureTensorUpdated_ = true;
+      // first half of the pipeline
+      update_first_half();
+      fuse_into_hessian();
+      // This should be just about a no-op if it's already updated.
+      totalEigenFilter_->Update();
    }
-   // This should be just about a no-op if it's already updated.
-   totalEigenFilter_->Update();
+
+#ifdef LETTHEAIR
+   hessian_maker_->Update();
+   HessianImageType::Pointer hessian = hessian_maker_->GetOutput();
+   typedef itk::ImageDuplicator<HessianImageType> DuplicatorType;
+   DuplicatorType::Pointer duplicator = DuplicatorType::New();
+   duplicator->SetInputImage(hessian.GetPointer());
+   duplicator->Update();
+   HessianImageType::Pointer gaussianed_hessian_ = duplicator->GetOutput();
+#endif // LETTHEAIR
 }
 
-void BetaPipeline::FuseIntoHessian()
+
+void BetaPipeline::update_first_half()
+{
+   for (unsigned i = 0; i < 6; ++i) {
+      gaussian_maker_[i]->Update();
+   }
+}
+
+
+void BetaPipeline::fuse_into_hessian()
 {
    typedef itk::ImageRegionIterator<GaussianFilterType::OutputImageType> GaussianIteratorType;
    GaussianIteratorType itGaussed[6];
@@ -180,6 +194,7 @@ void BetaPipeline::FuseIntoHessian()
    HessianIteratorType itHess(hessian_maker_->GetOutput(),
                               hessian_maker_->GetOutput()->GetRequestedRegion());
 
+   // We write in-place here (bad maybe)
    for (itHess.GoToBegin(); not itHess.IsAtEnd(); ++itHess) {
       for (unsigned i = 0; i < 6; ++i) {
          itHess.Value()[i] = itGaussed[i].Get();
@@ -187,4 +202,18 @@ void BetaPipeline::FuseIntoHessian()
          ++itGaussed[i];
       }
    }
+}
+
+bool BetaPipeline::everythings_updated() const
+{
+   // bool bUpdated = true;
+   // for (unsigned i = 0; i < 6; ++i) {
+   //    bUpdated = bUpdated and gaussian_maker_[i]->GetOutput()->DataHasBeenGenerated();
+   // }
+
+   // bUpdated = bUpdated and hessian_maker_->GetOutput()->DataHasBeenGenerated();
+
+   // bUpdated = bUpdated and totalEigenFilter_->GetOutput()->DataHasBeenGenerated();
+
+   // return bUpdated;
 }

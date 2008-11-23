@@ -33,10 +33,12 @@ struct BetaPipeline
    void set_up_resampler(ImageType::Pointer image,
                          PointType const& center);
 
-   void FuseIntoHessian();
-
 private:
    void update();
+   void update_first_half();
+   void fuse_into_hessian();
+
+   bool everythings_updated() const;
 
 #define DEBUG_PRIVATE public
 DEBUG_PRIVATE:

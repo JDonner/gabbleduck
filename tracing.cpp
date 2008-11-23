@@ -163,11 +163,12 @@ cout << "yoo! physical point: " << newPt << "; " << index << "; not within image
    else {
 //cout << __FILE__ << " (awkward) index: " << index << "; within?: " << isWithinImage << endl;
       EigenValueImageType::Pointer evalImage = pipeline.eigValImage();
+cout << "evals ";
       for (unsigned i = 0; i < Dimension; ++i) {
          outEVals[i] = evalImage->GetPixel(index)[i];
-//cout << outEVals[i] << " ";
+cout << outEVals[i] << " ";
       }
-//cout << endl;
+cout << endl;
 
       EigenVectorImageType::Pointer evecImage = pipeline.eigVecImage();
 EigenVectorImageType::RegionType eigDefinedRegion = evecImage->GetBufferedRegion();
