@@ -144,7 +144,7 @@ void BetaPipeline::update_first_half()
    DuplicatorType::Pointer duplicator = DuplicatorType::New();
    duplicator->SetInputImage(hessian.GetPointer());
    duplicator->Update();
-   HessianImageType::Pointer gaussianed_hessian_ = duplicator->GetOutput();
+   gaussianed_hessian_ = duplicator->GetOutput();
 }
 
 void BetaPipeline::fuse_into_hessian()
