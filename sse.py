@@ -69,7 +69,7 @@ def residue_index(res0, res1):
 
     (first, last) = (-1, -1)
 
-#    print "res0, res1: ", res0, res1
+    print "res0, res1: ", res0, res1
 #    print "r[0]: ", sorted_residues[0][0]
     # find index of res0, res1
     first = map(lambda r: r[0], sorted_residues).index(res0)

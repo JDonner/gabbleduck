@@ -216,4 +216,5 @@ bool BetaPipeline::everythings_updated() const
    // bUpdated = bUpdated and totalEigenFilter_->GetOutput()->DataHasBeenGenerated();
 
    // return bUpdated;
+   return false;
 }
