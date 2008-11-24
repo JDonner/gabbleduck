@@ -94,6 +94,7 @@ def spawnWork(fname, beta_thickness, thickness_flex, falloff, sigma):
                       "--SigmaOfFeatureGaussian=%0.3f" % sigma,
                       "--SeedDensityFalloff=%0.3f" % falloff,
                       "--RequiredNewPointSeparation=0.5",
+                      "--BetaPointFakeDensity=0.5",
                       "--OutputDir=output",
 #                      "--MaxPoints=0",
                       fname]
