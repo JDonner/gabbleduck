@@ -138,7 +138,13 @@ void BetaPipeline::gaussianize()
 
 void BetaPipeline::update_first_half()
 {
-
+   hessian_maker_->Update();
+   HessianImageType::Pointer hessian = hessian_maker_->GetOutput();
+   typedef itk::ImageDuplicator<HessianImageType> DuplicatorType;
+   DuplicatorType::Pointer duplicator = DuplicatorType::New();
+   duplicator->SetInputImage(hessian.GetPointer());
+   duplicator->Update();
+   HessianImageType::Pointer gaussianed_hessian_ = duplicator->GetOutput();
 }
 
 void BetaPipeline::fuse_into_hessian()

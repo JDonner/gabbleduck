@@ -4,7 +4,7 @@
 #include "types.h"
 #include "point.h"
 #include "polygon.h"
-
+#include <itkImageDuplicator.h>
 
 // After:
 //    http://www.itk.org/pipermail/insight-users/2006-May/017729.html
@@ -48,6 +48,9 @@ DEBUG_PRIVATE:
    VectorType                          offset_;
 
    HessianFilterType::Pointer          hessian_maker_;
+   typedef HessianFilterType::OutputImageType HessianImageType;
+
+   HessianImageType::Pointer           gaussianed_hessian_;
 
    EigenAnalysisFilterType::Pointer    totalEigenFilter_;
 
