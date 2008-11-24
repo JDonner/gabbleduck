@@ -153,9 +153,11 @@ def main(args):
     if not len(args):
         args.append('*.mrc')
 
-    filespec = args[0]
-    volume_files = glob.glob(filespec)
-    print "Files [%s]: " % filespec, ", ".join(volume_files)
+    volume_files = []
+    for spec in args:
+        volume_files.extend(glob.glob(spec))
+
+    print "Files [%s]: " % ", ".join(volume_files)
 
     # 10MB
     LargeSize = 10000000
