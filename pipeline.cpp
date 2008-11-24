@@ -2,16 +2,73 @@
 #include "pipeline.h"
 #include "geometry.h"
 
+#include <itkImageDuplicator.h>
 #include <iostream>
 
 
 using namespace std;
 
 
+
+BetaPipeline::BetaPipeline(ImageType::Pointer fullImage,
+                           PointType const& physCenter,
+                           // In cells. no point in fractional cells (I believe)
+                           int region_width)
+{
+   ImageType::IndexType index;
+   bool isWithin = fullImage->TransformPhysicalPointToIndex(physCenter, index);
+   assert(isWithin);
+
+   ImageRegion region;
+   region.SetIndex(index);
+   // add 'size'. Don't know what units these are, physical or pixel.
+   // The '+ 1' to compensate for the phys -> index truncation
+   // And another '+ 1' to deal with our fractional translation
+   region.PadByRadius(region_width + 1 + 1);
+
+   // It's a filter, so, we want to set requested region on the input image,
+   // and then a 'shift' transform of a fraction of a cell, right?
+   // output- to- input, and in physical coordinates (itkResampleImageFilter.h)
+
+   set_up_resampler(fullImage, physCenter);
+
+   hessian_maker_ = HessianFilterType::New();
+   // 1.0 is default sigma value. Units are image's physical units
+   // (see itkGaussianDerivativeImageFunction, which all the rest use).
+   hessian_maker_->SetSigma(constants::SigmaOfDerivativeGaussian);
+   hessian_maker_->SetInput(resampler_->GetOutput());
+
+   // file:///big/common/software/insight/install/html/classitk_1_1SymmetricEigenAnalysisImageFilter.html
+   // Compute eigenvalues.. order them in descending order
+   totalEigenFilter_ = EigenAnalysisFilterType::New();
+   totalEigenFilter_->SetDimension( Dimension );
+   totalEigenFilter_->SetInput( hessian_maker_->GetOutput() );
+   totalEigenFilter_->OrderEigenValuesBy(
+      EigenAnalysisFilterType::JgdCalculatorType::OrderByValue);
+   // -- We may not need these cast + adaptor + accessor things
+   // (maybe some). They're for the benefit of other filters, I think.
+}
+
+// unsigned index_of_symmetric(unsigned row, unsigned col)
+// {
+//    unsigned k;
+//    if ( row < col )
+//    {
+//       k = row * Dimension + col - row * ( row + 1 ) / 2;
+//    }
+//    else
+//    {
+//       k = col * Dimension + row - col * ( col + 1 ) / 2;
+//    }
+
+//    return k;
+// }
+
 void BetaPipeline::set_up_resampler(ImageType::Pointer fullImage,
                                     PointType const& physCenter)
 {
-   // /big/common/software/insight/InsightToolkit-3.4.0/Examples/Filtering/ResampleImageFilter.cxx is most helpful
+   // itkTranslationTransformTest.cxx
+   // Examples/Filtering/ResampleImageFilter.cxx is most helpful
    // Resample, to shift the image to (slightly) new coordinates
    resampler_ = ResampleFilterType::New();
 //   resampler_.SetInterpolator();
@@ -74,46 +131,26 @@ void BetaPipeline::set_up_resampler(ImageType::Pointer fullImage,
 //resampler_->GetOutput()->Print(cout, 2);
 }
 
-// /big/common/software/insight/InsightToolkit-3.4.0/Testing/Code/Common/itkTranslationTransformTest.cxx
-
-BetaPipeline::BetaPipeline(ImageType::Pointer fullImage,
-                           PointType const& physCenter,
-                           // In cells. no point in fractional cells (I believe)
-                           int region_width)
+void BetaPipeline::gaussianize()
 {
-//cout << "input: " << endl;
-//fullImage->Print(cout, 2);
 
-   ImageType::IndexType index;
-   bool isWithin = fullImage->TransformPhysicalPointToIndex(physCenter, index);
-   assert(isWithin);
-
-   ImageRegion region;
-   region.SetIndex(index);
-   // add 'size'. Don't know what units these are, physical or pixel.
-   // The '+ 1' to compensate for the phys -> index truncation
-   // And another '+ 1' to deal with our fractional translation
-   region.PadByRadius(region_width + 1 + 1);
-
-   // It's a filter, so, we want to set requested region on the input image,
-   // and then a 'shift' transform of a fraction of a cell, right?
-   // output- to- input, and in physical coordinates (itkResampleImageFilter.h)
-
-   set_up_resampler(fullImage, physCenter);
-
-   hessian_ = HessianFilterType::New();
-   // 1.0 is default sigma value. Units are image's physical units
-   // (see itkGaussianDerivativeImageFunction, which all the rest use).
-   hessian_->SetSigma(constants::SigmaOfDerivativeGaussian);
-   hessian_->SetInput(resampler_->GetOutput());
-
-   // file:///big/common/software/insight/install/html/classitk_1_1SymmetricEigenAnalysisImageFilter.html
-   // Compute eigenvalues.. order them in descending order
-   totalEigenFilter_ = EigenAnalysisFilterType::New();
-   totalEigenFilter_->SetDimension( Dimension );
-   totalEigenFilter_->SetInput( hessian_->GetOutput() );
-   totalEigenFilter_->OrderEigenValuesBy(
-      EigenAnalysisFilterType::JgdCalculatorType::OrderByValue);
-   // -- We may not need these cast + adaptor + accessor things
-   // (maybe some). They're for the benefit of other filters, I think.
 }
+
+void BetaPipeline::update_first_half()
+{
+
+}
+
+void BetaPipeline::fuse_into_hessian()
+{
+
+}
+
+void BetaPipeline::update()
+{
+   update_first_half();
+   gaussianize();
+   fuse_into_hessian();
+   totalEigenFilter_->Update();
+}
+
