@@ -29,6 +29,7 @@ SET(SOURCES
       constants.cpp
       instrument.cpp
       geometry.cpp
+      gaussian.cpp
       local-maxima.cpp
       main.cpp
       pipeline.cpp

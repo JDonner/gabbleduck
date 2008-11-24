@@ -1,0 +1,5 @@
+#ifndef HAND_GAUSSIAN_H
+#define HAND_GAUSSIAN_H
+
+
+#endif // HAND_GAUSSIAN_H
