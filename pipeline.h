@@ -32,7 +32,8 @@ struct BetaPipeline
                          PointType const& center);
 
 private:
-   void update() { totalEigenFilter_->Update(); }
+   void gaussianize();
+   void update();
 
 #define DEBUG_PRIVATE public
 DEBUG_PRIVATE:
