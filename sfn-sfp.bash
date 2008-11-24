@@ -6,8 +6,9 @@
 
 
 rm -f "stats.txt"
+OUTPUTDIR=${1:-"output"}
 
-for vfile in output/*.vertices
+for vfile in $OUTPUTDIR/*.vertices
 do
     vfile_base=$(basename $vfile .vertices)
 
