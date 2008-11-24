@@ -2,10 +2,12 @@
 #include "pipeline.h"
 #include "geometry.h"
 
+#include <itkImageDuplicator.h>
 #include <iostream>
 
 
 using namespace std;
+
 
 
 BetaPipeline::BetaPipeline(ImageType::Pointer fullImage,
@@ -30,23 +32,37 @@ BetaPipeline::BetaPipeline(ImageType::Pointer fullImage,
 
    set_up_resampler(fullImage, physCenter);
 
-   hessian_ = HessianFilterType::New();
+   hessian_maker_ = HessianFilterType::New();
    // 1.0 is default sigma value. Units are image's physical units
    // (see itkGaussianDerivativeImageFunction, which all the rest use).
-   hessian_->SetSigma(constants::SigmaOfDerivativeGaussian);
-   hessian_->SetInput(resampler_->GetOutput());
+   hessian_maker_->SetSigma(constants::SigmaOfDerivativeGaussian);
+   hessian_maker_->SetInput(resampler_->GetOutput());
 
    // file:///big/common/software/insight/install/html/classitk_1_1SymmetricEigenAnalysisImageFilter.html
    // Compute eigenvalues.. order them in descending order
    totalEigenFilter_ = EigenAnalysisFilterType::New();
    totalEigenFilter_->SetDimension( Dimension );
-   totalEigenFilter_->SetInput( hessian_->GetOutput() );
+   totalEigenFilter_->SetInput( hessian_maker_->GetOutput() );
    totalEigenFilter_->OrderEigenValuesBy(
       EigenAnalysisFilterType::JgdCalculatorType::OrderByValue);
    // -- We may not need these cast + adaptor + accessor things
    // (maybe some). They're for the benefit of other filters, I think.
 }
 
+// unsigned index_of_symmetric(unsigned row, unsigned col)
+// {
+//    unsigned k;
+//    if ( row < col )
+//    {
+//       k = row * Dimension + col - row * ( row + 1 ) / 2;
+//    }
+//    else
+//    {
+//       k = col * Dimension + row - col * ( col + 1 ) / 2;
+//    }
+
+//    return k;
+// }
 
 void BetaPipeline::set_up_resampler(ImageType::Pointer fullImage,
                                     PointType const& physCenter)
@@ -120,8 +136,21 @@ void BetaPipeline::gaussianize()
 
 }
 
+void BetaPipeline::update_first_half()
+{
+
+}
+
+void BetaPipeline::fuse_into_hessian()
+{
+
+}
+
 void BetaPipeline::update()
 {
+   update_first_half();
+   gaussianize();
+   fuse_into_hessian();
    totalEigenFilter_->Update();
 }
 

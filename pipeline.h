@@ -32,7 +32,9 @@ struct BetaPipeline
                          PointType const& center);
 
 private:
+   void update_first_half();
    void gaussianize();
+   void fuse_into_hessian();
    void update();
 
 #define DEBUG_PRIVATE public
@@ -45,7 +47,7 @@ DEBUG_PRIVATE:
 
    VectorType                          offset_;
 
-   HessianFilterType::Pointer          hessian_;
+   HessianFilterType::Pointer          hessian_maker_;
 
    EigenAnalysisFilterType::Pointer    totalEigenFilter_;
 
