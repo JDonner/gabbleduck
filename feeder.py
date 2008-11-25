@@ -17,7 +17,7 @@ g_ThicknessFlexes = [0.25, 0.3]
 g_ThicknessFalloffs = [0.65, 0.7, 0.75]
 
 # In Angstroms, or rather, the same units as that of the image itself.
-g_Sigmas = [3.0, 4.5]
+g_Sigmas = [3.0, 4.5, 5.0]
 
 
 class ThreadQueue(object):
@@ -91,6 +91,8 @@ def spawnWork(fname, beta_thickness, thickness_flex, falloff, sigma):
 #                      "--FinalSnapshot=0",
                       "--BetaThickness=%0.3f" % beta_thickness,
                       "--BetaThicknessFlex=%0.3f" % thickness_flex,
+                      # Let these two sigmas be the same for now
+                      "--SigmaOfDerivativeGaussian=%0.3f" % sigma,
                       "--SigmaOfFeatureGaussian=%0.3f" % sigma,
                       "--SeedDensityFalloff=%0.3f" % falloff,
                       "--RequiredNewPointSeparation=0.5",
