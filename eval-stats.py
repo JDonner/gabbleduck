@@ -51,8 +51,10 @@ def sort_by_best(valses_by_protein):
 
 if __name__ == "__main__":
     args = sys.argv[1:]
+    # stats file to look at
     if len(args) < 1:
         args.append("stats.txt")
+    # the best 'N' (here 5)
     if len(args) < 2:
         args.append(5)
     main(args)
