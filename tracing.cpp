@@ -140,8 +140,11 @@ void CalcEigenStuff(Image::Pointer fullImage, PointType const& physPt,
 //   // &&& Wants to be WindowSize, in physical units (arg!)
 //   int region_width = 5;
 
+   // <width> needs to be enough to 'support' the sigmas of the Hessian
+   // and gaussian proper.
+   unsigned width = 0;
    // pipeline does resampling
-   BetaPipeline pipeline(fullImage, physPt, -1 /* &&& unused bogus region_width*/);
+   BetaPipeline pipeline(fullImage, physPt, width);
 
 // ImageType::IndexType indexUseless;
 // pipeline.resampler_->GetOutput()->TransformPhysicalPointToIndex(physPt, indexUseless);

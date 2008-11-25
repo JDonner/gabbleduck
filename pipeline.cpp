@@ -13,18 +13,18 @@ using namespace std;
 BetaPipeline::BetaPipeline(ImageType::Pointer fullImage,
                            PointType const& physCenter,
                            // In cells. no point in fractional cells (I believe)
-                           int region_width)
+                           int /*region_width*/)
 {
    ImageType::IndexType index;
    bool isWithin = fullImage->TransformPhysicalPointToIndex(physCenter, index);
    assert(isWithin);
 
-   ImageRegion region;
-   region.SetIndex(index);
-   // add 'size'. Don't know what units these are, physical or pixel.
-   // The '+ 1' to compensate for the phys -> index truncation
-   // And another '+ 1' to deal with our fractional translation
-   region.PadByRadius(region_width + 1 + 1);
+// ImageRegion region;
+// region.SetIndex(index);
+// // add 'size'. Don't know what units these are, physical or pixel.
+// // The '+ 1' to compensate for the phys -> index truncation
+// // And another '+ 1' to deal with our fractional translation
+// region.PadByRadius(region_width + 1 + 1);
 
    // It's a filter, so, we want to set requested region on the input image,
    // and then a 'shift' transform of a fraction of a cell, right?
@@ -92,6 +92,7 @@ void BetaPipeline::set_up_resampler(ImageType::Pointer fullImage,
 
    resampler_->SetTransform(translation_);
    resampler_->SetInput(fullImage);
+   // &&& Couldn't we extend the edge or something instead?
    resampler_->SetDefaultPixelValue(0.0);
 
    ImageType::SpacingType spacing = fullImage->GetSpacing();
@@ -104,9 +105,11 @@ void BetaPipeline::set_up_resampler(ImageType::Pointer fullImage,
    ImageType::SizeType too_small;
    too_small[0] = too_small[1] = too_small[2] = 13;
    // &&& Ah, here's the place we need to change...
-   // &&& this size is in pixels, right?
+   // Size is in pixels; the usual meaning of 'size'
    resampler_->SetSize(too_small);
 
+   // &&& let it warn us if the support is too small
+   resampler_->SetDebug(true);
 
    ImageType::PointType physOrigin = fullImage->GetOrigin();
    // fastest-moving (ie, X) first, says the resampling section of the guide
