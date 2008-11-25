@@ -86,7 +86,6 @@ void exploration_phase(InputImageType::Pointer inputImage,
    BeatenNit itBt(beatenRadius, beatenImage, beatenImage->GetLargestPossibleRegion());
    itBt.SetBoundaryCondition(beatenBoundaryCondition);
 
-
    InputNit::RadiusType inputRadius;
    inputRadius.Fill(1);
    // The boundary condition here shouldn't matter (image becomes 0

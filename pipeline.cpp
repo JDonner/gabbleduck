@@ -102,6 +102,7 @@ void BetaPipeline::set_up_resampler(ImageType::Pointer fullImage,
    // As the Gaussian support type gets larger, we'll need more 'support'
    // here probably
    ImageType::SizeType too_small;
+   // &&& whoa, hardwired support value!
    too_small[0] = too_small[1] = too_small[2] = 13;
    // &&& Ah, here's the place we need to change...
    // &&& this size is in pixels, right?

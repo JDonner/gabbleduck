@@ -53,3 +53,7 @@ sage: g
 Specifically Hessian theory...
 
   http://www.cs.utah.edu/~gk/MS/html/node14.html#eq:2dd2
+
+2nd derivative mask, [1 -2 1] (1st derivative was: [-0.5 0 0.5]
+
+  http://www.cs.utah.edu/~gk/MS/html/node32.html
