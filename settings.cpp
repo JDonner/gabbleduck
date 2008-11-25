@@ -23,7 +23,7 @@ po::variables_map& set_up_options(int argc, char** argv)
       ("BetaThickness", po::value<double>(&constants::BetaThickness)->default_value(5.0)->composing(),
        "BetaThickness; the number (in what units?) of the expected beta thickness")
       ("SigmaOfFeatureGaussian", po::value<double>(&constants::SigmaOfFeatureGaussian)->default_value(constants::BetaThickness)->composing(),
-       "SigmaOfFeatureGaussian - 'smear' sigma, shoudl be ~ feature size, ie beta thickness")
+       "SigmaOfFeatureGaussian - sigma of 'neighbors influence' gaussian, applied to hessian. Not sure what this should be. Half of beta thickness? Full beta thickness?")
       ("BetaThicknessFlex", po::value<double>(&constants::BetaThicknessFlex)->default_value(0.2)->composing(),
        "BetaThicknessFlex - How flexible to be, to count a piece as being beta (&&& when though?)")
       ("RequiredNewPointSeparation", po::value<double>(&constants::RequiredNewPointSeparation)->default_value(0.5)->composing(),
@@ -39,7 +39,7 @@ po::variables_map& set_up_options(int argc, char** argv)
       ("LineIncrement", po::value<double>(&constants::LineIncrement)->default_value(0.25)->composing(),
        "LineIncrement - we (&&& crudely) check for thickness by making constant-length advances along a line, to probe the end of a beta sheet. This is that constant. Wants binary search instead most likely.")
       ("SigmaOfDerivativeGaussian", po::value<double>(&constants::SigmaOfDerivativeGaussian)->default_value(constants::BetaThickness)->composing(),
-       "SigmaOfDerivativeGaussian - &&& Hrm, need to remember")
+       "SigmaOfDerivativeGaussian - For the difference of gaussians 2nd derivative method. Details below this sigma value are blurred out. Physical units (ie for us, Angstroms, not pixels)")
 
       ("SnapshotIntervalBase", po::value<unsigned>(&constants::SnapshotIntervalBase)->default_value(0)->composing(),
        "SnapshotIntervalBase - when you're debugging and want to see the progress of the algorithm incrementally, this is the base of base ^ power, in the number of points, that you make snapshots at")
