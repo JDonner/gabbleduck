@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 2.6)
 PROJECT(find-sheets)
 
-SET(ITK_DIR /usr/local/itk-3.8-plain-gcc-release/lib/InsightToolkit/)
+#SET(ITK_DIR /usr/local/itk-3.8-plain-gcc-release/lib/InsightToolkit/)
+SET(ITK_DIR /usr/local/itk-3.8-plain-gcc-dbg/lib/InsightToolkit/)
 #SET(ITK_DIR /usr/local/itk-3.10-no-mrc-dbg/lib/InsightToolkit/)
 
 #SET(ITK_DIR /usr/local/itk-rel/lib/InsightToolkit/)

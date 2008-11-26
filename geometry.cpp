@@ -7,6 +7,7 @@
 #include <set>
 #include <cmath>
 #include <vector>
+#include <limits>
 
 using namespace std;
 
@@ -21,8 +22,9 @@ void MakeTriangles(VectorType const& /*normal*/,
 
    PointType lo, hi;
    for (unsigned i = 0; i < Dimension; ++i) {
-      lo[i] =  1e38, hi[i] = -1e38;
+      lo[i] = numeric_limits<double>::max(), hi[i] = -numeric_limits<double>::max();
    }
+
    // find bounds
    for (unsigned pt = 0; pt < planar_points.size(); ++pt) {
       for (unsigned dim = 0; dim < Dimension; ++dim) {
@@ -44,7 +46,6 @@ void MakeTriangles(VectorType const& /*normal*/,
       ctr[i] = (hi[i] + lo[i]) / 2.0;
    }
 
-   // &&& 'pair'? Shouldn't it be 3D?
    typedef std::set<std::pair<InternalPrecisionType, unsigned> > VertexSet;
    // use for insertion sort
    VertexSet vertices;
