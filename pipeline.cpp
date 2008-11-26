@@ -112,7 +112,7 @@ void BetaPipeline::set_up_resampler(ImageType::Pointer fullImage,
    //   --SigmaOfDerivativeGaussian=10.0
    //   --SigmaOfFeatureGaussian=10.0
    ImageType::SizeType too_small;
-   too_small.Fill(5);
+   too_small.Fill(35);
    // &&& Ah, here's the place we need to change...
    // Size is in pixels; the usual meaning of 'size'
    resampler_->SetSize(too_small);
@@ -134,28 +134,28 @@ void BetaPipeline::set_up_resampler(ImageType::Pointer fullImage,
 
 //   resampler_->SetOutputStartIndex();
 
-cout << "resampler (before update): " << endl;
-resampler_->Print(cout, 2);
+//cout << "resampler (before update): " << endl;
+//resampler_->Print(cout, 2);
 
    // We don't need to Update up front like this (later stages will
    // 'pull' from earlier ones), it just makes tracing through easier
    resampler_->Update();
 
-cout << "resampler (after update): " << endl;
-resampler_->Print(cout, 2);
+//cout << "resampler (after update): " << endl;
+//resampler_->Print(cout, 2);
 }
 
 void BetaPipeline::update_first_half()
 {
-cout << "hessian; before" << endl;
-hessian_maker_->Print(cout, 2);
+//cout << "hessian; before" << endl;
+//hessian_maker_->Print(cout, 2);
    hessian_maker_->Update();
-cout << "hessian; after" << endl;
-hessian_maker_->Print(cout, 2);
+//cout << "hessian; after" << endl;
+//hessian_maker_->Print(cout, 2);
    HessianImageType::Pointer hessian = hessian_maker_->GetOutput();
 
-cout << "hessian IMAGE; after" << endl;
-hessian_maker_->GetOutput()->Print(cout, 2);
+//cout << "hessian IMAGE; after" << endl;
+//hessian_maker_->GetOutput()->Print(cout, 2);
 
    typedef itk::ImageDuplicator<HessianImageType> DuplicatorType;
    DuplicatorType::Pointer duplicator = DuplicatorType::New();
