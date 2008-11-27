@@ -14,10 +14,10 @@ g_BetaThicknesses = [5.0, 5.5, 6.0]
 g_ThicknessFlexes = [0.25, 0.3]
 
 # ie, at what proportion of
-g_ThicknessFalloffs = [0.65, 0.7, 0.75]
+g_ThicknessFalloffs = [0.5, 0.6, 0.65, 0.7]
 
 # In Angstroms, or rather, the same units as that of the image itself.
-g_Sigmas = [3.0, 4.5, 5.0]
+g_Sigmas = [3.0, 4.5]
 
 
 class ThreadQueue(object):
