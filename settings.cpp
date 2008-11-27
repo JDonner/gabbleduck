@@ -20,11 +20,11 @@ po::variables_map& set_up_options(int argc, char** argv)
       // Descriptions, in particular:
       // http://www.boost.org/doc/libs/1_35_0/doc/html/program_options/overview.html#id1251632
       ("help", "show options")
-      ("BetaThickness", po::value<double>(&constants::BetaThickness)->default_value(5.0)->composing(),
+      ("BetaThickness", po::value<double>(&constants::BetaThickness)->default_value(5.5)->composing(),
        "BetaThickness; the number (in what units?) of the expected beta thickness")
-      ("SigmaOfFeatureGaussian", po::value<double>(&constants::SigmaOfFeatureGaussian)->default_value(constants::BetaThickness)->composing(),
-       "SigmaOfFeatureGaussian - 'smear' sigma, shoudl be ~ feature size, ie beta thickness")
-      ("BetaThicknessFlex", po::value<double>(&constants::BetaThicknessFlex)->default_value(0.2)->composing(),
+      ("SigmaOfFeatureGaussian", po::value<double>(&constants::SigmaOfFeatureGaussian)->default_value(3.5)->composing(),
+       "SigmaOfFeatureGaussian - sigma of 'neighbors influence' gaussian, applied to hessian.")
+      ("BetaThicknessFlex", po::value<double>(&constants::BetaThicknessFlex)->default_value(0.25)->composing(),
        "BetaThicknessFlex - How flexible to be, to count a piece as being beta (&&& when though?)")
       ("RequiredNewPointSeparation", po::value<double>(&constants::RequiredNewPointSeparation)->default_value(0.5)->composing(),
        "RequiredNewPointSeparation - I think this is the grid distance. Lower means finer, but more work.")
@@ -32,14 +32,14 @@ po::variables_map& set_up_options(int argc, char** argv)
       // below the mean or something?
       ("SeedDensityThreshold", po::value<double>(&constants::SeedDensityThreshold)->default_value(0.05)->composing(),
        "SeedDensityThreshold. Value below which, though a seed may be a local maximum, we're still not interested. &&& Should be relative, bottom third or something.")
-      ("SeedDensityFalloff", po::value<double>(&constants::SeedDensityFalloff)->default_value(0.8)->composing(),
+      ("SeedDensityFalloff", po::value<double>(&constants::SeedDensityFalloff)->default_value(0.65)->composing(),
        "SeedDensityFalloff - &&& Eh?")
       ("SeedDensityWorthinessThreshold", po::value<double>(&constants::SeedDensityWorthinessThreshold)->default_value(0.01)->composing(),
        "SeedDensityWorthinessThreshold - &&& oops, what DensityThreshold then?")
       ("LineIncrement", po::value<double>(&constants::LineIncrement)->default_value(0.25)->composing(),
        "LineIncrement - we (&&& crudely) check for thickness by making constant-length advances along a line, to probe the end of a beta sheet. This is that constant. Wants binary search instead most likely.")
-      ("SigmaOfDerivativeGaussian", po::value<double>(&constants::SigmaOfDerivativeGaussian)->default_value(constants::BetaThickness)->composing(),
-       "SigmaOfDerivativeGaussian - &&& Hrm, need to remember")
+      ("SigmaOfDerivativeGaussian", po::value<double>(&constants::SigmaOfDerivativeGaussian)->default_value(3.5)->composing(),
+       "SigmaOfDerivativeGaussian - For the difference of gaussians 2nd derivative method. Details below this sigma value are blurred out. Physical units (ie for us, Angstroms, not pixels)")
 
       ("SnapshotIntervalBase", po::value<unsigned>(&constants::SnapshotIntervalBase)->default_value(0)->composing(),
        "SnapshotIntervalBase - when you're debugging and want to see the progress of the algorithm incrementally, this is the base of base ^ power, in the number of points, that you make snapshots at")
