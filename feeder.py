@@ -14,7 +14,7 @@ g_BetaThicknesses = [5.0, 5.5, 6.0]
 g_ThicknessFlexes = [0.25, 0.3]
 
 # ie, at what proportion of
-g_ThicknessFalloffs = [0.65, 0.7, 0.75]
+g_ThicknessFalloffs = [0.5, 0.6, 0.65, 0.7]
 
 # In Angstroms, or rather, the same units as that of the image itself.
 g_Sigmas = [3.0, 4.5]
@@ -91,19 +91,18 @@ def spawnWork(fname, beta_thickness, thickness_flex, falloff, sigma):
 #                      "--FinalSnapshot=0",
                       "--BetaThickness=%0.3f" % beta_thickness,
                       "--BetaThicknessFlex=%0.3f" % thickness_flex,
+                      # Let these two sigmas be the same for now
+                      "--SigmaOfDerivativeGaussian=%0.3f" % sigma,
                       "--SigmaOfFeatureGaussian=%0.3f" % sigma,
                       "--SeedDensityFalloff=%0.3f" % falloff,
                       "--RequiredNewPointSeparation=0.5",
                       "--OutputDir=output",
-                      "--ShowSeeds=true",
 #                      "--MaxPoints=0",
                       fname]
 
     print "running: ", ' '.join(cmd_line_parts)
 
-    retcode = subprocess.call(cmd_line_parts)
-    if retcode != 0:
-        print "CRASHed!"
+    subprocess.call(cmd_line_parts)
 
 
 # (for debugging)
@@ -155,9 +154,11 @@ def main(args):
     if not len(args):
         args.append('*.mrc')
 
-    filespec = args[0]
-    volume_files = glob.glob(filespec)
-    print "Files [%s]: " % filespec, ", ".join(volume_files)
+    volume_files = []
+    for spec in args:
+        volume_files.extend(glob.glob(spec))
+
+    print "Files [%s]: " % ", ".join(volume_files)
 
     # 10MB
     LargeSize = 10000000
