@@ -57,3 +57,6 @@ Specifically Hessian theory...
 2nd derivative mask, [1 -2 1] (1st derivative was: [-0.5 0 0.5]
 
   http://www.cs.utah.edu/~gk/MS/html/node32.html
+
+# Yo - try smoothing the image before taking the 2nd derivative. If that's
+# not built in to recursive gaussian or difference of gaussians.
