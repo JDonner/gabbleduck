@@ -59,7 +59,7 @@ po::variables_map& set_up_options(int argc, char** argv, po::options_description
 
       ("SnapshotImageZoom", po::value<unsigned>(&constants::SnapshotImageZoom)->default_value(2)->composing(),
        "SnapshotImageZoom - Magnifies the snapshots. Why I wanted to do this I don't recall.")
-      ("MaxPoints", po::value<unsigned>(&constants::MaxPoints)->default_value(10000)->composing(),
+      ("MaxPoints", po::value<unsigned>(&constants::MaxPoints)->default_value(0)->composing(),
        "MaxPoints - if the thing runs forever, cut it off at this number of points (defunct, needed for old bug)")
       ("OutputDir", po::value<string>()->default_value("output"), "output directory")
       ;

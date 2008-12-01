@@ -97,7 +97,7 @@ def spawnWork(fname, beta_thickness, thickness_flex, falloff,
                       # Let these two sigmas be the same for now
                       "--SigmaOfDerivativeGaussian=%0.3f" % sigma,
                       "--SigmaOfFeatureGaussian=%0.3f" % sigma,
-                      "--GaussianSupportSize=%02d" % gaussian_support,
+                      "--GaussianSupportSize=%2.2d" % gaussian_support,
                       "--SeedDensityFalloff=%0.3f" % falloff,
                       "--RequiredNewPointSeparation=0.5",
                       "--OutputDir=output",
