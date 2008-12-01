@@ -53,3 +53,6 @@ sage: g
 Specifically Hessian theory...
 
   http://www.cs.utah.edu/~gk/MS/html/node14.html#eq:2dd2
+
+# Yo - try smoothing the image before taking the 2nd derivative. If that's
+# not built in to recursive gaussian or difference of gaussians.

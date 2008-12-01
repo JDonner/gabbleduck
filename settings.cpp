@@ -11,19 +11,20 @@ using namespace std;
 
 po::variables_map g_vm;
 
-po::variables_map& set_up_options(int argc, char** argv)
+po::variables_map& set_up_options(int argc, char** argv, po::options_description& config)
 {
    // A group of options that will be allowed both on command line and
    // in config file
-   po::options_description config("Configuration");
    config.add_options()
       // Descriptions, in particular:
       // http://www.boost.org/doc/libs/1_35_0/doc/html/program_options/overview.html#id1251632
-      ("help", "show options")
+      ("help,h", "Show these options")
       ("BetaThickness", po::value<double>(&constants::BetaThickness)->default_value(5.5)->composing(),
        "BetaThickness; the number (in what units?) of the expected beta thickness")
       ("SigmaOfFeatureGaussian", po::value<double>(&constants::SigmaOfFeatureGaussian)->default_value(3.5)->composing(),
        "SigmaOfFeatureGaussian - sigma of 'neighbors influence' gaussian, applied to hessian.")
+      ("GaussianSupportSize", po::value<int>(&constants::GaussianSupportSize)->default_value(37)->composing(),
+       "GaussianSupportSize - ")
       ("BetaThicknessFlex", po::value<double>(&constants::BetaThicknessFlex)->default_value(0.25)->composing(),
        "BetaThicknessFlex - How flexible to be, to count a piece as being beta (&&& when though?)")
       ("RequiredNewPointSeparation", po::value<double>(&constants::RequiredNewPointSeparation)->default_value(0.5)->composing(),
@@ -42,11 +43,11 @@ po::variables_map& set_up_options(int argc, char** argv)
        "SigmaOfDerivativeGaussian - For the difference of gaussians 2nd derivative method. Details below this sigma value are blurred out. Physical units (ie for us, Angstroms, not pixels)")
 
       ("SnapshotIntervalBase", po::value<unsigned>(&constants::SnapshotIntervalBase)->default_value(0)->composing(),
-       "SnapshotIntervalBase - when you're debugging and want to see the progress of the algorithm incrementally, this is the base of base ^ power, in the number of points, that you make snapshots at")
+       "SnapshotIntervalBase - when you're debugging and want to see the progress of the algorithm incrementally, this is the base of base ^ power, in the number of points, that you take snapshots at")
       ("SnapshotIntervalPower", po::value<unsigned>(&constants::SnapshotIntervalPower)->default_value(2)->composing(),
        "SnapshotIntervalPower")
       ("FinalSnapshot", po::value<unsigned>(&constants::FinalSnapshot)->default_value(0)->composing(),
-       "FinalSnapshot - after how many snapshots, to quit. 0=go to natural exhaustion (defunct - needed for old bug)")
+       "FinalSnapshot - after how many snapshots, to quit. 0=go to natural exhaustion (now defunct - used to be needed for old bug)")
 
       ("BetaPointFakeDensity", po::value<double>(&constants::BetaPointFakeDensity)->default_value(0.1)->composing(),
        "BetaPointFakeDensity - the fake density value to use for beta points, to let us see them in a density image")
@@ -115,6 +116,9 @@ void dump_settings(po::variables_map const& vm, ostream& os)
       << '\n'
       << "vm[SigmaOfFeatureGaussian]: " << vm["SigmaOfFeatureGaussian"].as<double>() << '\n'
       << "SigmaOfFeatureGaussian: Window size of gaussian spread of 2nd derivative" << constants::SigmaOfFeatureGaussian << '\n'
+      << '\n'
+      << "vm[GaussianSupportSize]: " << vm["GaussianSupportSize"].as<int>() << '\n'
+      << "GaussianSupportSize: size of 'support' for feature gaussian, 'n' in: sigma = sqrt(n-1)/2" << constants::GaussianSupportSize << '\n'
       << '\n'
       << "vm[BetaThickness]: " << vm["BetaThickness"].as<double>() << '\n'
       << "BetaThickness: " << constants::BetaThickness << '\n'

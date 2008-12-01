@@ -292,7 +292,7 @@ def show_density(fname, ren):
     MAX_DENSITY = 1.0
     MIN_DENSITY = 0.0
 #    MAX_DENSITY = 1.0
-    STEPS = 10
+    STEPS = 20
     OPACITY = 1.0 / STEPS
 
     # The following reader is used to read a series of 2D slices (images)

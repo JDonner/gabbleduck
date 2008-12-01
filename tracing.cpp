@@ -17,20 +17,11 @@ using namespace std;
 
 void CalcEigenStuff(Image::Pointer fullImage, PointType const& physPt,
                     EigenValues& outEVals, EigenVectors& outEVecs);
-bool PointIsBeta(PointType const& physPt,
-                 EigenValues const& outEVals,
-                 EigenVectors const& outEVecs,
-                 ImageType::Pointer image);
 bool MeetsBetaCondition(PointType const& physPt,
                         EigenValues const& evals,
                         EigenVectors const& evec,
                         ImageType::Pointer image,
                         double sheetMin, double sheetMax);
-void new_pt(PointType const& pt, Image::SpacingType const& spacing,
-            PointType& newPt);
-void new_pt_index(PointType const& pt, Image::SpacingType const& spacing,
-                  ImageType::IndexType& newPt);
-
 
 static SpatialHash s_hash;
 
@@ -95,7 +86,8 @@ void FindBetaNodes(ImageType::Pointer image,
 
          CalcEigenStuff(image, physPt, evals, evecs);
 
-         if (PointIsBeta(physPt, evals, evecs, image)) {
+         if (MeetsBetaCondition(physPt, evals, evecs, image,
+                                constants::BetaMin, constants::BetaMax)) {
             ++n_beta_nodes;
             s_hash.addPt(physPt);
 
@@ -140,11 +132,11 @@ void CalcEigenStuff(Image::Pointer fullImage, PointType const& physPt,
    VectorType physShift;
    pt_shift(physPt, fullImage->GetSpacing(), physShift);
 
-//   // &&& Wants to be WindowSize, in physical units (arg!)
-//   int region_width = 5;
-
+   // <width> needs to be enough to 'support' the sigmas of the Hessian
+   // and gaussian proper.
+   unsigned width = 0;
    // pipeline does resampling
-   BetaPipeline pipeline(fullImage, physPt, -1 /* &&& unused bogus region_width*/);
+   BetaPipeline pipeline(fullImage, physPt, width);
 
 // ImageType::IndexType indexUseless;
 // pipeline.resampler_->GetOutput()->TransformPhysicalPointToIndex(physPt, indexUseless);
@@ -173,7 +165,7 @@ cout << "yoo! physical point: " << newPt << "; " << index << "; not within image
       EigenVectorImageType::Pointer evecImage = pipeline.eigVecImage();
 EigenVectorImageType::RegionType eigDefinedRegion = evecImage->GetBufferedRegion();
 
-ImageType::RegionType snipDefinedRegion = fullImage->GetBufferedRegion();
+//ImageType::RegionType snipDefinedRegion = fullImage->GetBufferedRegion();
 //cout << __FILE__ << "\nsnip defined region: \n" << endl;
 //snipDefinedRegion.Print(cout);
 
@@ -184,59 +176,6 @@ ImageType::RegionType snipDefinedRegion = fullImage->GetBufferedRegion();
       for (unsigned i = 0; i < Dimension; ++i) {
          outEVecs[i] = evecImage->GetPixel(index)[i];
       }
-   }
-}
-
-// The /whole/ condition
-// <physPt> is in pixels.(???) Hrm; the problem with that is that when we shift
-// the image around slightly, we'll have to convert those. Ie,
-// we'll require the nodes to remember their offsets... Hm.
-bool PointIsBeta(PointType const& physPt,
-                 EigenValues const& evals, EigenVectors const& evecs,
-                 ImageType::Pointer image)
-{
-   bool isBeta = MeetsBetaCondition(physPt, evals, evecs, image, constants::BetaMin, constants::BetaMax);
-   return isBeta;
-}
-
-
-// // u_x are eigenvalues
-// bool PointIsPlanelike(EigenValues const& evals)
-// {
-//    EigenValue u1 = evals[0];
-//    EigenValue u2 = evals[1];
-//    EigenValue u3 = evals[2];
-
-//    double p1 = (u1 - u2) / u1;
-//    double p2 = (u2 - u3) / u1;
-//    double p3 = u3 / u1;
-
-// #ifdef TALK
-// cout << " u1:\t" << u1
-//      << " u2:\t" << u2
-//      << " u3:\t" << u3
-//      << endl;
-
-// cout << " p1:\t" << p1
-//      << " p2:\t" << p2
-//      << " p3:\t" << p3
-//      << endl;
-// #endif
-
-//    bool planelike = p1 > p2 and p1 > p3;
-
-//    return planelike;
-// }
-
-
-void new_pt(PointType const& pt,
-            Image::SpacingType const& spacing,
-            PointType& newPt)
-{
-   VectorType shift;
-   pt_shift(pt, spacing, shift);
-   for (unsigned i = 0; i < Dimension; ++i) {
-      newPt[i] += shift[i];
    }
 }
 
@@ -303,6 +242,10 @@ else {
 }
 
 
+// The /whole/ condition
+// <physPt> is in pixels.(???) Hrm; the problem with that is that when we shift
+// the image around slightly, we'll have to convert those. Ie,
+// we'll require the nodes to remember their offsets... Hm.
 // Used to classify the seeds
 bool MeetsBetaCondition(PointType const& physPt,
                         EigenValues const& /* evals */, EigenVectors const& evec,

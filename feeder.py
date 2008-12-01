@@ -19,6 +19,8 @@ g_ThicknessFalloffs = [0.5, 0.6, 0.65, 0.7]
 # In Angstroms, or rather, the same units as that of the image itself.
 g_Sigmas = [3.0, 4.5]
 
+g_GSupports = [5, 13, 37]
+
 
 class ThreadQueue(object):
     def __init__(self, numThreads):
@@ -86,7 +88,8 @@ class SerialQueue(object):
             spawnWork(fname, beta_thickness, thickness_flex, falloff, sigma)
 
 
-def spawnWork(fname, beta_thickness, thickness_flex, falloff, sigma):
+def spawnWork(fname, beta_thickness, thickness_flex, falloff,
+              sigma, gaussian_support):
     cmd_line_parts = ["./find-sheets",
 #                      "--FinalSnapshot=0",
                       "--BetaThickness=%0.3f" % beta_thickness,
@@ -94,6 +97,7 @@ def spawnWork(fname, beta_thickness, thickness_flex, falloff, sigma):
                       # Let these two sigmas be the same for now
                       "--SigmaOfDerivativeGaussian=%0.3f" % sigma,
                       "--SigmaOfFeatureGaussian=%0.3f" % sigma,
+                      "--GaussianSupportSize=%02d" % gaussian_support,
                       "--SeedDensityFalloff=%0.3f" % falloff,
                       "--RequiredNewPointSeparation=0.5",
                       "--OutputDir=output",
@@ -119,18 +123,25 @@ def runThread(tq):
             exit()
             # we're done; we'll be collected
         else:
-            (fname, beta_thickness, thickness_flex, falloff, sigma) = work
+            (fname, beta_thickness, thickness_flex, falloff,
+             sigma, gaussian_support) = work
             print datetime.datetime.now(), "now at: ~%0.2f" % percent_done
-            spawnWork(fname, beta_thickness, thickness_flex, falloff, sigma)
+            spawnWork(fname, beta_thickness, thickness_flex, falloff,
+                      sigma, gaussian_support)
 
 
 def queue_up_parallel_work(tq, n_threads, mrc_files):
     for fname in mrc_files:
         for beta_thickness in g_BetaThicknesses:
+#        beta_thickness = 3.5
             for thickness_flex in g_ThicknessFlexes:
+#        thickness_flex = 0.25
                 for falloff in g_ThicknessFalloffs:
+#        falloff = 0.6
                     for sigma in g_Sigmas:
-                        tq.enqueue((fname, beta_thickness, thickness_flex, falloff, sigma))
+                        for support in g_GSupports:
+                            tq.enqueue((fname, beta_thickness, thickness_flex, falloff,
+                                        sigma, support))
 
     # let threads know they're done
     for i in range(n_threads):
@@ -183,4 +194,7 @@ def main(args):
 
 
 if __name__ == "__main__":
+    # Give it any number of file specs, anything that a shell would
+    # recognize eg
+    #   ./feeder.py mrc-input/*.mrc
     main(sys.argv[1:])

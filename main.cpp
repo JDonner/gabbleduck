@@ -32,12 +32,28 @@ string extract_basename(string fname)
    return base;
 }
 
+void usage(po::options_description const& config)
+{
+   cout << "\nUse like:\n\t./find-sheets --parm1=foo --parm2=6.0 "
+        << "(... see below) filename (eg 1AGW.mrc)\n"
+        << "\nAll parameters have reasonable defaults so you can simply run as:\n"
+        << "\t./find-sheets filename"
+        << "\n\n"
+        << config
+        << endl;
+}
 
 int main(int argc, char** argv)
 {
    set_nice_numeric_format(cout);
 
-   po::variables_map& vm = set_up_options(argc, argv);
+   po::options_description config("Configuration");
+   po::variables_map& vm = set_up_options(argc, argv, config);
+
+   if (vm.count("help") or not vm.count("input-file")) {
+      usage(config);
+      return 1;
+   }
 
    string fname = vm["input-file"].as<string>();
    string output_dir = vm["OutputDir"].as<string>();
@@ -56,6 +72,7 @@ int main(int argc, char** argv)
       constants::BetaThickness,
       constants::BetaThicknessFlex,
       constants::SigmaOfFeatureGaussian,
+      constants::GaussianSupportSize,
       constants::SeedDensityFalloff,
       constants::RequiredNewPointSeparation);
 

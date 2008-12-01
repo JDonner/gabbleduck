@@ -60,6 +60,7 @@ string beta_output_name(string basename,
                         double beta_thickness,
                         double thickness_flex,
                         double sigma,
+                        int gaussian_support,
                         double beta_falloff_factor,
                         double point_sep
                         )
@@ -71,6 +72,7 @@ string beta_output_name(string basename,
        << "-bt=" << beta_thickness
        << "-bflex=" << thickness_flex
        << "-sig=" << sigma
+       << "-supp=" << gaussian_support
        << "-bfal=" << beta_falloff_factor
        << "-sep=" << point_sep
       ;

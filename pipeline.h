@@ -4,8 +4,6 @@
 #include "types.h"
 #include "point.h"
 #include "polygon.h"
-
-//#include <itkDiscreteGaussianImageFilter.h>
 #include <itkRecursiveGaussianImageFilter.h>
 
 // After:
@@ -34,11 +32,10 @@ struct BetaPipeline
                          PointType const& center);
 
 private:
-   void update();
    void update_first_half();
+   void gaussianize();
    void fuse_into_hessian();
-
-   bool everythings_updated() const;
+   void update();
 
 #define DEBUG_PRIVATE public
 DEBUG_PRIVATE:
@@ -51,7 +48,6 @@ DEBUG_PRIVATE:
    VectorType                          offset_;
 
    HessianFilterType::Pointer          hessian_maker_;
-
 //   typedef HessianFilterType::OutputImageType HessianImageType;
 
    typedef itk::NthElementImageAdaptor<

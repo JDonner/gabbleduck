@@ -13,15 +13,20 @@ and it'll write output (with the output's name full of parms) into
 To run it in bulk, do ./feeder.py, it runs over all the files, and
 several sets of parameters that you give.
 
-Somewhere before this point, you need to run make-carbons.bash which
-extracts the carbons from the .pdb files. These are what we measure
+Somewhere before this point, you need to run
+
+    make-carbons.bash
+
+which extracts the carbons from the .pdb files. These are what we measure
 the goodness of fit against the vertices, with.
 
 You then do:
 
-sfn-sfp.bash which takes the .vertices file, uses the same name,
-compares the vertex positions against the carbon atoms', find sfn,
-sfp, and writes a line to stats.txt.
+    sfn-sfp.bash
+
+which takes the .vertices file, uses the same name, compares the
+vertex positions against the carbon atoms', find sfn, sfp, and writes
+a line to stats.txt.
 
 'look.py' then goes through stats.txt and finds the 5 (or so) best
 fits.

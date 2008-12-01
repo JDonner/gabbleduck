@@ -1,5 +1,9 @@
 #include "constants.h"
 
+// These constants would be used if we didn't have the boost::options
+// stuff.  I believe those obviate all of this, the boost framework
+// gives them their own default values.  Believe those instead.
+
 namespace constants
 {
 // &&& This 20% is arbitrary
@@ -15,6 +19,7 @@ double SigmaOfDerivativeGaussian = BetaThickness;
 double BetaThickness = 5.0;
 // paper's recommended value (as compromise between speed and accuracy)
 double SigmaOfFeatureGaussian = 3.0;
+int GaussianSupportSize = 37;
 
 // Physical coordinates
 double RequiredNewPointSeparation = 0.5;

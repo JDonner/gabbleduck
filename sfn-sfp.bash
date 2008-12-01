@@ -6,8 +6,9 @@
 
 
 rm -f "stats.txt"
+OUTPUTDIR=${1:-"output"}
 
-for vfile in output/*.vertices
+for vfile in $OUTPUTDIR/*.vertices
 do
     vfile_base=$(basename $vfile .vertices)
 
@@ -21,8 +22,14 @@ do
     echo "protein=[$protein]"
 
     declare -a sfn_sfp
-    # array (thus splitting) of stdout output
-    sfn_sfp=($(./sfn-sfp $protein.carbons $vfile))
+    if [ -r $protein.carbons ]
+    then
+        # array (thus splitting) of stdout output
+        sfn_sfp=($(./sfn-sfp $protein.carbons $vfile))
+    else
+        echo "Need file: $protein.carbons"
+        exit 1
+    fi
 
     # output looks like: SFN 1.2 SFP 3.4. Pick out just numbers
     echo $vfile_bits_string ${sfn_sfp[0]}=${sfn_sfp[1]} ${sfn_sfp[2]}=${sfn_sfp[3]} >> stats.txt

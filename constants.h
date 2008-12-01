@@ -19,6 +19,41 @@ extern double BetaThickness;
 // 2nd derivative around.
 extern double SigmaOfFeatureGaussian;
 
+// Should be odd. This should truthfully be calculated from the size
+// of the feature gaussian.
+// JGD is not sure ITK uses it though, which is disturbing; what does
+// it do when it goes off the edge of the sampled region, just use a
+// default value without complaint? Something's wrong, it should
+// complain. This is a parameter just to experiment with, but this
+// shouldn't be here.
+
+// http://www.mvtec.com/halcon/download/documentation/reference/hdevelop/binomial_filter.html
+
+// sigma = sqrt(n-1)/2
+
+//  n  |  sigma
+// -------------
+//  3  |  0.7523
+//  5  |  1.0317
+//  7  |  1.2505
+//  9  |  1.4365
+// 11  |  1.6010
+// 13  |  1.7502
+// 15  |  1.8876
+// 17  |  2.0157
+// 19  |  2.1361
+// 21  |  2.2501
+// 23  |  2.3586
+// 25  |  2.4623
+// 27  |  2.5618
+// 29  |  2.6576
+// 31  |  2.7500
+// 33  |  2.8395
+// 35  |  2.9262
+// 37  |  3.0104
+// (n above == GaussianSupportSize)
+extern int GaussianSupportSize;
+
 // Should be the size of the feature to be detected, ie, BetaThickness.
 // AKA the 'window size'
 
@@ -54,7 +89,7 @@ extern bool ShowSeeds;
 extern double SeedsDisplayEmphFactor;
 extern unsigned SnapshotImageZoom;
 
-// Physical coordinates
+// In physical coordinates
 extern double RequiredNewPointSeparation;
 
 extern unsigned MaxPoints;
