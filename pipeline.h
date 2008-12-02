@@ -67,20 +67,6 @@ DEBUG_PRIVATE:
 
    EigenAnalysisFilterType::Pointer    totalEigenFilter_;
 
-   // // &&& What's the difference between an adaptor and an accessor?
-   // // Eigenvalue
-   // // Create an adaptor and plug the output to the parametric space
-   // EValueImageAdaptorType::Pointer
-   //    eValueAdaptor1_,
-   //    eValueAdaptor2_,
-   //    eValueAdaptor3_;
-
-   // // Eigenvector
-   // EigenVectorImageAdaptorType::Pointer
-   //    eVectorAdaptor1_,
-   //    eVectorAdaptor2_,
-   //    eVectorAdaptor3_;
-
    EigenvalueAccessor< EigenValueArrayType >
       valAccessor1_,
       valAccessor2_,

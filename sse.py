@@ -62,8 +62,6 @@ def int_at(line, start, end):
     return int(tok_at(line, start, end))
 
 def residue_index(res0, res1):
-    global sorted_residues
-
     (first, last) = (-1, -1)
 
     print "res0, res1: ", res0, res1
@@ -110,6 +108,7 @@ def load_sheet_def(line):
     end_res_no = tok_at(line, 34, 37)
     end_res_id = make_resid(chain, end_res_no)
     return (start_res_id, end_res_id)
+
 
 def load_atom_def(line):
     atomid = tok_at(line, 7, 11)
@@ -228,16 +227,6 @@ def show_alpha_helices(renderer):
 
         (polyLinePoints, aPolyLine) = make_polyline(helix)
 
-#         # Create a tube filter to represent the lines as tubes.  Set up the
-#         # associated mapper and actor.
-#         tuber = vtk.vtkTubeFilter()
-#         tuber.SetInputConnection(appendF.GetOutputPort())
-#         tuber.SetRadius(0.1)
-#         lineMapper = vtk.vtkPolyDataMapper()
-#         lineMapper.SetInputConnection(tuber.GetOutputPort())
-#         lineActor = vtk.vtkActor()
-#         lineActor.SetMapper(lineMapper)
-
         aPolyLineGrid.InsertNextCell(aPolyLine.GetCellType(),
                                      aPolyLine.GetPointIds())
         aPolyLineGrid.SetPoints(polyLinePoints)
@@ -349,16 +338,6 @@ def show_density(fname, ren):
     outline.SetMapper(mapOutline)
     outline.GetProperty().SetColor(0, 0, 0)
 
-#     # It is convenient to create an initial view of the data. The FocalPoint
-#     # and Position form a vector direction. Later on (ResetCamera() method)
-#     # this vector is used to position the camera to look at the data in
-#     # this direction.
-#     aCamera = vtk.vtkCamera()
-#     aCamera.SetViewUp(0, 0, -1)
-#     aCamera.SetPosition(0, 1, 0)
-#     aCamera.SetFocalPoint(0, 0, 0)
-#     aCamera.ComputeViewPlaneNormal()
-
     # Actors are added to the renderer.
     ren.AddActor(outline)
     ren.AddActor(skin)
@@ -425,16 +404,6 @@ def show_laplace(fname, ren):
     outline = vtk.vtkActor()
     outline.SetMapper(mapOutline)
     outline.GetProperty().SetColor(0, 0, 0)
-
-#     # It is convenient to create an initial view of the data. The FocalPoint
-#     # and Position form a vector direction. Later on (ResetCamera() method)
-#     # this vector is used to position the camera to look at the data in
-#     # this direction.
-#     aCamera = vtk.vtkCamera()
-#     aCamera.SetViewUp(0, 0, -1)
-#     aCamera.SetPosition(0, 1, 0)
-#     aCamera.SetFocalPoint(0, 0, 0)
-#     aCamera.ComputeViewPlaneNormal()
 
     # Actors are added to the renderer.
     ren.AddActor(outline)

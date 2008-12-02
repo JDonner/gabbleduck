@@ -62,8 +62,6 @@ BetaPipeline::BetaPipeline(ImageType::Pointer fullImage,
    totalEigenFilter_->SetInput( hessian_maker_->GetOutput() );
    totalEigenFilter_->OrderEigenValuesBy(
       EigenAnalysisFilterType::JgdCalculatorType::OrderByValue);
-   // -- We may not need these cast + adaptor + accessor things
-   // (maybe some). They're for the benefit of other filters, I think.
 }
 
 
@@ -117,7 +115,7 @@ void BetaPipeline::set_up_resampler(ImageType::Pointer fullImage,
    //   --SigmaOfDerivativeGaussian=10.0
    //   --SigmaOfFeatureGaussian=10.0
    ImageType::SizeType sizeSample;
-   sizeSample.Fill(13);
+   sizeSample.Fill(constants::GaussianSupportSize);
    // &&& Ah, here's the place we need to change...
    // Size is in pixels; the usual meaning of 'size'
    resampler_->SetSize(sizeSample);
@@ -163,10 +161,8 @@ idxCenter[0] = region.GetSize()[0] / 2;
 idxCenter[1] = region.GetSize()[1] / 2;
 idxCenter[2] = region.GetSize()[2] / 2;
 
-ImageType::PointType physAlsoCenter;
-resampled->TransformIndexToPhysicalPoint(idxCenter, physAlsoCenter);
-
-// Wei shenme?
+//ImageType::PointType physAlsoCenter;
+//resampled->TransformIndexToPhysicalPoint(idxCenter, physAlsoCenter);
 // cout
 //    << physCenter[0] << " "
 //    << physCenter[1] << " "
@@ -209,6 +205,13 @@ void BetaPipeline::update()
 
 void BetaPipeline::update_first_half()
 {
+   // &&& This wants to be, not a filter but a function, since we
+   // only want one value, the value at the center of the resampled
+   // area.
+   //
+   // <GaussianBlurImageFunction>
+   //
+   // Pull from resampler through Hessian, into Gaussian
    for (unsigned i = 0; i < 6; ++i) {
       gaussian_maker_[i]->Update();
    }
