@@ -2,18 +2,29 @@
 #include "pipeline.h"
 #include "geometry.h"
 
-#include <itkGaussianBlurImageFunction.h>
+#include <itkImageConstIterator.h>
 #include <iostream>
 
 
 using namespace std;
+
+// Symmetric matrices have only their upper triangles stored.
+// This maps 'flat' storage index to corresponding row+col indeces
+unsigned row_col[6][2] = {
+   // yes should work the arithmetic out instead
+   {0,0}, {0,1}, {0,2},
+          {1,1}, {1,2},
+                 {2,2}
+};
+
 
 
 BetaPipeline::BetaPipeline(ImageType::Pointer fullImage,
                            PointType const& physCenter,
                            // In cells. no point in fractional cells (I believe)
                            int region_width)
-  : bStructureTensorUpdated_(false)
+  : eigenSystemAnalyzer_(Dimension)
+  , bStructureTensorUpdated_(false)
 {
    (void)region_width;
 //cout << "input: " << endl;
@@ -42,6 +53,8 @@ BetaPipeline::BetaPipeline(ImageType::Pointer fullImage,
       derivative_filter_[i]->SetInput(resampler_->GetOutput());
    }
 
+   tensor_image_ = TensorImageType::New();
+
    // At this point we break the ITK pipeline
    multiply_gaussian_components();
 
@@ -51,22 +64,22 @@ BetaPipeline::BetaPipeline(ImageType::Pointer fullImage,
       tensor_component_adaptor_[i]->Allocate();
       tensor_component_adaptor_[i]->SelectNthElement(i);
 
+      tensor_component_adaptor_[i] = TensorComponentAdaptorType::New();
+
+
       // They're each the same function, but they have to be templated
       // to a different adaptor (1-6)
-      gaussians_[i] = GaussianFilterType::New();
-      gaussians_[i]->SetInput(tensor_component_adaptor_[i]);
+      gaussians_[i] = GaussianImageFunction::New();
+      gaussians_[i]->SetInputImage(tensor_component_adaptor_[i]);
+
       // &&& should handle different spacings.. wait, doesn't it already?
       // physical ('world') coordinates
       gaussians_[i]->SetSigma(constants::SigmaOfFeatureGaussian);
    }
 
+   eigenSystemAnalyzer_.SetOrderEigenValues(EigenSystemAnalyzerType::OrderByMagnitude);
+
    // At this point, <point_structure_tensor_>
-   // Compute eigenvalues.. order them in descending order
-   totalEigenFilter_ = EigenAnalysisFilterType::New();
-   totalEigenFilter_->SetDimension( Dimension );
-   totalEigenFilter_->SetInput( point_structure_tensor_ );
-   totalEigenFilter_->OrderEigenValuesBy(
-      EigenAnalysisFilterType::JgdCalculatorType::OrderByValue);
 }
 
 
@@ -78,33 +91,14 @@ BetaPipeline::BetaPipeline(ImageType::Pointer fullImage,
 void BetaPipeline::set_up_resampler(ImageType::Pointer fullImage,
                                     PointType const& physCenter)
 {
-  /**
-   * Set the coordinate transform to use for resampling.  Note that
-   * this must be in physical coordinates and it is the
-   * output-to-input transform, NOT the input-to-output transform that
-   * you might naively expect.  By default the filter uses an identity
-   * transform. You must provide a different transform here, before
-   * attempting to run the filter, if you do not want to use the
-   * default identity transform. */
-//   VectorType offset = transform_shift(physCenter, fullImage->GetSpacing());
-
-// cout << "physCenter(phys): " << physCenter
-//      << "; spacing(phys): " << fullImage->GetSpacing()
-//      << "; offset: " << offset << endl;
-
-//   translation_ = TranslationTransform::New();
-//   translation_->SetOffset(offset);
-
-   // itkTranslationTransformTest.cxx
-   // Examples/Filtering/ResampleImageFilter.cxx is most helpful
-   // Resample, to shift the image to (slightly) new coordinates
    resampler_ = ResampleFilterType::New();
 
-//   resampler_->SetTransform(translation_);
    resampler_->SetInput(fullImage);
 
-   // We always resample from the whole, original image, so using 0
-   // is just fine. Unless we're restricted to the region we sample from.
+   // We always resample from the whole, original image, so using 0 is
+   // just fine (there is plenty of empty space at the edges of the
+   // image anyway).  Unless we're restricted to the region we sample
+   // from.
    resampler_->SetDefaultPixelValue(0.0);
 
    ImageType::SizeType sizeSample;
@@ -113,8 +107,7 @@ void BetaPipeline::set_up_resampler(ImageType::Pointer fullImage,
    // Size is in pixels; the usual meaning of 'size'
    resampler_->SetSize(sizeSample);
 
-physCenter
-   ImageIndex idxResampledCenter_;
+   IndexType idxResampledCenter_;
 
    // &&& let it warn us if the support is too small
 //   resampler_->SetDebug(true);
@@ -189,54 +182,49 @@ void BetaPipeline::update()
       // first half of the pipeline
       update_first_half();
       fuse_into_tensor();
+      TakeGaussiansAtOrignalPoint();
       // This should be just about a no-op if it's already updated.
-      totalEigenFilter_->Update();
+      CalcEigenSystemAtOriginalPoint();
    }
 }
 
 
 void BetaPipeline::update_first_half()
 {
-   // &&& This wants to be, not a filter but a function, since we
-   // only want one value, the value at the center of the resampled
-   // area.
-   //
-   // <GaussianBlurImageFunction>
-   //
-   // Pull from resampler through Tensor, into Gaussian
-   for (unsigned i = 0; i < 6; ++i) {
-      gaussian_filter_[i]->Update();
-   }
-}
 
+}
 
 void BetaPipeline::multiply_gaussian_components()
 {
    typedef itk::ImageConstIterator<DerivativeFilterType::OutputImageType> DerivativeIteratorType;
    DerivativeIteratorType itDerived[3];
 
+DerivativeIteratorType itD;
+++itD;
+
    for (unsigned i = 0; i < Dimension; ++i) {
-      itDerived[i] = DerivativeIteratorType(derivative_filter_->GetOutput(),
+      itDerived[i] = DerivativeIteratorType(derivative_filter_[i]->GetOutput(),
                                             // &&& LargestPossibleRegion would also be fine
-                                            derivative_filter_->GetRequestedRegion());
+                                            derivative_filter_[i]->GetOutput()->GetRequestedRegion());
       itDerived[i].GoToBegin();
    }
 
 
-   // Allocate a SymmTensorType
+   // Allocate a TensorType
 
    typedef itk::ImageRegionIterator<TensorImageType> TensorIteratorType;
    TensorIteratorType itGradientTensor(tensor_image_,
                                        tensor_image_->GetRequestedRegion());
 
-   // We write the product into the tensor here.
-   for (itTensor.GoToBegin(); not itTensor.IsAtEnd(); ++itTensor) {
+   // Write the product into the tensor here.
+   for (itGradientTensor.GoToBegin(); not itGradientTensor.IsAtEnd(); ++itGradientTensor) {
       for (unsigned i = 0; i < 6; ++i) {
-         itTensor.Value()[i] = itDerived[i].Get();
+         itGradientTensor.Value()[i] = itDerived[i].Get();
          unsigned row = row_col[i][0];
          unsigned col = row_col[i][1];
 
-         itTensor.Value()[i] = itDerived[row] * itDerived[col];
+         // row and col are indexes to dimension
+         itGradientTensor.Value()[i] = itDerived[row].Value() * itDerived[col].Value();
       }
 
       for (unsigned i = 0; i < Dimension; ++i) {
@@ -248,13 +236,6 @@ void BetaPipeline::multiply_gaussian_components()
    // image as its support.
 }
 
-
-unsigned row_col[6][2] = {
-   // yes should work the arithmetic out instead
-   {0,0}, {0,1}, {0,2},
-          {1,1}, {1,2},
-                 {2,2}
-};
 
 
 // void BetaPipeline::fuse_into_tensor()
@@ -270,19 +251,14 @@ unsigned row_col[6][2] = {
 //    }
 
 //    typedef itk::ImageRegionIterator<TensorImageType> TensorIteratorType;
-//    TensorIteratorType itTensor(tensor_filter_->GetOutput(),
+//    TensorIteratorType itGradientTensor(tensor_filter_->GetOutput(),
 //                                 tensor_filter_->GetOutput()->GetRequestedRegion());
 
 // }
 
 
-void BetaPipeline::TakeGaussianAtOrignalPoint()
+void BetaPipeline::TakeGaussianssAtOrignalPoint()
 {
-   typedef itk::GaussianBlurImageFunction<TensorComponentAdaptorType,
-      TensorType> GaussianFunction;
-
-   GaussianFunction gaussians[6];
-
    for (unsigned i = 0; i < 6; ++i) {
       point_structure_tensor_ = gaussians_[i].GetValue() * tensor_image_[i].GetValue();
    }
@@ -292,29 +268,16 @@ void BetaPipeline::TakeGaussianAtOrignalPoint()
 
 void BetaPipeline::CalcEigenSystemAtOriginalPoint()
 {
-   typedef SymmetricEigenAnalysis<InputPixelType, EValuesPixelType, EVectorsPixelType>
-      EigenSystemAnalyzer;
-
-   EigenSystemAnalyzerType eigenSystemAnalyzer;
    // We want magnitude, we don't care about direction
    // &&& (wait, what would negative eigenvalues mean?)
    // <OrderByValue> is also possible, not sure what it'd mean though.
-   eigenSystemAnalyzer.SetOrderEigenValues(OrderByMagnitude);
 
-   typedef  InternalPrecisionType                         EigenValue;
-   typedef  VectorType                                    EigenVector;
-
-   typedef  EigenValue                                    EigenValues[Dimension];
-   typedef  EigenVector                                   EigenVectors[Dimension];
-
-   EigenValues eigenValues_;
-   EigenVectors eigenVectors_;
-
-   unsigned n = eigenSystemAnalyzer.ComputeEigenValuesAndVectors(
-      point_structure_tensor_, TVector &EigenValues, TEigenMatrix &EigenVectors);
-
-   // &&& We want to order by magnitude (of eigenvalue, I hope this is referring to)
+   unsigned n = eigenSystemAnalyzer_.ComputeEigenValuesAndVectors(
+      point_structure_tensor_,
+      eigenValues_,
+      eigenVectors_);
 }
+
 
 // Given <row>, <col>, find corresponding index into symmetric tensor's
 // straight array storage.
