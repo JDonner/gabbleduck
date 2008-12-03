@@ -59,7 +59,9 @@ void add_seeds_to_snapshot(Seeds const& seeds,
 string beta_output_name(string basename,
                         double beta_thickness,
                         double thickness_flex,
-                        double sigma,
+                        double dsigma,
+                        double fsigma,
+                        int gaussian_support,
                         double beta_falloff_factor,
                         double point_sep
                         )
@@ -70,7 +72,9 @@ string beta_output_name(string basename,
    oss << basename
        << "-bt=" << beta_thickness
        << "-bflex=" << thickness_flex
-       << "-sig=" << sigma
+       << "-dsig=" << dsigma
+       << "-fsig=" << fsigma
+       << "-supp=" << gaussian_support
        << "-bfal=" << beta_falloff_factor
        << "-sep=" << point_sep
       ;

@@ -14,7 +14,9 @@ extern std::string beta_output_name(
    std::string basename,
    double beta_thickness,
    double thickness_flex,
-   double sigma,
+   double dsigma,
+   double fsigma,
+   int gaussian_support,
    double beta_falloff_factor,
    double point_sep);
 extern void snapshot_beta_points(Nodes const& nodes);

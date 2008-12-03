@@ -5,8 +5,6 @@
 
 #include <itkImage.h>
 #include <itkTranslationTransform.h>
-// Discussed in section 6.5.1 (page 158) of the itk Software Guide pdf.
-#include <itkHessianRecursiveGaussianImageFilter.h>
 
 #include <itkImageAdaptor.h>
 #include <itkCastImageFilter.h>
@@ -15,6 +13,8 @@
 #include <itkLinearInterpolateImageFunction.h>
 
 #include "PixelAccessors.h"
+// Discussed in section 6.5.1 (page 158) of the itk Software Guide pdf.
+#include <itkHessianRecursiveGaussianImageFilter.h>
 #include "jgdTotalEigenImageFilter.h"
 
 #include "settings.h"
@@ -45,6 +45,7 @@ typedef  EigenVector                                   EigenVectors[Dimension];
 typedef  itk::CovariantVector< PixelType, Dimension >  CovariantVectorType;
 
 typedef  itk::Image< InputPixelType, Dimension >       InputImageType;
+typedef  itk::Image< InternalPrecisionType, Dimension > InternalImageType;
 typedef  InputImageType                                ImageType;
 typedef  ImageType                                     Image;
 typedef  InputImageType                                BetaImageType;
@@ -54,8 +55,8 @@ typedef  itk::Image< VectorType, Dimension >           VectorImageType;
 typedef  itk::TranslationTransform<InternalPrecisionType, Dimension> TranslationTransform;
 
 
-typedef  itk::HessianRecursiveGaussianImageFilter<InputImageType>
-   HessianFilterType;
+typedef  itk::HessianRecursiveGaussianImageFilter<InputImageType> HessianFilterType;
+typedef  itk::SymmetricSecondRankTensor< InternalPrecisionType, Dimension > SymmTensorType;
 typedef  HessianFilterType::OutputImageType            HessianImageType;
 typedef  HessianImageType::PixelType                   HessianPixelType;
 

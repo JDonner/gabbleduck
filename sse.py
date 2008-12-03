@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 #
-# This example creates a polygonal model of a cone, and then renders it to
-# the screen. It will rotate the cone 360 degrees and then exit. The basic
-# setup of source -> mapper -> actor -> renderer -> renderwindow is
-# typical of most VTK programs.
+# This is built on VTK examples, there may still be strange comments
 #
 
 #
@@ -65,11 +62,9 @@ def int_at(line, start, end):
     return int(tok_at(line, start, end))
 
 def residue_index(res0, res1):
-    global sorted_residues
-
     (first, last) = (-1, -1)
 
-#    print "res0, res1: ", res0, res1
+    print "res0, res1: ", res0, res1
 #    print "r[0]: ", sorted_residues[0][0]
     # find index of res0, res1
     first = map(lambda r: r[0], sorted_residues).index(res0)
@@ -114,6 +109,7 @@ def load_sheet_def(line):
     end_res_id = make_resid(chain, end_res_no)
     return (start_res_id, end_res_id)
 
+
 def load_atom_def(line):
     atomid = tok_at(line, 7, 11)
 
@@ -127,6 +123,7 @@ def load_atom_def(line):
     y = float_at(line, 39, 46)
     z = float_at(line, 47, 54)
     return (atomid, resid, (x, y, z))
+
 
 def load_pdb(file):
     for line in file:
@@ -230,16 +227,6 @@ def show_alpha_helices(renderer):
 
         (polyLinePoints, aPolyLine) = make_polyline(helix)
 
-#         # Create a tube filter to represent the lines as tubes.  Set up the
-#         # associated mapper and actor.
-#         tuber = vtk.vtkTubeFilter()
-#         tuber.SetInputConnection(appendF.GetOutputPort())
-#         tuber.SetRadius(0.1)
-#         lineMapper = vtk.vtkPolyDataMapper()
-#         lineMapper.SetInputConnection(tuber.GetOutputPort())
-#         lineActor = vtk.vtkActor()
-#         lineActor.SetMapper(lineMapper)
-
         aPolyLineGrid.InsertNextCell(aPolyLine.GetCellType(),
                                      aPolyLine.GetPointIds())
         aPolyLineGrid.SetPoints(polyLinePoints)
@@ -289,10 +276,10 @@ def show_density(fname, ren):
     FEATURE_ANGLE = 60.0
 
 # 1AGW goes from 0 - 0.6+
-    MAX_DENSITY = 1.0
+    MAX_DENSITY = 2.0
     MIN_DENSITY = 0.0
 #    MAX_DENSITY = 1.0
-    STEPS = 10
+    STEPS = 20
     OPACITY = 1.0 / STEPS
 
     # The following reader is used to read a series of 2D slices (images)
@@ -310,16 +297,6 @@ def show_density(fname, ren):
     mrc.SetFileName(fname)
     #mrc.SetFileName(VTK_DATA_ROOT + "/Data/ironProt.vtk")
 
-#GetOrigin()
-#GetSpacing()
-#GetExtent()
-#vtk.vtkStructuredPoints = mrc.GetOutput()
-
-    # An isosurface, or contour value of 500 is known to correspond to the
-    # skin of the patient. Once generated, a vtkPolyDataNormals filter is
-    # is used to create normals for smooth surface shading during rendering.
-    # The triangle stripper is used to create triangle strips from the
-    # isosurface these render much faster on many systems.
     skinExtractor = vtk.vtkContourFilter()
     skinExtractor.UseScalarTreeOn()
     # Not sure whether this is used by the alg..
@@ -361,16 +338,6 @@ def show_density(fname, ren):
     outline.SetMapper(mapOutline)
     outline.GetProperty().SetColor(0, 0, 0)
 
-#     # It is convenient to create an initial view of the data. The FocalPoint
-#     # and Position form a vector direction. Later on (ResetCamera() method)
-#     # this vector is used to position the camera to look at the data in
-#     # this direction.
-#     aCamera = vtk.vtkCamera()
-#     aCamera.SetViewUp(0, 0, -1)
-#     aCamera.SetPosition(0, 1, 0)
-#     aCamera.SetFocalPoint(0, 0, 0)
-#     aCamera.ComputeViewPlaneNormal()
-
     # Actors are added to the renderer.
     ren.AddActor(outline)
     ren.AddActor(skin)
@@ -388,20 +355,8 @@ def show_laplace(fname, ren):
     OPACITY = 0.1
     (RED, GREEN, BLUE) = (0.0, 0.0, 0.9)
 
-    # The following reader is used to read a series of 2D slices (images)
-    # that compose the volume. The slice dimensions are set, and the
-    # pixel spacing. The data Endianness must also be specified. The reader
-    # usese the FilePrefix in combination with the slice number to construct
-    # filenames using the format FilePrefix.%d. (In this case the FilePrefix
-    # is the root name of the file: quarter.)
     mrc = vtk.vtkStructuredPointsReader()
-    #v16.SetDataDimensions(64, 64)
-    #v16.SetDataByteOrderToLittleEndian()
-    #v16.SetFilePrefix(VTK_DATA_ROOT + "/Data/headsq/quarter")
-    #v16.SetImageRange(1, 93)
-    #v16.SetDataSpacing(3.2, 3.2, 1.5)
     mrc.SetFileName(fname)
-    #mrc.SetFileName(VTK_DATA_ROOT + "/Data/ironProt.vtk")
 
 #GetOrigin()
 #GetSpacing()
@@ -449,16 +404,6 @@ def show_laplace(fname, ren):
     outline = vtk.vtkActor()
     outline.SetMapper(mapOutline)
     outline.GetProperty().SetColor(0, 0, 0)
-
-#     # It is convenient to create an initial view of the data. The FocalPoint
-#     # and Position form a vector direction. Later on (ResetCamera() method)
-#     # this vector is used to position the camera to look at the data in
-#     # this direction.
-#     aCamera = vtk.vtkCamera()
-#     aCamera.SetViewUp(0, 0, -1)
-#     aCamera.SetPosition(0, 1, 0)
-#     aCamera.SetFocalPoint(0, 0, 0)
-#     aCamera.ComputeViewPlaneNormal()
 
     # Actors are added to the renderer.
     ren.AddActor(outline)
@@ -565,7 +510,8 @@ def main(pairs):
         handler = _main_module.__dict__[handler_name]
         fname = file
         if not os.access(fname, os.R_OK):
-            print "Missing %s" % (fname)
+            print "Missing file %s" % (fname)
+            sys.exit(1)
         else:
             handler(fname, renderer)
 

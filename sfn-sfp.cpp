@@ -4,8 +4,7 @@
 #include <limits>
 #include <cmath>
 
-// (take out, or use your own appropriate '-march')
-// g++ -W -Wall -O2 -march=barcelona -o sfn-sfp sfn-sfp.cpp
+// g++ -W -Wall -O2 -o sfn-sfp sfn-sfp.cpp
 
 using namespace std;
 
@@ -27,31 +26,38 @@ void load_pts(ifstream& in, Pts& pts)
       in >> pt.x >> pt.y >> pt.z;
       pts.push_back(pt);
    }
+   // We always run one past the end of good data, so pop the last off.
+   pts.pop_back();
 }
 
 
 
-// Big, fat n^2
+// O(n^2)
 float SFX(Pts const& ys, Pts const& xs)
 {
-   float sum_ds = 0.0;
-   for (Pts::const_iterator ity = ys.begin(), endy = ys.end();
-        ity != endy; ++ity) {
-      float nearest_dist2 = numeric_limits<float>::max();
-      for (Pts::const_iterator itx = xs.begin(), endx = xs.end();
-           itx != endx; ++itx) {
-         float dx = ity->x - itx->x,
-            dy = ity->y - itx->y,
-            dz = ity->z - itx->z;
-         float dist2 = dx * dx + dy * dy + dz * dz;
-         if (dist2 < nearest_dist2) {
-            nearest_dist2 = dist2;
-         }
-      }
-      sum_ds += sqrtf(nearest_dist2);
+   if (ys.empty() or xs.empty()) {
+      return 999.9;
    }
+   else {
+      float sum_ds = 0.0;
+      for (Pts::const_iterator ity = ys.begin(), endy = ys.end();
+           ity != endy; ++ity) {
+         float nearest_dist2 = numeric_limits<float>::max();
+         for (Pts::const_iterator itx = xs.begin(), endx = xs.end();
+              itx != endx; ++itx) {
+            float dx = ity->x - itx->x,
+               dy = ity->y - itx->y,
+               dz = ity->z - itx->z;
+            float dist2 = dx * dx + dy * dy + dz * dz;
+            if (dist2 < nearest_dist2) {
+               nearest_dist2 = dist2;
+            }
+         }
+         sum_ds += sqrtf(nearest_dist2);
+      }
 
-   return sum_ds / ys.size();
+      return sum_ds / ys.size();
+   }
 }
 
 
@@ -68,7 +74,9 @@ float SFP(Pts const& vertices, Pts const& carbons)
    return sfp;
 }
 
-
+// Use like:
+//    ./sfn-sfp   1AGW.carbons   1AGW.<parmvals>.vertices
+//
 int main(int argc, char* argv[])
 {
    --argc, ++argv;

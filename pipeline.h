@@ -4,7 +4,7 @@
 #include "types.h"
 #include "point.h"
 #include "polygon.h"
-#include <itkImageDuplicator.h>
+#include <itkRecursiveGaussianImageFilter.h>
 
 // After:
 //    http://www.itk.org/pipermail/insight-users/2006-May/017729.html
@@ -48,25 +48,23 @@ DEBUG_PRIVATE:
    VectorType                          offset_;
 
    HessianFilterType::Pointer          hessian_maker_;
-   typedef HessianFilterType::OutputImageType HessianImageType;
 
-   HessianImageType::Pointer           gaussianed_hessian_;
+   typedef itk::NthElementImageAdaptor<
+      HessianImageType, InternalPrecisionType >
+      HessianComponentAdaptorType;
+
+   HessianComponentAdaptorType::Pointer hess_component_adaptor_[6];
+
+   typedef itk::RecursiveGaussianImageFilter<
+      HessianComponentAdaptorType, InternalImageType > GaussianFilterType;
+   GaussianFilterType::Pointer         gaussian_maker_[6];
+
+   bool bStructureTensorUpdated_;
+
+   // make a separate one just to avoid complications
+   HessianFilterType::OutputImageType::Pointer  gaussianed_hessian_;
 
    EigenAnalysisFilterType::Pointer    totalEigenFilter_;
-
-   // // &&& What's the difference between an adaptor and an accessor?
-   // // Eigenvalue
-   // // Create an adaptor and plug the output to the parametric space
-   // EValueImageAdaptorType::Pointer
-   //    eValueAdaptor1_,
-   //    eValueAdaptor2_,
-   //    eValueAdaptor3_;
-
-   // // Eigenvector
-   // EigenVectorImageAdaptorType::Pointer
-   //    eVectorAdaptor1_,
-   //    eVectorAdaptor2_,
-   //    eVectorAdaptor3_;
 
    EigenvalueAccessor< EigenValueArrayType >
       valAccessor1_,

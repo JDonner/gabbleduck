@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
 
-# &&& later, use this instead of feeder, maybe. But, we need threading no?
-# Just feed a list of files and parameters and let it deal?
-# Would rather in fact do it from some shell script.
-
 
 rm -f "stats.txt"
 OUTPUTDIR=${1:-"output"}

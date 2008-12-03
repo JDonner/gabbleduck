@@ -8,11 +8,15 @@ global helix_defs
 global res_atoms_by_resid
 global sorted_residues
 
+# Atoms look like: ('symbol' is chemical, eg 'C', 'N', 'O' etc
+# (atomid, resid, (x, y, z), symbol)
 atom_defs_by_id = {}
 sheet_defs = []
 helix_defs = []
+# atom looks the same here:
+# (atomid, resid, (x, y, z), symbol)
 res_atoms_by_resid = {}
-# sorted_residues == (resid, (x,y,z))
+# sorted_residues look like: (resid, (x,y,z))
 sorted_residues = []
 
 
@@ -34,6 +38,20 @@ def _float_at(line, start, end):
 # 1-based, to make easier to match to spec
 def _int_at(line, start, end):
     return int(_tok_at(line, start, end))
+
+
+def residue_index(res0, res1):
+    (first, last) = (-1, -1)
+
+#    print "res0, res1: ", res0, res1
+#    print "r[0]: ", sorted_residues[0][0]
+    # find index of res0, res1
+    first = map(lambda r: r[0], sorted_residues).index(res0)
+    last = map(lambda r: r[0], sorted_residues).index(res1)
+#    print "fst, lst: ", first, last
+#    for x in range(first, last + 1):
+#        print "res[", x, "]", sorted_residues[x][0]
+    return (first, last)
 
 
 # Keep chainno separate from resno
@@ -61,6 +79,7 @@ def _load_sheet_def(line):
     return (start_res_id, end_res_id)
 
 
+# (atomid, resid, (x, y, z), symbol)
 def _load_atom_def(line):
     atomid = _tok_at(line, 7, 11)
 
@@ -129,3 +148,5 @@ def _process_residues():
     # sort by id ([0])
     sorted_residues.sort(key=lambda r: r[0])
 #    print >> sys.stderr, "min res: %f, %f, %f; max res: %f, %f, %f" % (xmin, ymin, zmin, xmax, ymax, zmax)
+
+

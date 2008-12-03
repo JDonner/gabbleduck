@@ -50,7 +50,9 @@ const unsigned GabbleSplineOrder = 1;
 
 namespace po = boost::program_options;
 extern po::variables_map g_vm;
-extern po::variables_map& set_up_options(int argc, char** argv);
+extern po::variables_map& set_up_options(
+   int argc, char** argv, po::options_description& config);
+
 extern void dump_settings(po::variables_map const& vm, std::ostream& os);
 
 #endif // SETTINGS_H

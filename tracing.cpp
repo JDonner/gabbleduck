@@ -22,11 +22,6 @@ bool MeetsBetaCondition(PointType const& physPt,
                         EigenVectors const& evec,
                         ImageType::Pointer image,
                         double sheetMin, double sheetMax);
-void new_pt(PointType const& pt, Image::SpacingType const& spacing,
-            PointType& newPt);
-void new_pt_index(PointType const& pt, Image::SpacingType const& spacing,
-                  ImageType::IndexType& newPt);
-
 
 static SpatialHash s_hash;
 
@@ -137,9 +132,6 @@ void CalcEigenStuff(Image::Pointer fullImage, PointType const& physPt,
    VectorType physShift;
    pt_shift(physPt, fullImage->GetSpacing(), physShift);
 
-//   // &&& Wants to be WindowSize, in physical units (arg!)
-//   int region_width = 5;
-
    // <width> needs to be enough to 'support' the sigmas of the Hessian
    // and gaussian proper.
    unsigned width = 0;
@@ -163,6 +155,7 @@ cout << "yoo! physical point: " << newPt << "; " << index << "; not within image
    else {
 //cout << __FILE__ << " (awkward) index: " << index << "; within?: " << isWithinImage << endl;
       EigenValueImageType::Pointer evalImage = pipeline.eigValImage();
+//cout << "evals ";
       for (unsigned i = 0; i < Dimension; ++i) {
          outEVals[i] = evalImage->GetPixel(index)[i];
 //cout << outEVals[i] << " ";
@@ -172,7 +165,7 @@ cout << "yoo! physical point: " << newPt << "; " << index << "; not within image
       EigenVectorImageType::Pointer evecImage = pipeline.eigVecImage();
 EigenVectorImageType::RegionType eigDefinedRegion = evecImage->GetBufferedRegion();
 
-ImageType::RegionType snipDefinedRegion = fullImage->GetBufferedRegion();
+//ImageType::RegionType snipDefinedRegion = fullImage->GetBufferedRegion();
 //cout << __FILE__ << "\nsnip defined region: \n" << endl;
 //snipDefinedRegion.Print(cout);
 
@@ -185,19 +178,6 @@ ImageType::RegionType snipDefinedRegion = fullImage->GetBufferedRegion();
       }
    }
 }
-
-
-void new_pt(PointType const& pt,
-            Image::SpacingType const& spacing,
-            PointType& newPt)
-{
-   VectorType shift;
-   pt_shift(pt, spacing, shift);
-   for (unsigned i = 0; i < Dimension; ++i) {
-      newPt[i] += shift[i];
-   }
-}
-
 
 // Seeds are in pixels, no sense in anything else.
 // We want to resample (for a new image) against the original image,
