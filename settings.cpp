@@ -22,7 +22,7 @@ po::variables_map& set_up_options(int argc, char** argv, po::options_description
       ("BetaThickness", po::value<double>(&constants::BetaThickness)->default_value(5.5)->composing(),
        "BetaThickness; the number (in what units?) of the expected beta thickness")
       ("SigmaOfFeatureGaussian", po::value<double>(&constants::SigmaOfFeatureGaussian)->default_value(3.5)->composing(),
-       "SigmaOfFeatureGaussian - sigma of 'neighbors influence' gaussian, applied to hessian.")
+       "SigmaOfFeatureGaussian - sigma of 'neighbors influence' gaussian, applied to gradient tensor.")
       ("GaussianSupportSize", po::value<int>(&constants::GaussianSupportSize)->default_value(13)->composing(),
        "GaussianSupportSize - ")
       ("BetaThicknessFlex", po::value<double>(&constants::BetaThicknessFlex)->default_value(0.25)->composing(),
@@ -39,8 +39,6 @@ po::variables_map& set_up_options(int argc, char** argv, po::options_description
        "SeedDensityWorthinessThreshold - &&& oops, what DensityThreshold then?")
       ("LineIncrement", po::value<double>(&constants::LineIncrement)->default_value(0.25)->composing(),
        "LineIncrement - we (&&& crudely) check for thickness by making constant-length advances along a line, to probe the end of a beta sheet. This is that constant. Wants binary search instead most likely.")
-      ("SigmaOfDerivativeGaussian", po::value<double>(&constants::SigmaOfDerivativeGaussian)->default_value(3.5)->composing(),
-       "SigmaOfDerivativeGaussian - For the difference of gaussians 2nd derivative method. Details below this sigma value are blurred out. Physical units (ie for us, Angstroms, not pixels)")
 
       ("SnapshotIntervalBase", po::value<unsigned>(&constants::SnapshotIntervalBase)->default_value(0)->composing(),
        "SnapshotIntervalBase - when you're debugging and want to see the progress of the algorithm incrementally, this is the base of base ^ power, in the number of points, that you take snapshots at")
@@ -93,11 +91,6 @@ po::variables_map& set_up_options(int argc, char** argv, po::options_description
    ///////////////////////////////////////////////
    // dependent values, not user-settable
 
-   if (not g_vm.count("SigmaOfDerivativeGaussian")) {
-      cout << "Sigma not specified!" << endl;
-      constants::SigmaOfDerivativeGaussian = 1.0;
-   }
-
    constants::BetaMin = constants::BetaThickness * (1.0 - constants::BetaThicknessFlex);
    constants::BetaMax = constants::BetaThickness * (1.0 + constants::BetaThicknessFlex);
 
@@ -111,11 +104,8 @@ void dump_settings(po::variables_map const& vm, ostream& os)
       << "vm[SeedDensityThreshold]: " << vm["SeedDensityThreshold"].as<double>() << '\n'
       << "SeedDensityThreshold: " << constants::SeedDensityThreshold << '\n'
       << '\n'
-      << "vm[SigmaOfDerivativeGaussian]: " << vm["SigmaOfDerivativeGaussian"].as<double>() << '\n'
-      << "SigmaOfDerivativeGaussian: internal, for taking 2nd derivative" << constants::SigmaOfDerivativeGaussian << '\n'
-      << '\n'
       << "vm[SigmaOfFeatureGaussian]: " << vm["SigmaOfFeatureGaussian"].as<double>() << '\n'
-      << "SigmaOfFeatureGaussian: Window size of gaussian spread of 2nd derivative" << constants::SigmaOfFeatureGaussian << '\n'
+      << "SigmaOfFeatureGaussian: 'Window size' of 'neighbors influence' / blur gaussian, applied to gradient tensor" << constants::SigmaOfFeatureGaussian << '\n'
       << '\n'
       << "vm[GaussianSupportSize]: " << vm["GaussianSupportSize"].as<int>() << '\n'
       << "GaussianSupportSize: size of 'support' for feature gaussian, 'n' in: sigma = sqrt(n-1)/2" << constants::GaussianSupportSize << '\n'

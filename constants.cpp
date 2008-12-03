@@ -12,12 +12,9 @@ double BetaThicknessFlex = 0.2;
 double BetaMin = BetaThickness * (1.0 - BetaThicknessFlex);
 double BetaMax = BetaThickness * (1.0 + BetaThicknessFlex);
 
-// from equation (7) from paper.
-double SigmaOfDerivativeGaussian = BetaThickness;
-
-
 double BetaThickness = 5.0;
-// paper's recommended value (as compromise between speed and accuracy)
+// Gaussian sigma of paper's formula (7)
+/// paper's recommended value (as compromise between speed and accuracy)
 double SigmaOfFeatureGaussian = 3.0;
 int GaussianSupportSize = 37;
 

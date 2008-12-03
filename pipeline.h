@@ -4,13 +4,14 @@
 #include "types.h"
 #include "point.h"
 #include "polygon.h"
-#include <itkRecursiveGaussianImageFilter.h>
 
 // After:
 //    http://www.itk.org/pipermail/insight-users/2006-May/017729.html
 
 // The ITK filters pipelined together
 
+// &&& Frick, could we re-use this filter, just re-locate it as needed?
+// It'd save so much memory thrashing.
 struct BetaPipeline
 {
    BetaPipeline(ImageType::Pointer image,
@@ -18,14 +19,14 @@ struct BetaPipeline
                 // In cells. no point in fractional cells (I believe)
                 int region_width);
 
-   EigenValueImageType::Pointer eigValImage() {
+   EigenValuesType const& eigenValues() const {
       update();
-      return totalEigenFilter_->GetEigenValuesImage();
+      return eigenValues_;
    }
 
-   EigenVectorImageType::Pointer eigVecImage() {
+   EigenVectorsType const& eigenVectors() const {
       update();
-      return totalEigenFilter_->GetEigenVectorsImage();
+      return eigenVectors_;
    }
 
    void set_up_resampler(ImageType::Pointer image,
@@ -34,59 +35,39 @@ struct BetaPipeline
 private:
    void update_first_half();
    void gaussianize();
-   void fuse_into_hessian();
+   void fuse_into_tensor();
    void update();
 
-#define DEBUG_PRIVATE public
-DEBUG_PRIVATE:
+   // &&& Should try to reuse the pipeline, for speed's sake.
+   void reset();
+
+private:
    typedef itk::ResampleImageFilter< ImageType, ImageType, InternalPrecisionType > ResampleFilterType;
    ResampleFilterType::Pointer         resampler_;
 
-   typedef itk::TranslationTransform< InternalPrecisionType, Dimension > TransformType;
-   TransformType::Pointer              translation_;
-
-   VectorType                          offset_;
-
-   HessianFilterType::Pointer          hessian_maker_;
+   typedef DerivativeImageFilter<ImageType, ImageType> DerivativeFilterType;
+   DerivativeFilterType::Pointer       derivative_filter_[3];
 
    typedef itk::NthElementImageAdaptor<
-      HessianImageType, InternalPrecisionType >
-      HessianComponentAdaptorType;
+      TensorImageType, InternalPrecisionType >
+      TensorComponentAdaptorType;
 
-   HessianComponentAdaptorType::Pointer hess_component_adaptor_[6];
+   TensorComponentAdaptorType::Pointer tensor_component_adaptor_[6];
 
-   typedef itk::RecursiveGaussianImageFilter<
-      HessianComponentAdaptorType, InternalImageType > GaussianFilterType;
-   GaussianFilterType::Pointer         gaussian_maker_[6];
+   typedef itk::RecursiveGaussianImageFilter< InternalImageType, InternalImageType > GaussianFilterType;
 
    bool bStructureTensorUpdated_;
 
    // make a separate one just to avoid complications
-   HessianFilterType::OutputImageType::Pointer  gaussianed_hessian_;
+   TensorFilterType::OutputImageType::Pointer  gaussianed_tensor_;
 
-   EigenAnalysisFilterType::Pointer    totalEigenFilter_;
+   TensorType                          point_structure_tensor_;
 
-   EigenvalueAccessor< EigenValueArrayType >
-      valAccessor1_,
-      valAccessor2_,
-      valAccessor3_;
+   typedef  EigenValue                 EigenValuesType[Dimension];
+   typedef  EigenVector                EigenVectorsType[Dimension];
 
-   EigenvectorAccessor< EigenVectorMatrixType, EigenVector >
-      vecAccessor1_,
-      vecAccessor2_,
-      vecAccessor3_;
-
-   // eValueCastfilter1 is the eigenvalues with the maximum eigenvalue.
-   // eValueCastfilter3 is the eigenvalues with the minimum eigenvalue.
-   EValueCastImageFilterType::Pointer
-      eValueCastFilter1_,
-      eValueCastFilter2_,
-      eValueCastFilter3_;
-
-   EigenVectorCastImageFilterType::Pointer
-      eVectorCastFilter1_,
-      eVectorCastFilter2_,
-      eVectorCastFilter3_;
+   EigenValuesType eigenValues_;
+   EigenVectorsType eigenVectors_;
 };
 
 #endif // BETA_PIPELINE_H

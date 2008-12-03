@@ -57,8 +57,8 @@ typedef  itk::TranslationTransform<InternalPrecisionType, Dimension> Translation
 
 typedef  itk::HessianRecursiveGaussianImageFilter<InputImageType> HessianFilterType;
 typedef  itk::SymmetricSecondRankTensor< InternalPrecisionType, Dimension > SymmTensorType;
-typedef  HessianFilterType::OutputImageType            HessianImageType;
-typedef  HessianImageType::PixelType                   HessianPixelType;
+typedef  SymmTensorType::OutputImageType            TensorImageType;
+typedef  HessianImageType::PixelType                HessianPixelType;
 
 
 ///////////////////////////////////////////////////////////////////

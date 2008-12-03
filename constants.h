@@ -9,9 +9,6 @@
 
 namespace constants
 {
-// Used in taking 2nd derivative
-extern double SigmaOfDerivativeGaussian;
-
 // &&& Make it a function of the map resolution?
 extern double BetaThickness;
 

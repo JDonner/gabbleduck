@@ -132,51 +132,14 @@ void CalcEigenStuff(Image::Pointer fullImage, PointType const& physPt,
    VectorType physShift;
    pt_shift(physPt, fullImage->GetSpacing(), physShift);
 
-   // <width> needs to be enough to 'support' the sigmas of the Hessian
-   // and gaussian proper.
+   // &&& <width> needs to be enough to 'support' the sigma of the gaussian
    unsigned width = 0;
    // pipeline does resampling
    BetaPipeline pipeline(fullImage, physPt, width);
+   pipeline.update();
 
-// ImageType::IndexType indexUseless;
-// pipeline.resampler_->GetOutput()->TransformPhysicalPointToIndex(physPt, indexUseless);
-// cout << __FILE__ << " (useless) index: " << indexUseless << endl;
-
-   PointType newPt = physPt + physShift;
-   ImageType::IndexType index;
-   bool isWithinImage = pipeline.resampler_->GetOutput()->TransformPhysicalPointToIndex(newPt, index);
-   if (not isWithinImage) {
-      cout << "origin: " << pipeline.resampler_->GetOutput()->GetOrigin() << "; "
-           << "other end: " << pipeline.resampler_->GetOutput()->GetSpacing() << "; "
-           << "size: " << pipeline.resampler_->GetOutput()->GetRequestedRegion().GetSize()
-           << endl;
-cout << "yoo! physical point: " << newPt << "; " << index << "; not within image" << endl;
-   }
-   else {
-//cout << __FILE__ << " (awkward) index: " << index << "; within?: " << isWithinImage << endl;
-      EigenValueImageType::Pointer evalImage = pipeline.eigValImage();
-//cout << "evals ";
-      for (unsigned i = 0; i < Dimension; ++i) {
-         outEVals[i] = evalImage->GetPixel(index)[i];
-//cout << outEVals[i] << " ";
-      }
-//cout << endl;
-
-      EigenVectorImageType::Pointer evecImage = pipeline.eigVecImage();
-EigenVectorImageType::RegionType eigDefinedRegion = evecImage->GetBufferedRegion();
-
-//ImageType::RegionType snipDefinedRegion = fullImage->GetBufferedRegion();
-//cout << __FILE__ << "\nsnip defined region: \n" << endl;
-//snipDefinedRegion.Print(cout);
-
-// &&& grrr - defined region is at 0,0,0, [5,5,5]
-// and index is way in the middle somewhere.
-//cout << __FILE__ << "\neig defined region: \n" << endl;
-//eigDefinedRegion.Print(cout);
-      for (unsigned i = 0; i < Dimension; ++i) {
-         outEVecs[i] = evecImage->GetPixel(index)[i];
-      }
-   }
+   outEVals = pipeline.eigenValues();
+   outEVecs = pipeline.eigenVectors();
 }
 
 // Seeds are in pixels, no sense in anything else.

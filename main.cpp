@@ -79,7 +79,6 @@ int main(int argc, char** argv)
       basepath,
       constants::BetaThickness,
       constants::BetaThicknessFlex,
-      constants::SigmaOfDerivativeGaussian,
       constants::SigmaOfFeatureGaussian,
       constants::GaussianSupportSize,
       constants::SeedDensityFalloff,

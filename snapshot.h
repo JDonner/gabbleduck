@@ -14,8 +14,7 @@ extern std::string beta_output_name(
    std::string basename,
    double beta_thickness,
    double thickness_flex,
-   double dsigma,
-   double fsigma,
+   double sigma,
    int gaussian_support,
    double beta_falloff_factor,
    double point_sep);
