@@ -15,6 +15,9 @@ unsigned n_beta_nodes = 0;
 unsigned n_total_hashed_pts = 0;
 unsigned n_rejected_as_too_close = 0;
 
+unsigned n_eigen_successes = 0;
+unsigned n_eigen_failures = 0;
+
 void dump_instrument_vars(ostream& os)
 {
    os << "n_total_visited: " << n_total_visited << '\n'
@@ -29,6 +32,8 @@ void dump_instrument_vars(ostream& os)
       << "n_non_planelike_nodes: " << n_non_planelike_nodes << '\n'
       << "n_beta_nodes: " << n_beta_nodes << '\n'
       << "n_total_hashed_pts: " << n_total_hashed_pts << '\n'
-      << "n_rejected_as_too_close: " << n_rejected_as_too_close
+      << "n_rejected_as_too_close: " << n_rejected_as_too_close << '\n'
+      << "eigen successes: " << n_eigen_successes << '\n'
+      << "eigen failures: " << n_eigen_failures << '\n'
       << endl;
 }

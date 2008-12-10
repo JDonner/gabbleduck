@@ -55,7 +55,7 @@ extern int GaussianSupportSize;
 // AKA the 'window size'
 
 // &&& This 20% is arbitrary
-extern double BetaThicknessFlex;
+extern double BetaThickRangeRatio;
 
 extern double BetaMin;
 extern double BetaMax;
@@ -64,8 +64,16 @@ extern double BetaMax;
 // a beta point.
 extern double SeedDensityThreshold;
 
-// Once we've got the seed, this is the
-extern double SeedDensityWorthinessThreshold;
+// What we're willing to think of as a reasonable beta density,
+// as a proportion of the highest density found in the map.
+// &&& Unfortunately, this method is totally arbitrary. Perhaps it'd
+// be an ok way to measure it in an interactive program but,
+// it just seems to take a lot of tuning.
+extern double RelativeSeedDensityThreshold;
+
+// The actual density value guessed for beta sheets from the above
+// <RelativeSeedDensityThreshold> * the maximum sheet density.
+extern double CandidateDensityThreshold;
 
 // At what falloff, from a maximum, is it the end of the beta region?
 // We're saying, here, when it reaches half the highest density.
@@ -81,7 +89,7 @@ extern unsigned SnapshotIntervalPower;
 
 // Beta points don't have an intensity but we want to use 3D density
 // methods to show them, so we give them this fake value.
-extern double BetaPointFakeDensity;
+extern double BetaPointDisplayFakeDensity;
 extern bool ShowSeeds;
 extern double SeedsDisplayEmphFactor;
 extern unsigned SnapshotImageZoom;

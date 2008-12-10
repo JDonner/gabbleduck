@@ -17,6 +17,7 @@ extern std::string beta_output_name(
    double sigma,
    int gaussian_support,
    double beta_falloff_factor,
+   double beta_density_rel_max,
    double point_sep);
 extern void snapshot_beta_points(Nodes const& nodes);
 extern void write_snapshot_image(std::string fname);

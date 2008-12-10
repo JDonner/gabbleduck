@@ -50,12 +50,12 @@ int main(int argc, char** argv)
    po::options_description config("Configuration");
    po::variables_map& vm = set_up_options(argc, argv, config);
 
-   if (vm.count("help") or not vm.count("input-file")) {
+   if (vm.count("help") or not vm.count("inputfile")) {
       usage(config);
       return 1;
    }
 
-   string fname = vm["input-file"].as<string>();
+   string fname = vm["inputfile"].as<string>();
    ifstream in(fname.c_str());
    // Also give help if the file doesn't exist
    if (not in.good()) {
@@ -78,10 +78,11 @@ int main(int argc, char** argv)
    string temp_basepath = beta_output_name(
       basepath,
       constants::BetaThickness,
-      constants::BetaThicknessFlex,
+      constants::BetaThickRangeRatio,
       constants::SigmaOfFeatureGaussian,
       constants::GaussianSupportSize,
       constants::SeedDensityFalloff,
+      constants::RelativeSeedDensityThreshold,
       constants::RequiredNewPointSeparation);
 
    string temp_logname = temp_basepath + ".log";
@@ -110,10 +111,13 @@ dump_settings(g_vm, g_log);
       }
    }
 
+   constants::CandidateDensityThreshold =
+      constants::RelativeSeedDensityThreshold * maxSeedDensity;
+
    Seeds trueMaxSeeds;
    for (Seeds::const_iterator it = allSeeds.begin(), end = allSeeds.end();
         it != end; ++it) {
-      if (constants::SeedDensityWorthinessThreshold * maxSeedDensity < image->GetPixel(*it)) {
+      if (constants::CandidateDensityThreshold < image->GetPixel(*it)) {
          trueMaxSeeds.push_back(*it);
       }
    }
@@ -139,11 +143,11 @@ g_log << "safe seeds: " << trueMaxSeeds.size()
 
 #if WANT_SNAPSHOTS
    snapshot_beta_points(betaNodes);
-#endif
 
    if (constants::ShowSeeds) {
       add_seeds_to_snapshot(trueMaxSeeds, image, g_vm["SeedsDisplayEmphFactor"].as<double>());
    }
+#endif
 
    // rename file, now that we know how it turned out
    ostringstream oss;

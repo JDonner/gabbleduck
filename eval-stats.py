@@ -28,14 +28,14 @@ def main(args):
     for protein, valses in ordered_valses_by_protein.items():
         # print the parms with the few best fits (lowest sfn x sfp)
         for i in range(top_n):
-            print protein, "\t".join(["%s:%0.3f" %
+            print "%-16.16s" % protein, " ".join(sorted(["%s:%0.3f" %
                                       (pair[0], pair[1])
-                                      for pair in valses[i].items()])
+                                      for pair in valses[i].items()]))
 
 
 def sort_by_low(valses):
     def keyof(vals):
-        return vals['SFN'] * vals['SFP']
+        return vals['SFN'] + vals['SFP']
     ordered = sorted(valses, key=keyof)
     return ordered
 

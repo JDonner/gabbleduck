@@ -16,6 +16,9 @@ extern unsigned n_beta_nodes;
 extern unsigned n_total_hashed_pts;
 extern unsigned n_rejected_as_too_close;
 
+extern unsigned n_eigen_failures;
+extern unsigned n_eigen_successes;
+
 extern void dump_instrument_vars(std::ostream& os);
 
 #endif // INSTRUMENT_H

@@ -6,6 +6,7 @@
 #include "polygon.h"
 #include <itkDerivativeImageFilter.h>
 #include <itkNthElementImageAdaptor.h>
+#include <itkResampleImageFilter.h>
 #include <itkGaussianBlurImageFunction.h>
 #include <itkSymmetricEigenAnalysis.h>
 
@@ -13,6 +14,11 @@
 //    http://www.itk.org/pipermail/insight-users/2006-May/017729.html
 
 // The ITK filters pipelined together
+
+// Thrown when eigenanalysis fails
+struct FailedEigenAnalysis {
+   // Its existence is enough
+};
 
 // &&& Frick, could we re-use this filter, just re-locate it as needed?
 // It'd save so much memory thrashing.
@@ -23,29 +29,20 @@ struct BetaPipeline
                 // In cells. no point in fractional cells (I believe)
                 int region_width);
 
-   EigenValuesType const& eigenValues() {
-      update();
-      return eigenValues_;
-   }
-
-   EigenVectorsType const& eigenVectors() {
-      update();
-      return eigenVectors_;
-   }
+   EigenValuesType const& eigenValues();
+   EigenVectorsType const& eigenVectors();
 
    void set_up_resampler(ImageType::Pointer image,
                          PointType const& center);
 
 private:
    void update_first_half();
-   void gaussianize();
-   void fuse_into_tensor();
    void update();
-   void TakeGaussiansAtOrignalPoint();
-   void multiply_gaussian_components();
-   void CalcEigenSystemAtOriginalPoint();
+   void TakeGaussiansAtOriginalPoint();
+   void multiply_derivative_components();
+   void CalcEigenSystemAtOriginalPoint() throw (FailedEigenAnalysis);
 
-   // &&& Should try to reuse the pipeline, for speed's sake.
+   // &&& Could try to reuse the pipeline, for speed's sake.
    void reset();
 
 private:
@@ -55,7 +52,7 @@ private:
    typedef itk::DerivativeImageFilter< ImageType, ImageType > DerivativeFilterType;
    DerivativeFilterType::Pointer       derivative_filter_[Dimension];
 
-   typedef  itk::Image<TensorType, Dimension>           TensorImageType;
+   typedef  itk::Image<TensorType, Dimension>  TensorImageType;
 
    TensorImageType::Pointer                    tensor_image_;
 
@@ -66,10 +63,16 @@ private:
 
    TensorComponentAdaptorType::Pointer tensor_component_adaptor_[6];
 
+   // We don't need a filter, because we want the result for one point
+   // only.
    typedef itk::GaussianBlurImageFunction<TensorComponentAdaptorType,
-      TensorType> GaussianImageFunction;
+      InternalPrecisionType> GaussianImageFunction;
 
-   GaussianImageFunction::Pointer gaussians_[6];
+   // One for each component of the gradient image, even though the
+   // functions themselves are all the same. The 3D-ness of these
+   // functions should come from the adaptor, which in turn comes from
+   // the tensor image type.
+   GaussianImageFunction::Pointer gaussian_functions_[6];
 
    typedef itk::SymmetricEigenAnalysis<TensorType, EigenValuesType, EigenVectorsType>
       EigenSystemAnalyzerType;

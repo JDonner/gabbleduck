@@ -64,7 +64,7 @@ def int_at(line, start, end):
 def residue_index(res0, res1):
     (first, last) = (-1, -1)
 
-    print "res0, res1: ", res0, res1
+#    print "res0, res1: ", res0, res1
 #    print "r[0]: ", sorted_residues[0][0]
     # find index of res0, res1
     first = map(lambda r: r[0], sorted_residues).index(res0)
@@ -274,12 +274,11 @@ def show_beta_sheets(renderer):
 def show_density(fname, ren):
     # originally 60.0
     FEATURE_ANGLE = 60.0
-
 # 1AGW goes from 0 - 0.6+
-    MAX_DENSITY = 2.0
+    MAX_DENSITY = 1.0
     MIN_DENSITY = 0.0
 #    MAX_DENSITY = 1.0
-    STEPS = 20
+    STEPS = 15
     OPACITY = 1.0 / STEPS
 
     # The following reader is used to read a series of 2D slices (images)
