@@ -28,13 +28,13 @@ public:
    SpatialHash();
 
    void init(ImageType::PointType origin,
-             double grid_phys_separation,
+             Flt grid_phys_separation,
              unsigned (&n_pixels)[Dimension],
-             double (&phys_separation)[Dimension]);
+             Flt (&phys_separation)[Dimension]);
 
    void addPt(PointType const& pt);
 
-   bool isWithinDistanceOfAnything(PointType const& pt, double distance) const;
+   bool isWithinDistanceOfAnything(PointType const& pt, Flt distance) const;
 
    unsigned offset_of(Index const& idx) const;
    Index index_of(PointType const& pt) const;
@@ -56,8 +56,8 @@ private:
 
 private:
    ImageType::PointType image_origin_;
-   double total_grid_phys_extent_[Dimension];
-   double cell_phys_extent_[Dimension];
+   Flt total_grid_phys_extent_[Dimension];
+   Flt cell_phys_extent_[Dimension];
 
    unsigned stride_0_;
    unsigned stride_1_;

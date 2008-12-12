@@ -13,25 +13,25 @@
 #include "settings.h"
 
 
-typedef double                                         InputPixelType;
+typedef float                                         InputPixelType;
 typedef InputPixelType                                PixelType;
 typedef PixelType                                     BetaPixelType;
-typedef double                                         InternalPrecisionType;
-typedef InternalPrecisionType                         EigenComponentType;
+typedef float                                         Flt;
+typedef Flt                         EigenComponentType;
 
 const unsigned Dimension = 3;
 
 typedef  itk::FixedArray<EigenComponentType, Dimension> FixedVectorType;
-typedef  itk::Vector<InternalPrecisionType, Dimension>  VectorType;
+typedef  itk::Vector<Flt, Dimension>  VectorType;
 
-typedef  InternalPrecisionType                         EigenValueType;
+typedef  Flt                         EigenValueType;
 typedef  VectorType                                    EigenVectorType;
 
 typedef  itk::FixedArray<EigenValueType, Dimension>    EigenValuesType;
 typedef  itk::FixedArray<VectorType, Dimension>        EigenVectorsType;
 
 typedef  itk::Image< InputPixelType, Dimension >       InputImageType;
-typedef  itk::Image< InternalPrecisionType, Dimension > InternalImageType;
+typedef  itk::Image< Flt, Dimension > InternalImageType;
 typedef  InternalImageType                             ImageType;
 //typedef  ImageType                                     Image;
 //typedef  InputImageType                                BetaImageType;
@@ -39,7 +39,7 @@ typedef  itk::ImageRegion<Dimension>                   ImageRegionType;
 typedef  itk::Index<Dimension>                         ImageIndexType;
 typedef  itk::Size<Dimension>                          ImageSizeType;
 
-typedef  itk::SymmetricSecondRankTensor< InternalPrecisionType, Dimension > TensorType;
+typedef  itk::SymmetricSecondRankTensor< Flt, Dimension > TensorType;
 
 #if defined(GABBLE_INTERPOLATOR_IS_SPLINE) && (GABBLE_INTERPOLATOR_IS_SPLINE == 1)
   typedef  itk::BSplineInterpolateImageFunction<ImageType, PixelType> InterpolatorType;

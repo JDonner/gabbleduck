@@ -7,51 +7,36 @@
 namespace constants
 {
 // &&& This 20% is arbitrary
-double BetaThickRangeRatio = 0.2;
+float BetaThickRangeRatio = 0.2;
 
-double BetaMin = BetaThickness * (1.0 - BetaThickRangeRatio);
-double BetaMax = BetaThickness * (1.0 + BetaThickRangeRatio);
+float BetaMin = BetaThickness * (1.0 - BetaThickRangeRatio);
+float BetaMax = BetaThickness * (1.0 + BetaThickRangeRatio);
 
-double BetaThickness = 5.0;
+float BetaThickness = 5.0;
 // Gaussian sigma of paper's formula (7)
 /// paper's recommended value (as compromise between speed and accuracy)
-double SigmaOfFeatureGaussian = 3.0;
+float SigmaOfFeatureGaussian = 3.0;
 int GaussianSupportSize = 5;
 
 // Physical coordinates
-double RequiredNewPointSeparation = 0.5;
+float RequiredNewPointSeparation = 0.5;
 
 // Density in the original image, below which we don't even bother to
 // check whether it's a local maxima. As good as 0, in other words.
-double SeedDensityThreshold = 0.05;
+float SeedDensityThreshold = 0.05;
 
 // A seed (local maxima)'s density must be at least this % (x 100 of
 // course) of the highest seed density.
-double RelativeSeedDensityThreshold = 0.7;
+float RelativeSeedDensityThreshold = 0.7;
 
-double CandidateDensityThreshold;
+float CandidateDensityThreshold;
 
 // At what falloff, from a maximum, is it the end of the beta region?
 // We're saying, here, when it reaches half the highest density.
 // This is absolutely arbitrary and wants to be experimental.
-double SeedDensityFalloff = 0.8;
+float SeedDensityFalloff = 0.8;
 
 // Or, a binary search?
-double LineIncrement = 0.25;
-
-// Not a physical constant; maybe belongs in instrument...
-unsigned SnapshotIntervalBase = 500;
-unsigned SnapshotIntervalPower = 2;
-unsigned FinalSnapshot = 1;
-
-unsigned MaxPoints = 10000;
-
-// Beta points don't have an intensity but we want to use 3D density
-// methods to show them, so this is the density we give them.
-double BetaPointDisplayFakeDensity = 0.1;
-bool ShowSeeds = false;
-double SeedsDisplayEmphFactor = 2.0;
-
-unsigned SnapshotImageZoom = 2;
+float LineIncrement = 0.25;
 
 } // namespace constants

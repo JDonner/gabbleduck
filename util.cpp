@@ -9,7 +9,7 @@ ofstream g_log;
 
 void set_nice_numeric_format(ostream& os)
 {
-   os << fixed << setprecision(2);
+   os << fixed << setprecision(3);
 }
 
 // Make a file readable / writable for shared user installation at NMSU

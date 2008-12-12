@@ -68,9 +68,6 @@ BetaPipeline::BetaPipeline(ImageType::Pointer fullImage,
       tensor_component_adaptor_[i]->Allocate();
       tensor_component_adaptor_[i]->SelectNthElement(i);
 
-      tensor_component_adaptor_[i] = TensorComponentAdaptorType::New();
-
-
       // They're each the same function, but they have to be templated
       // to a different adaptor (1-6)
       gaussian_functions_[i] = GaussianImageFunction::New();
@@ -79,12 +76,11 @@ BetaPipeline::BetaPipeline(ImageType::Pointer fullImage,
       // &&& should handle different spacings.. wait, doesn't it already?
       // physical ('world') coordinates
       gaussian_functions_[i]->SetSigma(constants::SigmaOfFeatureGaussian);
-
-//gaussian_functions_[i]->Print(cout, 3);
    }
 
-   // can be, OrderByValue, OrderByMagnitude
-   eigenSystemAnalyzer_.SetOrderEigenValues(EigenSystemAnalyzerType::OrderByMagnitude);
+   // Can be, <OrderByValue>, <OrderByMagnitude>. It seems mostly
+   // to not make much difference.
+   eigenSystemAnalyzer_.SetOrderEigenValues(EigenSystemAnalyzerType::OrderByValue);
 }
 
 
@@ -242,12 +238,13 @@ void BetaPipeline::multiply_derivative_components()
          unsigned row = row_col[i][0];
          unsigned col = row_col[i][1];
 
-//cout << "drv[" << row << "]:" << itDerived[row].Value()
-//     << "; drv[" << col << "]:" << itDerived[col].Value()
-//     << endl;
-
          // row and col are indexes to dimension
          itGradientTensor.Value()[i] = itDerived[row].Value() * itDerived[col].Value();
+
+// cout << "drv[" << row << "]:" << itDerived[row].Value()
+//      << "; drv[" << col << "]:" << itDerived[col].Value()
+//      << "; Xed: " << itGradientTensor.Value()[i]
+//      << endl;
       }
 
       for (unsigned i = 0; i < Dimension; ++i) {
@@ -260,14 +257,13 @@ void BetaPipeline::multiply_derivative_components()
 }
 
 
-// &&& Couldn't get this to work
-// void BetaPipeline::TakeITKGaussiansAtOriginalPoint()
+// void BetaPipeline::TakeGaussiansAtOriginalPoint()
 // {
 //    ImageIndexType idxCenter = center_index_of_region(
-//       resampler_->GetOutput()->GetLargestPossibleRegion());
+//       resampler_->GetOutput()->GetBufferedRegion());
 //    for (unsigned i = 0; i < 6; ++i) {
-// double gauss_value = gaussian_functions_[i]->EvaluateAtIndex(idxCenter);
-// double derv_derv = tensor_image_->GetPixel(idxCenter)[i];
+// Flt gauss_value = gaussian_functions_[i]->EvaluateAtIndex(idxCenter);
+// Flt derv_derv = tensor_image_->GetPixel(idxCenter)[i];
 //       point_structure_tensor_[i] =
 //          gaussian_functions_[i]->EvaluateAtIndex(idxCenter) *
 //          tensor_image_->GetPixel(idxCenter)[i];
@@ -278,6 +274,7 @@ void BetaPipeline::multiply_derivative_components()
 //      << endl;
 //    }
 // }
+
 
 void BetaPipeline::TakeGaussiansAtOriginalPoint()
 {
@@ -293,7 +290,7 @@ assert(tensorSize[2] == size);
 
    for (unsigned i = 0; i < 6; ++i) {
 
-      double gaussian_of_center = 0.0;
+      Flt gaussian_of_center = 0.0;
       ImageIndexType idxTensor;
       for (unsigned z = 0; z < size; ++z) {
          idxTensor[2] = z;
@@ -304,6 +301,10 @@ assert(tensorSize[2] == size);
 
                gaussian_of_center +=
                   tensor_image_->GetPixel(idxTensor)[i] * g_GaussianMask->at(x, y, z);
+// cout << " tens[" << i << "]: " << tensor_image_->GetPixel(idxTensor)[i]
+//      << " [" << x << "," << y << "," << z << "] gauss: " << g_GaussianMask->at(x, y, z)
+//      << " gaussed: " << gaussian_of_center
+//      << endl;
             }
          }
       }
@@ -313,8 +314,8 @@ assert(tensorSize[2] == size);
 //        point_structure_tensor_[i] =
 //           gaussian_functions_[i]->EvaluateAtIndex(idxCenter) *
 //           tensor_image_->GetPixel(idxCenter)[i];
-//double gauss_value = gaussian_functions_[i]->EvaluateAtIndex(idxCenter);
-//double derv_derv = tensor_image_->GetPixel(idxCenter)[i];
+//Flt gauss_value = gaussian_functions_[i]->EvaluateAtIndex(idxCenter);
+//Flt derv_derv = tensor_image_->GetPixel(idxCenter)[i];
 //       cout << "sz tensor image: " << tensor_image_->GetBufferedRegion().GetSize() << endl;
 //       cout << i << " derv_derv: " << derv_derv
 //            << " gauss: " << gaussian_of_center
@@ -345,8 +346,8 @@ void BetaPipeline::CalcEigenSystemAtOriginalPoint() throw (FailedEigenAnalysis)
 
    // index of first failed eigenvalue
    if (0 < n) {
-      throw FailedEigenAnalysis();
       ++n_eigen_failures;
+      throw FailedEigenAnalysis();
    }
    else {
       ++n_eigen_successes;
@@ -357,11 +358,15 @@ void BetaPipeline::CalcEigenSystemAtOriginalPoint() throw (FailedEigenAnalysis)
 EigenValuesType const& BetaPipeline::eigenValues()
 {
    update();
+   // ITK gives them in /ascending/ order, we want largest first
+   std::swap(eigenValues_[0], eigenValues_[2]);
    return eigenValues_;
 }
 
 EigenVectorsType const& BetaPipeline::eigenVectors()
 {
    update();
+   // ITK gives them in /ascending/ order, we want largest first
+   std::swap(eigenVectors_[0], eigenVectors_[2]);
    return eigenVectors_;
 }

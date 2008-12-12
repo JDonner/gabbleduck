@@ -46,7 +46,26 @@ const unsigned GabbleSplineOrder = 1;
 //#define WANT_GRID_BOUNDS_CHECKING 1
 
 //#define WANT_SNAPSHOTS 0
-#define WANT_SNAPSHOTS 1
+//#define WANT_SNAPSHOTS 1
+
+namespace settings {
+
+extern bool WithSnapshots;
+
+extern unsigned SnapshotIntervalBase;
+extern unsigned SnapshotIntervalPower;
+extern bool FinalSnapshot;
+
+extern unsigned MaxPoints;
+
+// Beta points don't have an intensity but we want to use 3D density
+// methods to show them, so we give them this fake value.
+extern float BetaPointDisplayFakeDensity;
+extern bool ShowSeeds;
+extern float SeedsDisplayEmphFactor;
+extern unsigned SnapshotImageZoom;
+
+} // settings
 
 namespace po = boost::program_options;
 extern po::variables_map g_vm;

@@ -46,7 +46,7 @@ void MakeTriangles(VectorType const& /*normal*/,
       ctr[i] = (hi[i] + lo[i]) / 2.0;
    }
 
-   typedef std::set<std::pair<InternalPrecisionType, unsigned> > VertexSet;
+   typedef std::set<std::pair<Flt, unsigned> > VertexSet;
    // use for insertion sort
    VertexSet vertices;
 
@@ -54,7 +54,7 @@ void MakeTriangles(VectorType const& /*normal*/,
    // to measure the other pts' angles.
    PointType first = planar_points[0];
    VectorType v0 = planar_points[0] - ctr;
-   InternalPrecisionType v0Norm = v0.GetNorm();
+   Flt v0Norm = v0.GetNorm();
 
    // 0 angle with itself
    vertices.insert(std::make_pair(0.0, 0));
@@ -62,12 +62,12 @@ void MakeTriangles(VectorType const& /*normal*/,
    for (unsigned iPt = 1, sz = planar_points.size(); iPt < sz; ++iPt) {
       VectorType vi = planar_points[iPt] - ctr;
       // dot product
-      InternalPrecisionType cos_alpha = v0 * vi;
+      Flt cos_alpha = v0 * vi;
       // cross product
       VectorType crossed = CrossProduct(v0, vi);
       double sin_alpha = crossed.GetNorm() / (vi.GetNorm() * v0Norm);
 
-      InternalPrecisionType angle_with_first = atan2(cos_alpha, sin_alpha);
+      Flt angle_with_first = atan2(cos_alpha, sin_alpha);
       vertices.insert(std::make_pair(angle_with_first, iPt));
    }
 

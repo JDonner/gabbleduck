@@ -86,6 +86,7 @@ def residue_index(res0, res1):
 #     z /= atoms.length()
 #     return (x,y,z)
 
+
 def make_resid(chainno, resno):
 #    print "chainno: ", chainno, "resno:", resno
     return "%3.3s:%5.5s" % (chainno, resno)
@@ -158,7 +159,7 @@ def process_residues():
         sorted_residues.append((resid, (x, y, z)))
     # sort by id ([0])
     sorted_residues.sort(key=lambda r: r[0])
-    print "min: %f, %f, %f; max: %f, %f, %f" % (xmin, ymin, zmin, xmax, ymax, zmax)
+#    print "min: %f, %f, %f; max: %f, %f, %f" % (xmin, ymin, zmin, xmax, ymax, zmax)
 
 
 # by residue center, nothing else
@@ -187,38 +188,6 @@ def make_polyline(def_tup):
     return (polyLinePoints, aPolyLine)
 
 
-def show_sheets(renderer):
-#    print len(sheet_defs), " sheets"
-    for sheet in sheet_defs:
-#    sheet = sheet_defs[1]
-        aPolyLineGrid = vtk.vtkUnstructuredGrid()
-        aPolyLineGrid.Allocate(5, 1)
-
-        (polyLinePoints, aPolyLine) = make_polyline(sheet)
-
-#         # Create a tube filter to represent the lines as tubes.  Set up the
-#         # associated mapper and actor.
-#         tuber = vtk.vtkTubeFilter()
-#         tuber.SetInputConnection(appendF.GetOutputPort())
-#         tuber.SetRadius(0.1)
-#         lineMapper = vtk.vtkPolyDataMapper()
-#         lineMapper.SetInputConnection(tuber.GetOutputPort())
-#         lineActor = vtk.vtkActor()
-#         lineActor.SetMapper(lineMapper)
-
-        aPolyLineGrid.InsertNextCell(aPolyLine.GetCellType(),
-                                     aPolyLine.GetPointIds())
-        aPolyLineGrid.SetPoints(polyLinePoints)
-
-        aPolyLineMapper = vtk.vtkDataSetMapper()
-        aPolyLineMapper.SetInput(aPolyLineGrid)
-        aPolyLineActor = vtk.vtkActor()
-        aPolyLineActor.SetMapper(aPolyLineMapper)
-        aPolyLineActor.GetProperty().SetDiffuseColor(0, 0, 0)
-
-        renderer.AddActor(aPolyLineActor)
-
-
 def show_alpha_helices(renderer):
     for helix in helix_defs:
 #    helix = helix_defs[1]
@@ -235,7 +204,7 @@ def show_alpha_helices(renderer):
         aPolyLineMapper.SetInput(aPolyLineGrid)
         aPolyLineActor = vtk.vtkActor()
         aPolyLineActor.SetMapper(aPolyLineMapper)
-        aPolyLineActor.GetProperty().SetDiffuseColor(1, 1, 1)
+        aPolyLineActor.GetProperty().SetDiffuseColor(46.0/255.0, 139.0/255.0, 87.0/255.0)
 
         renderer.AddActor(aPolyLineActor)
 
@@ -266,7 +235,7 @@ def show_beta_sheets(renderer):
         aPolyLineMapper.SetInput(aPolyLineGrid)
         aPolyLineActor = vtk.vtkActor()
         aPolyLineActor.SetMapper(aPolyLineMapper)
-        aPolyLineActor.GetProperty().SetDiffuseColor(1, 1, 1)
+        aPolyLineActor.GetProperty().SetDiffuseColor(1, 215.0/255.0, 0.0)
 
         renderer.AddActor(aPolyLineActor)
 
@@ -345,6 +314,9 @@ def show_density(fname, ren):
     #skin.VisibilityOff()
     skin.GetProperty().SetOpacity(OPACITY)
 
+
+def show_pts(pts):
+    pass
 
 def show_laplace(fname, ren):
     # originally 60.0

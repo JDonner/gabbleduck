@@ -10,17 +10,17 @@ using namespace std;
 typedef vector<int> Row;
 
 
-void fill_3D_gaussian(int n, double sigma,
+void fill_3D_gaussian(int n, Flt sigma,
                       GaussianMaskType* gaussian_mask);
 
 // Gives 98% of the area under the gaussian.
 // &&& True formula should be:
 //   support = 2 Sigma / image spacing
 // But we assume unit spacing (our case) for now.
-unsigned support_of_sigma(double sigma)
+unsigned support_of_sigma(Flt sigma)
 {
-   // <sigma> is on /one/ side, support on both. 2 x 2sigma
-   unsigned support = 4 * sigma;
+   // <sigma> is on /one/ side, support on both. 2.5 x 2sigma
+   unsigned support = 5 * sigma;
    if (support % 2 == 0) {
       // Make sure it's odd
       ++support;
@@ -31,7 +31,7 @@ unsigned support_of_sigma(double sigma)
 GaussianMaskType* g_GaussianMask;
 
 // There's just one per run of the program
-void init_gaussian_mask(int n, double sigma)
+void init_gaussian_mask(int n, Flt sigma)
 {
    g_GaussianMask = new GaussianMaskType(n);
 
@@ -45,46 +45,65 @@ void init_gaussian_mask(int n, double sigma)
 // Note sure how to do that yet. Isn't it
 // Note that this assumes that 1 pixel == 1 physical unit! (ok for us but
 // bad in general).
-void fill_3D_gaussian(int n, double sigma,
+void fill_3D_gaussian(int n, Flt sigma,
                       GaussianMaskType* gaussian_mask)
 {
    // odd only, for no good reason
    assert(n % 2 == 1);
+   Flt total = 0.0;
    // 2 PI ^ 3/2
-   double factor = 1.0 / pow(2 * M_PI, 1.5);
+   Flt factor = 1.0 / pow(2 * M_PI, 3.0 / 2.0);
+   Flt two_sigma_squared = 2.0 * sigma * sigma;
 
-   double two_sigma_squared = 2.0 * sigma * sigma;
+// cout << "gauss factor: " << factor
+//      << " two_sigma_squared: " << two_sigma_squared
+//      << endl;
+
    int ctr = n / 2;
    for (int z = 0; z < n; ++z) {
       for (int y = 0; y < n; ++y) {
          for (int x = 0; x < n; ++x) {
-            gaussian_mask->at(x, y, z) = factor *
-               ::exp(- (x-ctr)*(x-ctr) + (y-ctr)*(y-ctr) + (z-ctr)*(z-ctr) /
+// cout << " [" << x << "," << y << "," << z << "]"
+//      << " arg: " << (x-ctr)*(x-ctr) + (y-ctr)*(y-ctr) + (z-ctr)*(z-ctr)
+//    ;
+
+            Flt val = factor *
+               ::exp(- ((x-ctr)*(x-ctr) + (y-ctr)*(y-ctr) + (z-ctr)*(z-ctr)) /
                      two_sigma_squared);
+            gaussian_mask->at(x, y, z) = val;
+            total += val;
          }
       }
    }
+
+   // for (int z = 0; z < n; ++z) {
+   //    for (int y = 0; y < n; ++y) {
+   //       for (int x = 0; x < n; ++x) {
+   //          gaussian_mask->at(x, y, z) /= total;
+   //       }
+   //    }
+   // }
 }
 
-// void fill_gaussian_matrix(unsigned n, vnl_matrix<double>& g)
+// void fill_gaussian_matrix(unsigned n, vnl_matrix<Flt>& g)
 // {
 //    g.set_size(n, n);
-//    vnl_matrix<double> r(1,n);
+//    vnl_matrix<Flt> r(1,n);
 //    binomial_row(n, r);
-//    vnl_matrix<double> rt = r.transpose();
+//    vnl_matrix<Flt> rt = r.transpose();
 //
 //    g = rt * r;
 // }
 
-// double apply_gaussian(image::Pointer image, Index idxCtr, unsigned n)
+// Flt apply_gaussian(image::Pointer image, Index idxCtr, unsigned n)
 // {
-//    vector<double> gauss_row = make_row_gauss(n);
+//    vector<Flt> gauss_row = make_row_gauss(n);
 
 //    // to normalize the gaussian row
-//    double sum = 0.0;
+//    Flt sum = 0.0;
 //    sum *= Dimension;
 
-//    double convolved = 0.0;
+//    Flt convolved = 0.0;
 //    // gaussian is separable (ie, can do each dim separately
 //    // and sum them) so, we do 1D gaussian over each axis.
 //    NeighborhoodIteratorType::RadiusType radius;
@@ -131,7 +150,7 @@ void fill_binomial_row(unsigned n, Row& row)
 {
    row.clear();
    for (unsigned k = 0; k <= n; ++k) {
-      double val = num_combinations(n, k);
+      Flt val = num_combinations(n, k);
       row.push_back(val);
 
       // right hand side by symmetry

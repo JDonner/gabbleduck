@@ -9,20 +9,24 @@
 extern void setup_snapshot_image(std::string basename, ImageType::Pointer model);
 extern void add_seeds_to_snapshot(Seeds const& seeds,
                            ImageType::Pointer original_image,
-                           double seeds_emph_factor);
+                           Flt seeds_emph_factor);
 extern std::string beta_output_name(
    std::string basename,
-   double beta_thickness,
-   double thickness_flex,
-   double sigma,
+   Flt beta_thickness,
+   Flt thickness_flex,
+   Flt sigma,
    int gaussian_support,
-   double beta_falloff_factor,
-   double beta_density_rel_max,
-   double point_sep);
+   Flt beta_falloff_factor,
+   Flt beta_density_rel_max,
+   Flt point_sep);
 extern void snapshot_beta_points(Nodes const& nodes);
 extern void write_snapshot_image(std::string fname);
 extern void maybe_snap_image(unsigned n_betas, Nodes const& nodes);
 extern void write_vertices(Nodes const& nodes, std::string vertex_filename);
+
+extern void write_ray(std::ostream& os, PointType const& base,
+                      EigenValuesType const& vals,
+                      EigenVectorsType const& vec);
 
 extern std::string s_snapshot_basename;
 extern ImageType::Pointer g_snapshot_image;

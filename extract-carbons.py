@@ -17,7 +17,7 @@ def carbons_of_beta_sheet(sheet):
     (start_res, end_res) = sheet
     (start_idx, end_idx) = pdb.residue_index(start_res, end_res)
     assert -1 < start_idx and -1 < end_idx, "strt: %s, end %s" % (start_res, end_res)
-    residues = pdb.sorted_residues[start_idx : end_idx + 1]
+    residues = pdb.g_sorted_residues[start_idx : end_idx + 1]
     for res in residues:
         resid = res[0]
         # (atomid, resid, (x, y, z), symbol)

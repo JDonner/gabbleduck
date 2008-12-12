@@ -6,7 +6,7 @@
 #include "settings.h"
 #include "instrument.h"
 #include "spatial-hash.h"
-// for image snapshotting
+#include "snapshot.h"
 #include "gaussian.h"
 #include "main.h"
 
@@ -22,15 +22,12 @@ bool MeetsBetaCondition(PointType const& physPt,
                         EigenValuesType const& evals,
                         EigenVectorsType const& evec,
                         ImageType::Pointer image,
-                        double sheetMin, double sheetMax);
+                        Flt sheetMin, Flt sheetMax);
 
 static SpatialHash s_hash;
 
-// Arg, I think this wants to be an object
-// non-recursive version
-void FindBetaNodes(ImageType::Pointer image,
-                   Seeds const& seeds,
-                   Nodes& outNodes)
+// Gaussian mask and spatial hash
+void setup(ImageType::Pointer image)
 {
    init_gaussian_mask(constants::GaussianSupportSize,
                       constants::SigmaOfFeatureGaussian);
@@ -41,7 +38,7 @@ void FindBetaNodes(ImageType::Pointer image,
    ImageType::SpacingType spacing = image->GetSpacing();
 
    unsigned nPixels[Dimension];
-   double physSpacing[Dimension];
+   Flt physSpacing[Dimension];
    ImageType::PointType image_origin = image->GetOrigin();
    // ImageType::SizeType's indexes are fastest-moving first, in ours,
    // they're last. So, we reverse them.
@@ -51,7 +48,20 @@ void FindBetaNodes(ImageType::Pointer image,
       physSpacing[i] = spacing[Dimension - 1 - i];
    }
 
-   s_hash.init(image_origin, constants::RequiredNewPointSeparation, nPixels, physSpacing);
+   s_hash.init(image_origin, constants::RequiredNewPointSeparation,
+               nPixels, physSpacing);
+}
+
+
+// Arg, I think this wants to be an object
+void FindBetaNodes(ImageType::Pointer image,
+                   Seeds const& seeds,
+                   Nodes& outNodes)
+{
+   setup(image);
+
+   unsigned n_seed_points = seeds.size();
+   unsigned n_remaining_seed_points = n_seed_points;
 
    typedef queue<PointType> PointQueue;
    PointQueue possible_beta_points;
@@ -93,6 +103,9 @@ void FindBetaNodes(ImageType::Pointer image,
          bool bEigenAnalysisSucceeded = true;
          try {
             CalcEigenStuff(image, physPt, evals, evecs);
+            if (0 < n_remaining_seed_points) {
+//               write_ray(cout, physPt, evals, evecs);
+            }
          }
          catch (FailedEigenAnalysis& e) {
             // Nothing; just skip the calculations
@@ -101,7 +114,8 @@ void FindBetaNodes(ImageType::Pointer image,
 
          if (bEigenAnalysisSucceeded and
              MeetsBetaCondition(physPt, evals, evecs, image,
-                                constants::BetaMin, constants::BetaMax)) {
+                                constants::BetaMin,
+                                constants::BetaMax)) {
             ++n_beta_nodes;
             s_hash.addPt(physPt);
 
@@ -137,6 +151,11 @@ void FindBetaNodes(ImageType::Pointer image,
 maybe_snap_image(n_beta_nodes, outNodes);
          }
       }
+      // Do this at the end so that we can use this number to tell us
+      // whether a pt is a seed or not (done at the beginning, ==0 is
+      // ambiguous)
+      if (n_remaining_seed_points)
+         --n_remaining_seed_points;
    }
 }
 
@@ -167,14 +186,14 @@ void CalcEigenStuff(ImageType::Pointer fullImage, PointType const& physPt,
 
 
 // initial, and drop-off - doesn't ITK have such a thing already?
-double length_of_density(InterpolatorType::Pointer interpolator,
+Flt length_of_density(InterpolatorType::Pointer interpolator,
                          PointType const& initial_pt,
-                         double initial_density,
+                         Flt initial_density,
                          VectorType const& direction,
-                         double max_dist,
-                         double increment)
+                         Flt max_dist,
+                         Flt increment)
 {
-   double density;
+   Flt density;
    VectorType vec = direction;
 
    if (initial_density < constants::CandidateDensityThreshold) {
@@ -188,7 +207,7 @@ double length_of_density(InterpolatorType::Pointer interpolator,
    }
 
    // forward
-   double fwd_length = 0.0;
+   Flt fwd_length = 0.0;
    density = initial_density;
    for (int times = 1; ; ++times) {
       PointType test_pt = initial_pt + direction * times * increment;
@@ -200,7 +219,7 @@ double length_of_density(InterpolatorType::Pointer interpolator,
    }
 
    // backward
-   double bkwd_length = 0.0;
+   Flt bkwd_length = 0.0;
    density = initial_density;
    for (int times = 1; ; ++times) {
       PointType test_pt = initial_pt - direction * times * increment;
@@ -211,7 +230,7 @@ double length_of_density(InterpolatorType::Pointer interpolator,
       }
    }
 
-   double length_of_comparable_density = fwd_length + bkwd_length;
+   Flt length_of_comparable_density = fwd_length + bkwd_length;
 
 if (0 < length_of_comparable_density) {
 //cout << "non-zero length: " << length_of_comparable_density << endl;
@@ -231,9 +250,9 @@ bool MeetsBetaCondition(PointType const& physPt,
                         EigenValuesType const& /* evals */,
                         EigenVectorsType const& evec,
                         ImageType::Pointer image,
-                        double sheetMin, double sheetMax)
+                        Flt sheetMin, Flt sheetMax)
 {
-   double increment = constants::LineIncrement * image->GetSpacing()[0];
+   Flt increment = constants::LineIncrement * image->GetSpacing()[0];
 
    InterpolatorType::Pointer interpolator = InterpolatorType::New();
 
@@ -243,17 +262,17 @@ cout << "yep it's spline, order: " << GabbleSplineOrder << endl;
    interpolator->SetSplineOrder(GabbleSplineOrder);
 #endif
    interpolator->SetInputImage(image);
-   double initial_density = interpolator->Evaluate(physPt);
+   Flt initial_density = interpolator->Evaluate(physPt);
 
    // Note, t1 uses evec[2], t2 [1], t3 [0]; that's because ITK orders
    // them in /ascending/ order, ie smallest first. We want largest,
    // first.
-   double t1 = length_of_density(interpolator, physPt, initial_density,
-                                 evec[2], sheetMax, increment);
-   double t2 = length_of_density(interpolator, physPt, initial_density,
-                                 evec[1], sheetMax, increment);
-   double t3 = length_of_density(interpolator, physPt, initial_density,
+   Flt t1 = length_of_density(interpolator, physPt, initial_density,
                                  evec[0], sheetMax, increment);
+   Flt t2 = length_of_density(interpolator, physPt, initial_density,
+                                 evec[1], sheetMax, increment);
+   Flt t3 = length_of_density(interpolator, physPt, initial_density,
+                                 evec[2], sheetMax, increment);
 
 // cout << sheetMin << " <=? " << " (t1) " << t1 << " <=? " << sheetMax << " ?"
 //      << endl;

@@ -17,9 +17,9 @@ SpatialHash::SpatialHash()
 }
 
 void SpatialHash::init(ImageType::PointType origin,
-                       double grid_phys_separation,
+                       Flt grid_phys_separation,
                        unsigned (&n_pixels)[Dimension],
-                       double (&phys_separation)[Dimension])
+                       Flt (&phys_separation)[Dimension])
 {
    image_origin_ = origin;
 
@@ -48,10 +48,10 @@ void SpatialHash::addPt(PointType const& physPt)
 // The strategy here is, though this is n^2, it's a very small n, just
 // finely-spaced adjacent cells.
 bool SpatialHash::isWithinDistanceOfAnything(PointType const& physPt,
-                                             double distance) const
+                                             Flt distance) const
 {
    // (save taking a lot of square roots)
-   double d2 = distance * distance;
+   Flt d2 = distance * distance;
 
    Index idx = index_of(physPt);
    Cells nbrs;
@@ -64,7 +64,7 @@ bool SpatialHash::isWithinDistanceOfAnything(PointType const& physPt,
       if (pts) {
          for (Pts::const_iterator itPts = pts->begin(), endPts = pts->end();
               itPts != endPts; ++itPts) {
-            if (itPts->SquaredEuclideanDistanceTo<double>(physPt) < d2) {
+            if (itPts->SquaredEuclideanDistanceTo<Flt>(physPt) < d2) {
                return true;
             }
          }

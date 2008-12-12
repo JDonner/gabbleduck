@@ -5,9 +5,6 @@
 #include "point.h"
 #include "triangle.h"
 
-bool MeetsBetaCondition(double sheetMin, double sheetMax,
-                        double t1, double t2, double t3);
-
 //void MakePolygon(Points const& planar_points, Polygon& outPolygon);
 void MakeTriangles(VectorType const& /*normal*/,
                    Points const& planar_points,

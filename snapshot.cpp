@@ -13,9 +13,9 @@ ImageType::Pointer g_snapshot_image;
 void setup_snapshot_image(string basename, ImageType::Pointer model)
 {
    ImageType::SpacingType spacing = model->GetSpacing();
-   spacing[0] /= constants::SnapshotImageZoom;
-   spacing[1] /= constants::SnapshotImageZoom;
-   spacing[2] /= constants::SnapshotImageZoom;
+   spacing[0] /= settings::SnapshotImageZoom;
+   spacing[1] /= settings::SnapshotImageZoom;
+   spacing[2] /= settings::SnapshotImageZoom;
 
    g_snapshot_image = ImageType::New();
    g_snapshot_image->SetSpacing( spacing );
@@ -26,9 +26,9 @@ void setup_snapshot_image(string basename, ImageType::Pointer model)
 
    // size is in pixels
    ImageType::SizeType doubled_size(size);
-   doubled_size[0] *= constants::SnapshotImageZoom;
-   doubled_size[1] *= constants::SnapshotImageZoom;
-   doubled_size[2] *= constants::SnapshotImageZoom;
+   doubled_size[0] *= settings::SnapshotImageZoom;
+   doubled_size[1] *= settings::SnapshotImageZoom;
+   doubled_size[2] *= settings::SnapshotImageZoom;
    g_snapshot_image->SetRegions( doubled_size );
 
    g_snapshot_image->Allocate();
@@ -39,11 +39,11 @@ void setup_snapshot_image(string basename, ImageType::Pointer model)
 
 void add_seeds_to_snapshot(Seeds const& seeds,
                            ImageType::Pointer original_image,
-                           double seeds_emph_factor)
+                           Flt seeds_emph_factor)
 {
    for (Seeds::const_iterator it = seeds.begin(), end = seeds.end();
         it != end; ++it) {
-      double seed_density = original_image->GetPixel(*it);
+      Flt seed_density = original_image->GetPixel(*it);
       PointType physPoint;
       original_image->TransformIndexToPhysicalPoint(*it, physPoint);
 
@@ -57,13 +57,13 @@ void add_seeds_to_snapshot(Seeds const& seeds,
 
 // <basename> == eg, 1AGW
 string beta_output_name(string basename,
-                        double beta_thickness,
-                        double thickness_flex,
-                        double sigma,
+                        Flt beta_thickness,
+                        Flt thickness_flex,
+                        Flt sigma,
                         int gaussian_support,
-                        double beta_falloff_factor,
-                        double beta_density_rel_max,
-                        double point_sep
+                        Flt beta_falloff_factor,
+                        Flt beta_density_rel_max,
+                        Flt point_sep
                         )
 {
    ostringstream oss;
@@ -98,7 +98,7 @@ void snapshot_beta_points(Nodes const& nodes)
       PixelType density = g_snapshot_image->GetPixel(index);
       // There is no natural beta intensity (except maybe beta-like-ness,
       // which we don't keep)
-      density += constants::BetaPointDisplayFakeDensity;
+      density += settings::BetaPointDisplayFakeDensity;
       g_snapshot_image->SetPixel(index, density);
    }
 }
@@ -126,7 +126,7 @@ void write_snapshot_image(string fname)
 void maybe_snap_image(unsigned n_betas, Nodes const& nodes)
 {
    static unsigned s_iSeries = 0;
-   static unsigned s_snap_at = constants::SnapshotIntervalBase;
+   static unsigned s_snap_at = settings::SnapshotIntervalBase;
    static time_t s_then = ::time(0);
 
    if (n_betas == s_snap_at) {
@@ -140,16 +140,16 @@ void maybe_snap_image(unsigned n_betas, Nodes const& nodes)
       snapshot_beta_points(nodes);
       write_snapshot_image(s_snapshot_basename + ".vtk");
 
-      s_snap_at = constants::SnapshotIntervalBase * unsigned(::pow(constants::SnapshotIntervalPower, s_iSeries));
+      s_snap_at = settings::SnapshotIntervalBase * unsigned(::pow(settings::SnapshotIntervalPower, s_iSeries));
 
       // If <FinalSnapshot> == 0 indicates infinite
-      if (constants::FinalSnapshot and constants::FinalSnapshot <= s_iSeries) {
+      if (settings::FinalSnapshot and settings::FinalSnapshot <= s_iSeries) {
          LongEnoughException long_enough;
          throw long_enough;
       }
    }
 
-   if (constants::MaxPoints and constants::MaxPoints <= n_betas) {
+   if (settings::MaxPoints and settings::MaxPoints <= n_betas) {
       //      ostringstream oss;
       //      oss << s_snapshot_basename << "." << n_betas << ".vtk";
 
@@ -162,7 +162,7 @@ void maybe_snap_image(unsigned n_betas, Nodes const& nodes)
    if ((n_betas % 1000) == 0) {
       time_t now = ::time(0);
       time_t elapsed = now - s_then;
-      g_log << "Progress: " << n_betas << " / " << constants::MaxPoints << "; "
+      g_log << "beta pts: " << n_betas << " / " << settings::MaxPoints << "; "
             << elapsed << " secs" << endl;
       s_then = now;
    }
@@ -179,4 +179,32 @@ void write_vertices(Nodes const& nodes, string vertex_filename)
          << (*it)->pos()[1] << " "
          << (*it)->pos()[2] << endl;
    }
+}
+
+// for debugging
+// Should go in 'instrument' I guess
+void write_ray(ostream& os, PointType const& base,
+               EigenValuesType const& vals,
+               EigenVectorsType const& vec)
+{
+   os << "at:"
+      << base[0] << ','
+      << base[1] << ','
+      << base[2] << ';'
+      << "dirs:";
+
+   for (unsigned k = 0; k < Dimension; ++k) {
+      for (unsigned i = 0; i < Dimension; ++i) {
+         os << vec[k][i] << ",";
+      }
+      os << ';';
+   }
+
+   os << "vals:";
+
+   for (unsigned k = 0; k < Dimension; ++k) {
+      os << vals[k] << ",";
+   }
+
+   os << endl;
 }

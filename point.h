@@ -6,7 +6,7 @@
 
 // Physical?
 // &&& oer - PointType is an ITK type, too.
-typedef itk::Point<double, Dimension> PointType;
+typedef itk::Point<Flt, Dimension> PointType;
 
 // struct PointPos
 // {

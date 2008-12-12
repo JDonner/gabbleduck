@@ -11,16 +11,18 @@ g_BetaThicknesses = [5.0]
 
 # These are in % of beta_thickness; min = beta - 10%, max = beta + 10% etc
 # ie, 25%, 40%
-g_ThicknessRangeRatios = [0.4]
+g_ThicknessRangeRatios = [0.15, 0.25, 0.35, 0.4, 0.5]
 
 # In Angstroms, or rather, the same units as that of the image itself.
 g_Sigmas = [3.0]
 
-g_RelativeSeedDensityThresholds = [0.5]
+g_RelativeSeedDensityThresholds = [0.4, 0.5, 0.7]
 
-g_Separations = [0.25]
+g_Falloffs = [0.7, 0.8, 0.9]
 
-# This is automatic, now; we use 2 x FeatureSigma (on each side, for 4x sigma total) for 98% coverage
+g_Separations = [0.5]
+
+# This is automatic, now; we use 2 x FeatureSigma (on each side, for 4x sigma total) for 95% coverage
 #g_GSupports = [13, 31]
 
 #UndergradLabMachineDescs = [
@@ -133,7 +135,7 @@ class ThreadQueue(object):
             self.thread_objs[i].join()
 
 
-def spawnWork(fname, beta_thickness, thickness_flex, rel_density, sigma,
+def spawnWork(fname, beta_thickness, thickness_flex, falloff, rel_density, sigma,
               separation):
     # ssh user@xyz.cs.nmsu.edu nice +19 ./find-sheets
     cmd_line_parts = ["./find-sheets",
@@ -142,7 +144,7 @@ def spawnWork(fname, beta_thickness, thickness_flex, rel_density, sigma,
                       "--BetaThickRangeRatio=%0.3f" % thickness_flex,
                       "--RelativeSeedDensityThreshold=%0.3f" % rel_density,
 #                      "--GaussianSupportSize=%2.2d" % gaussian_support,
-#                      "--SeedDensityFalloff=%0.3f" % falloff,
+                      "--SeedDensityFalloff=%0.3f" % falloff,
                       "--SigmaOfFeatureGaussian=%0.3f" % sigma,
                       "--RequiredNewPointSeparation=%0.3f" % separation,
                       "--OutputDir=output",
@@ -168,9 +170,9 @@ def runThread(tq):
             exit()
             # we're done; we'll be collected
         else:
-            (fname, beta_thickness, thickness_flex, rel_density, sigma, separation) = work
-            print datetime.datetime.now(), "now at: ~%0.2f" % percent_done
-            spawnWork(fname, beta_thickness, thickness_flex,
+            (fname, beta_thickness, thickness_flex, falloff, rel_density, sigma, separation) = work
+            print datetime.datetime.now(), "now at: ~%0.2f%%" % percent_done
+            spawnWork(fname, beta_thickness, thickness_flex, falloff,
                       rel_density, sigma, separation)
 
 
@@ -178,11 +180,12 @@ def queue_up_parallel_work(tq, n_threads, mrc_files):
     for fname in mrc_files:
         for beta_thickness in g_BetaThicknesses:
             for thickness_flex in g_ThicknessRangeRatios:
-                for rel_density in g_RelativeSeedDensityThresholds:
-                     for sigma in g_Sigmas:
-                         for separation in g_Separations:
-                             tq.enqueue((fname, beta_thickness, thickness_flex,
-                                         rel_density, sigma, separation))
+                for falloff in g_Falloffs:
+                    for rel_density in g_RelativeSeedDensityThresholds:
+                        for sigma in g_Sigmas:
+                            for separation in g_Separations:
+                                tq.enqueue((fname, beta_thickness, thickness_flex,
+                                            falloff, rel_density, sigma, separation))
 
     # let threads know they're done
     for i in range(n_threads):

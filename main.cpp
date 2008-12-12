@@ -127,9 +127,9 @@ g_log << "safe seeds: " << trueMaxSeeds.size()
       << "; max seed density: " << maxSeedDensity
       << endl;
 
-#if WANT_SNAPSHOTS
-   setup_snapshot_image(temp_basepath, image);
-#endif
+   if (settings::WithSnapshots) {
+      setup_snapshot_image(temp_basepath, image);
+   }
 
    Nodes betaNodes;
    bool bExhaustedNaturally = true;
@@ -141,22 +141,21 @@ g_log << "safe seeds: " << trueMaxSeeds.size()
       bExhaustedNaturally = false;
    }
 
-#if WANT_SNAPSHOTS
-   snapshot_beta_points(betaNodes);
+   if (settings::WithSnapshots) {
+      snapshot_beta_points(betaNodes);
 
-   if (constants::ShowSeeds) {
-      add_seeds_to_snapshot(trueMaxSeeds, image, g_vm["SeedsDisplayEmphFactor"].as<double>());
+      if (settings::ShowSeeds) {
+         add_seeds_to_snapshot(trueMaxSeeds, image, g_vm["SeedsDisplayEmphFactor"].as<Flt>());
+      }
    }
-#endif
 
    // rename file, now that we know how it turned out
    ostringstream oss;
    oss << temp_basepath << "-pts=" << betaNodes.size();
    string final_basepath = oss.str();
 
-#if WANT_SNAPSHOTS
-   write_snapshot_image(final_basepath + ".vtk");
-#endif
+   if (settings::WithSnapshots)
+      write_snapshot_image(final_basepath + ".vtk");
 
    write_vertices(betaNodes, final_basepath + ".vertices");
 

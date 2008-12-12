@@ -46,7 +46,7 @@ private:
    void reset();
 
 private:
-   typedef itk::ResampleImageFilter< ImageType, ImageType, InternalPrecisionType > ResampleFilterType;
+   typedef itk::ResampleImageFilter< ImageType, ImageType, Flt > ResampleFilterType;
    ResampleFilterType::Pointer         resampler_;
 
    typedef itk::DerivativeImageFilter< ImageType, ImageType > DerivativeFilterType;
@@ -58,7 +58,7 @@ private:
 
    TensorType                                  point_structure_tensor_;
 
-   typedef itk::NthElementImageAdaptor< TensorImageType, InternalPrecisionType >
+   typedef itk::NthElementImageAdaptor< TensorImageType, Flt >
       TensorComponentAdaptorType;
 
    TensorComponentAdaptorType::Pointer tensor_component_adaptor_[6];
@@ -66,7 +66,7 @@ private:
    // We don't need a filter, because we want the result for one point
    // only.
    typedef itk::GaussianBlurImageFunction<TensorComponentAdaptorType,
-      InternalPrecisionType> GaussianImageFunction;
+      Flt> GaussianImageFunction;
 
    // One for each component of the gradient image, even though the
    // functions themselves are all the same. The 3D-ness of these
