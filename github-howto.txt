@@ -2,9 +2,9 @@ git push github # push to github
 
 see .git/config
 
-I think it's
+I think it's:
 
   git push github
+    ( more formally: git push git@github.com:JDonner/gabbleduck.git )
 
   git fetch github
-

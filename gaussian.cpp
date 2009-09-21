@@ -59,8 +59,8 @@ void fill_3D_gaussian(int n, double sigma,
       for (int y = 0; y < n; ++y) {
          for (int x = 0; x < n; ++x) {
             gaussian_mask->at(x, y, z) = factor *
-               ::exp(- (x-ctr)*(x-ctr) + (y-ctr)*(y-ctr) + (z-ctr)*(z-ctr) /
-                     two_sigma_squared);
+               ::exp(- (x-ctr)*(x-ctr) + (y-ctr)*(y-ctr) + (z-ctr)*(z-ctr) ) /
+                     two_sigma_squared;
          }
       }
    }
