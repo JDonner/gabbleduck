@@ -7,19 +7,16 @@
 namespace constants
 {
 // &&& This 20% is arbitrary
-double BetaThicknessFlex = 0.2;
+double BetaThickRangeRatio = 0.2;
 
-double BetaMin = BetaThickness * (1.0 - BetaThicknessFlex);
-double BetaMax = BetaThickness * (1.0 + BetaThicknessFlex);
-
-// from equation (7) from paper.
-double SigmaOfDerivativeGaussian = BetaThickness;
-
+double BetaMin = BetaThickness * (1.0 - BetaThickRangeRatio);
+double BetaMax = BetaThickness * (1.0 + BetaThickRangeRatio);
 
 double BetaThickness = 5.0;
-// paper's recommended value (as compromise between speed and accuracy)
+// Gaussian sigma of paper's formula (7)
+/// paper's recommended value (as compromise between speed and accuracy)
 double SigmaOfFeatureGaussian = 3.0;
-int GaussianSupportSize = 37;
+int GaussianSupportSize = 5;
 
 // Physical coordinates
 double RequiredNewPointSeparation = 0.5;
@@ -30,7 +27,7 @@ double SeedDensityThreshold = 0.05;
 
 // A seed (local maxima)'s density must be at least this % (x 100 of
 // course) of the highest seed density.
-double SeedDensityWorthinessThreshold = 0.7;
+double RelativeSeedDensityThreshold = 0.7;
 
 // At what falloff, from a maximum, is it the end of the beta region?
 // We're saying, here, when it reaches half the highest density.
@@ -39,8 +36,6 @@ double SeedDensityFalloff = 0.8;
 
 // Or, a binary search?
 double LineIncrement = 0.25;
-
-// double SkeletonMergeThreshold = BetaThickness;
 
 // Not a physical constant; maybe belongs in instrument...
 unsigned SnapshotIntervalBase = 500;
@@ -51,7 +46,7 @@ unsigned MaxPoints = 10000;
 
 // Beta points don't have an intensity but we want to use 3D density
 // methods to show them, so this is the density we give them.
-double BetaPointFakeDensity = 0.1;
+double BetaPointDisplayFakeDensity = 0.1;
 bool ShowSeeds = false;
 double SeedsDisplayEmphFactor = 2.0;
 

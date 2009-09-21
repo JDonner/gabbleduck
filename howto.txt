@@ -32,11 +32,6 @@ a line to stats.txt.
 fits.
 
 
-This was abandoned, because I realized that
-HessianRecursiveGaussianImageFilter /just/ does the Hessian, it does
-not do the convolution despite its name. Somewhere along the line I
-knew this, but forgot it or got confused.
-
 So. The right way, is to take the Hessian but split it into 9 images,
 one for each elt, smear each of those images with a Gaussian function
 (plain old GaussianBlurImageFunction looks good at the moment), then

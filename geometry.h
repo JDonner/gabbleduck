@@ -20,11 +20,11 @@ void planes_intersection_with_box(VectorType normal, PointType const& pt,
 // pt
 // Must stay in physical coords
 VectorType transform_shift(PointType const& pt,
-                           Image::SpacingType const& spacing);
+                           ImageType::SpacingType const& spacing);
 
 
-void pt_shift(PointType const& pt,
-              Image::SpacingType const& spacing,
-              VectorType& outShift);
+// void pt_shift(PointType const& pt,
+//               ImageType::SpacingType const& spacing,
+//               VectorType& outShift);
 
 #endif // GEOMETRY_H

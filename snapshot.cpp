@@ -59,8 +59,7 @@ void add_seeds_to_snapshot(Seeds const& seeds,
 string beta_output_name(string basename,
                         double beta_thickness,
                         double thickness_flex,
-                        double dsigma,
-                        double fsigma,
+                        double sigma,
                         int gaussian_support,
                         double beta_falloff_factor,
                         double point_sep
@@ -71,9 +70,8 @@ string beta_output_name(string basename,
    // &&& Maybe resolution as well, from the file itself.
    oss << basename
        << "-bt=" << beta_thickness
-       << "-bflex=" << thickness_flex
-       << "-dsig=" << dsigma
-       << "-fsig=" << fsigma
+       << "-brange=" << thickness_flex
+       << "-sig=" << sigma
        << "-supp=" << gaussian_support
        << "-bfal=" << beta_falloff_factor
        << "-sep=" << point_sep
@@ -98,7 +96,7 @@ void snapshot_beta_points(Nodes const& nodes)
       PixelType density = g_snapshot_image->GetPixel(index);
       // There is no natural beta intensity (except maybe beta-like-ness,
       // which we don't keep)
-      density += constants::BetaPointFakeDensity;
+      density += constants::BetaPointDisplayFakeDensity;
       g_snapshot_image->SetPixel(index, density);
    }
 }

@@ -13,10 +13,10 @@ typedef itk::Image< BeatenPixel, Dimension >      BeatenImage;
 
 // Seed locations are in pixels
 
-typedef std::vector<IndexType> Seeds;
+typedef std::vector<ImageIndexType> Seeds;
 
-//typedef std::set<BeatenNit::IndexType,
-typedef std::set<IndexType,
+//typedef std::set<BeatenNit::ImageIndexType,
+typedef std::set<ImageIndexType,
                  itk::Functor::IndexLexicographicCompare<Dimension> > PointSet;
 
 // Called 'region' because occasionally there will be a plateau of

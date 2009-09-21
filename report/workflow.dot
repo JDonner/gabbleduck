@@ -1,0 +1,28 @@
+
+digraph Single {
+  "generate-mrc" [shape=box,label="generate-mrc.bash\n(in bulk, generate-mrcs.bash\n- calls pdb2mrc)"]
+  "1PRT.pdb" -> "generate-mrc"
+  "generate-mrc" -> "1PRT.mrc"
+
+  /* maybe "find-sheets" wants a node */
+
+  "find-sheets" [shape=box,label="find-sheets\n(in bulk, feeder.py)"]
+
+  "1PRT.mrc" -> "find-sheets"
+  "find-sheets" -> { "output/1PRT-parms.vtk"; "output/1PRT-parms.vertices" }
+
+  "extract-beta-carbons.bash" [shape=box,"extract-beta-carbons.bash"]
+
+  "1PRT.pdb" -> "extract-beta-carbons.bash"
+
+  "extract-beta-carbons.bash" -> "1PRT.carbons"
+
+  "sfn-sfp.bash" [shape=box, label="sfn-sfp.bash\n(calls compiled sfn-sfp.cpp)"]
+
+  "output/1PRT-parms.vertices" -> "sfn-sfp.bash"
+  "1PRT.carbons" -> "sfn-sfp.bash"
+  "sfn-sfp.bash" -> "stats.txt"
+
+  "sse.py" [shape=box, label="sse.py to view\nbeta points"]
+  "output/1PRT-parms.vtk" -> "sse.py"
+}

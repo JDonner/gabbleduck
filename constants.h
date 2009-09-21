@@ -9,9 +9,6 @@
 
 namespace constants
 {
-// Used in taking 2nd derivative
-extern double SigmaOfDerivativeGaussian;
-
 // &&& Make it a function of the map resolution?
 extern double BetaThickness;
 
@@ -58,7 +55,7 @@ extern int GaussianSupportSize;
 // AKA the 'window size'
 
 // &&& This 20% is arbitrary
-extern double BetaThicknessFlex;
+extern double BetaThickRangeRatio;
 
 extern double BetaMin;
 extern double BetaMax;
@@ -68,7 +65,7 @@ extern double BetaMax;
 extern double SeedDensityThreshold;
 
 // Once we've got the seed, this is the
-extern double SeedDensityWorthinessThreshold;
+extern double RelativeSeedDensityThreshold;
 
 // At what falloff, from a maximum, is it the end of the beta region?
 // We're saying, here, when it reaches half the highest density.
@@ -84,7 +81,7 @@ extern unsigned SnapshotIntervalPower;
 
 // Beta points don't have an intensity but we want to use 3D density
 // methods to show them, so we give them this fake value.
-extern double BetaPointFakeDensity;
+extern double BetaPointDisplayFakeDensity;
 extern bool ShowSeeds;
 extern double SeedsDisplayEmphFactor;
 extern unsigned SnapshotImageZoom;

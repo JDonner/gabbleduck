@@ -1,0 +1,24 @@
+\documentclass{article}
+\begin{document}
+
+\title{Description of Beta Sheet Finder}
+\author{Jeff Donner}
+
+An important part of a programming Project is a written report, which
+should include:
+
+a) High-level but thorough documentation of the purposes and algorithms
+   of the program,
+b) discussion and justification of the significant programming decisions
+   made,
+c) theoretical analysis if appropriate,
+
+d) Presentation and discussion of the results or performance
+   observed,
+
+e) A technical description of the design and implementation, and
+
+f) A User's Manual (and other documents, such as a Unix manual page,
+   as appropriate).
+
+\end{document}

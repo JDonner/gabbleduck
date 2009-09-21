@@ -1,0 +1,55 @@
+5x5 gaussian blur
+
+# so this, below, is an approximation or .. what the heck is it?
+2  4   5 . .
+4  9  12 . .
+5  12 15
+. .      . .
+
+etc
+divided by 159
+
+Seems to say it all, including relationship to sigma
+
+http://www.mvtec.com/halcon/download/documentation/reference/hdevelop/binomial_filter.html
+
+sigma = sqrt(n-1)/2
+
+ n  |  sigma
+-------------
+ 3  |  0.7523
+ 5  |  1.0317
+ 7  |  1.2505
+ 9  |  1.4365
+11  |  1.6010
+13  |  1.7502
+15  |  1.8876
+17  |  2.0157
+19  |  2.1361
+21  |  2.2501
+23  |  2.3586
+25  |  2.4623
+27  |  2.5618
+29  |  2.6576
+31  |  2.7500
+33  |  2.8395
+35  |  2.9262
+37  |  3.0104
+
+
+http://books.google.com/books?id=b1s4N98t3ucC&pg=PA124&lpg=PA124&dq=binomial+mask+gaussian&source=web&ots=luMR733hLa&sig=uu7Bh_wt77lrbhTLC5fLtaoyrWA&hl=en&sa=X&oi=book_result&resnum=5&ct=result#PPA124,M1
+
+
+u = Matrix([1,4,6,4,1])
+g = u.transpose() * u
+sage: g
+
+[ 1  4  6  4  1]
+[ 4 16 24 16  4]
+[ 6 24 36 24  6]
+[ 4 16 24 16  4]
+[ 1  4  6  4  1]
+
+Specifically Hessian theory...
+
+  http://www.cs.utah.edu/~gk/MS/html/node14.html#eq:2dd2

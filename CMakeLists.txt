@@ -26,8 +26,9 @@ INCLUDE_DIRECTORIES(
 
 SET(SOURCES
       constants.cpp
-      instrument.cpp
+      gaussian.cpp
       geometry.cpp
+      instrument.cpp
       local-maxima.cpp
       main.cpp
       pipeline.cpp

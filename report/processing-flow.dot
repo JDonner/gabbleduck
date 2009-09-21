@@ -1,0 +1,10 @@
+digraph ITK {
+    mrc_io -> input_image [label="itk filter"]
+    input_image -> seeds [label="hand found"]
+    seeds -> resampler [label="itk filter"]
+    resampler -> derivative [label="itk filter"]
+    derivative -> gradient_tensor [label="hand multiplied"]
+    gradient_tensor -> structure_tensor [label="gaussian\nhand applied"]
+    structure_tensor -> eigenvalues [label="itk symmetric\neigen analysis"]
+    eigenvalues -> beta_tests
+}

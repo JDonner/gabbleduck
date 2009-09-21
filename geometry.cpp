@@ -202,7 +202,7 @@ void planes_intersection_with_box(VectorType normal, PointType const& pt,
 // output-to-input
 VectorType
    transform_shift(PointType const& pt,
-                   Image::SpacingType const& spacing)
+                   ImageType::SpacingType const& spacing)
 {
    VectorType shift;
    for (unsigned i = 0; i < Dimension; ++i) {
@@ -237,24 +237,24 @@ VectorType
    return shift;
 }
 
-void pt_shift(PointType const& physPt,
-              Image::SpacingType const& physSpacing,
-              VectorType& outShift)
-{
-   outShift = transform_shift(physPt, physSpacing);
-   // for (unsigned i = 0; i < Dimension; ++i) {
-   //    double bounded = fmod(pt[i], spacing[i]);
-   //    double unitted = bounded / spacing[i];
-   //    // should be 0 or 1
-   //    double refcoord = trunc(unitted + 0.5);
+// void pt_shift(PointType const& physPt,
+//               ImageType::SpacingType const& physSpacing,
+//               VectorType& outShift)
+// {
+//    outShift = transform_shift(physPt, physSpacing);
+//    // for (unsigned i = 0; i < Dimension; ++i) {
+//    //    double bounded = fmod(pt[i], spacing[i]);
+//    //    double unitted = bounded / spacing[i];
+//    //    // should be 0 or 1
+//    //    double refcoord = trunc(unitted + 0.5);
 
-   //    assert(0.0 == refcoord or refcoord == 1.0);
+//    //    assert(0.0 == refcoord or refcoord == 1.0);
 
-   //    outShift[i] = (unitted - refcoord);
-   //    if (not (-0.5 <= outShift[i] and outShift[i] <= 0.5)) {
-   //       cout << "shift fails (" << i << "th): " << outShift[i] << endl;
-   //       assert(false);
-   //    }
-   //    outShift *= spacing[i];
-   // }
-}
+//    //    outShift[i] = (unitted - refcoord);
+//    //    if (not (-0.5 <= outShift[i] and outShift[i] <= 0.5)) {
+//    //       cout << "shift fails (" << i << "th): " << outShift[i] << endl;
+//    //       assert(false);
+//    //    }
+//    //    outShift *= spacing[i];
+//    // }
+// }

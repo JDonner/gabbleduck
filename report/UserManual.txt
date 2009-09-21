@@ -1,0 +1,74 @@
+
+Use like:
+	./find-sheets --parm1=foo --parm2=6.0 (... see below) filename (eg 1AGW.mrc)
+
+All parameters have reasonable defaults so you can simply run as:
+	./find-sheets filename
+
+Configuration:
+  -h [ --help ]                                Show these options
+  --BetaThickness arg (=5.5)                   BetaThickness; the number (in 
+                                               what units?) of the expected 
+                                               beta thickness
+  --SigmaOfFeatureGaussian arg (=3.5)          SigmaOfFeatureGaussian - sigma 
+                                               of 'neighbors influence' 
+                                               gaussian, applied to gradient 
+                                               tensor.
+  --GaussianSupportSize arg (=5)               GaussianSupportSize - how large 
+                                               the resampled region should be, 
+                                               to give the Gaussian enough 
+                                               pixels to be accurate
+  --BetaThicknessFlex arg (=0.25)              BetaThicknessFlex - How flexible
+                                               to be, to count a piece as being
+                                               beta (&&& when though?)
+  --RequiredNewPointSeparation arg (=0.5)      RequiredNewPointSeparation - I 
+                                               think this is the grid distance.
+                                               Lower means finer, but more 
+                                               work.
+  --SeedDensityThreshold arg (=0.05)           SeedDensityThreshold. Value 
+                                               below which, though a seed may 
+                                               be a local maximum, we're still 
+                                               not interested. &&& Should be 
+                                               relative, bottom third or 
+                                               something.
+  --SeedDensityFalloff arg (=0.65)             SeedDensityFalloff - &&& Eh?
+  --SeedDensityWorthinessThreshold arg (=0.01) SeedDensityWorthinessThreshold -
+                                               &&& oops, what DensityThreshold 
+                                               then?
+  --LineIncrement arg (=0.25)                  LineIncrement - we (&&& crudely)
+                                               check for thickness by making 
+                                               constant-length advances along a
+                                               line, to probe the end of a beta
+                                               sheet. This is that constant. 
+                                               Wants binary search instead most
+                                               likely.
+  --SnapshotIntervalBase arg (=0)              SnapshotIntervalBase - when 
+                                               you're debugging and want to see
+                                               the progress of the algorithm 
+                                               incrementally, this is the base 
+                                               of base ^ power, in the number 
+                                               of points, that you take 
+                                               snapshots at
+  --SnapshotIntervalPower arg (=2)             SnapshotIntervalPower
+  --FinalSnapshot arg (=0)                     FinalSnapshot - after how many 
+                                               snapshots, to quit. 0=go to 
+                                               natural exhaustion (now defunct 
+                                               - used to be needed for old bug)
+  --BetaPointFakeDensity arg (=0.1)            BetaPointFakeDensity - the fake 
+                                               density value to use for beta 
+                                               points, to let us see them in a 
+                                               density image
+  --ShowSeeds arg (=1)                         ShowSeeds
+  --SeedsDisplayEmphFactor arg (=2)            SeedsDisplayEmphFactor - when 
+                                               we're highlighting the original 
+                                               seeds, what multiple of their 
+                                               original intensity we want.
+  --SnapshotImageZoom arg (=2)                 SnapshotImageZoom - Magnifies 
+                                               the snapshots. Why I wanted to 
+                                               do this I don't recall.
+  --MaxPoints arg (=0)                         MaxPoints - if the thing runs 
+                                               forever, cut it off at this 
+                                               number of points (defunct, 
+                                               needed for old bug)
+  --OutputDir arg (=output)                    output directory
+

@@ -7,6 +7,7 @@
 #include "instrument.h"
 #include "spatial-hash.h"
 // for image snapshotting
+#include "gaussian.h"
 #include "main.h"
 
 #include <vector>
@@ -15,11 +16,11 @@
 using namespace std;
 
 
-void CalcEigenStuff(Image::Pointer fullImage, PointType const& physPt,
-                    EigenValues& outEVals, EigenVectors& outEVecs);
+void CalcEigenStuff(ImageType::Pointer fullImage, PointType const& physPt,
+                    EigenValuesType& outEVals, EigenVectorsType& outEVecs);
 bool MeetsBetaCondition(PointType const& physPt,
-                        EigenValues const& evals,
-                        EigenVectors const& evec,
+                        EigenValuesType const& evals,
+                        EigenVectorsType const& evec,
                         ImageType::Pointer image,
                         double sheetMin, double sheetMax);
 
@@ -31,6 +32,11 @@ void FindBetaNodes(ImageType::Pointer image,
                    Seeds const& seeds,
                    Nodes& outNodes)
 {
+   init_gaussian_mask(constants::GaussianSupportSize,
+                      constants::SigmaOfFeatureGaussian);
+
+   assert(g_GaussianMask != 0);
+
    ImageType::SizeType size = image->GetLargestPossibleRegion().GetSize();
    ImageType::SpacingType spacing = image->GetSpacing();
 
@@ -57,7 +63,7 @@ void FindBetaNodes(ImageType::Pointer image,
         it != end; ++it) {
       PointType physPt;
 
-      IndexType seed = *it;
+      ImageIndexType seed = *it;
       // &&& Could be stricter; none of the seeds should be 0,
       // ie around the edge
       assert(not (seed[0] == 0 or seed[1] == 0 or seed[2] == 0));
@@ -81,12 +87,20 @@ void FindBetaNodes(ImageType::Pointer image,
       else {
          ++n_far_enough_away;
 
-         EigenValues evals;
-         EigenVectors evecs;
+         EigenValuesType evals;
+         EigenVectorsType evecs;
 
-         CalcEigenStuff(image, physPt, evals, evecs);
+         bool bEigenAnalysisSucceeded = true;
+         try {
+            CalcEigenStuff(image, physPt, evals, evecs);
+         }
+         catch (FailedEigenAnalysis& e) {
+            // Nothing; just skip the calculations
+            bEigenAnalysisSucceeded = false;
+         }
 
-         if (MeetsBetaCondition(physPt, evals, evecs, image,
+         if (bEigenAnalysisSucceeded and
+             MeetsBetaCondition(physPt, evals, evecs, image,
                                 constants::BetaMin, constants::BetaMax)) {
             ++n_beta_nodes;
             s_hash.addPt(physPt);
@@ -126,57 +140,19 @@ maybe_snap_image(n_beta_nodes, outNodes);
    }
 }
 
-void CalcEigenStuff(Image::Pointer fullImage, PointType const& physPt,
-                    EigenValues& outEVals, EigenVectors& outEVecs)
+void CalcEigenStuff(ImageType::Pointer fullImage, PointType const& physPt,
+                    EigenValuesType& outEVals, EigenVectorsType& outEVecs)
 {
-   VectorType physShift;
-   pt_shift(physPt, fullImage->GetSpacing(), physShift);
-
-   // <width> needs to be enough to 'support' the sigmas of the Hessian
-   // and gaussian proper.
+   // &&& <width> needs to be enough to 'support' the sigma of the gaussian
    unsigned width = 0;
-   // pipeline does resampling
+
+   // &&& Ultimately this could be a single, fixed, static item, with
+   // a bit of resetting for speed.
+   // Pipeline does resampling
    BetaPipeline pipeline(fullImage, physPt, width);
 
-// ImageType::IndexType indexUseless;
-// pipeline.resampler_->GetOutput()->TransformPhysicalPointToIndex(physPt, indexUseless);
-// cout << __FILE__ << " (useless) index: " << indexUseless << endl;
-
-   PointType newPt = physPt + physShift;
-   ImageType::IndexType index;
-   bool isWithinImage = pipeline.resampler_->GetOutput()->TransformPhysicalPointToIndex(newPt, index);
-   if (not isWithinImage) {
-      cout << "origin: " << pipeline.resampler_->GetOutput()->GetOrigin() << "; "
-           << "other end: " << pipeline.resampler_->GetOutput()->GetSpacing() << "; "
-           << "size: " << pipeline.resampler_->GetOutput()->GetRequestedRegion().GetSize()
-           << endl;
-cout << "yoo! physical point: " << newPt << "; " << index << "; not within image" << endl;
-   }
-   else {
-//cout << __FILE__ << " (awkward) index: " << index << "; within?: " << isWithinImage << endl;
-      EigenValueImageType::Pointer evalImage = pipeline.eigValImage();
-//cout << "evals ";
-      for (unsigned i = 0; i < Dimension; ++i) {
-         outEVals[i] = evalImage->GetPixel(index)[i];
-//cout << outEVals[i] << " ";
-      }
-//cout << endl;
-
-      EigenVectorImageType::Pointer evecImage = pipeline.eigVecImage();
-EigenVectorImageType::RegionType eigDefinedRegion = evecImage->GetBufferedRegion();
-
-//ImageType::RegionType snipDefinedRegion = fullImage->GetBufferedRegion();
-//cout << __FILE__ << "\nsnip defined region: \n" << endl;
-//snipDefinedRegion.Print(cout);
-
-// &&& grrr - defined region is at 0,0,0, [5,5,5]
-// and index is way in the middle somewhere.
-//cout << __FILE__ << "\neig defined region: \n" << endl;
-//eigDefinedRegion.Print(cout);
-      for (unsigned i = 0; i < Dimension; ++i) {
-         outEVecs[i] = evecImage->GetPixel(index)[i];
-      }
-   }
+   outEVals = pipeline.eigenValues();
+   outEVecs = pipeline.eigenVectors();
 }
 
 // Seeds are in pixels, no sense in anything else.
@@ -195,15 +171,16 @@ double length_of_density(InterpolatorType::Pointer interpolator,
                          PointType const& initial_pt,
                          double initial_density,
                          VectorType const& direction,
-                         double max_dist, double increment)
+                         double max_dist,
+                         double increment)
 {
    double density;
    VectorType vec = direction;
 
 if (initial_density < constants::SeedDensityThreshold) {
    // Shouldn't happen at this point in the processing
-//   cout << "low density? " << initial_density << " < " << constants::SeedDensityThreshold
-//        << " shouldn't happen, how did it become a seed?" << '\n';
+   cout << "low density? " << initial_density << " < " << constants::SeedDensityThreshold
+        << " shouldn't happen, how did it become a seed?" << '\n';
 ++n_lo_density_centers;
 return 0.0;
 }
@@ -232,10 +209,10 @@ else {
 
    double length_of_comparable_density = fwd_length + -bkwd_length;
 
-// if (0 < length_of_comparable_density) {
-// cout << "non-zero length: " << length_of_comparable_density << endl;
-// ++n_non_zero_lengths;
-// }
+if (0 < length_of_comparable_density) {
+//cout << "non-zero length: " << length_of_comparable_density << endl;
+++n_non_zero_lengths;
+}
 
    return length_of_comparable_density;
 }
@@ -247,12 +224,12 @@ else {
 // we'll require the nodes to remember their offsets... Hm.
 // Used to classify the seeds
 bool MeetsBetaCondition(PointType const& physPt,
-                        EigenValues const& /* evals */, EigenVectors const& evec,
+                        EigenValuesType const& /* evals */,
+                        EigenVectorsType const& evec,
                         ImageType::Pointer image,
                         double sheetMin, double sheetMax)
 {
    double increment = constants::LineIncrement * image->GetSpacing()[0];
-//cout << "increment: " << increment << endl;
 
    InterpolatorType::Pointer interpolator = InterpolatorType::New();
 
@@ -264,18 +241,24 @@ cout << "yep it's spline, order: " << GabbleSplineOrder << endl;
    interpolator->SetInputImage(image);
    double initial_density = interpolator->Evaluate(physPt);
 
+   // Note, t1 uses evec[2], t2 [1], t3 [0]; that's because ITK orders
+   // them in /ascending/ order, ie smallest first. We want largest,
+   // first.
    double t1 = length_of_density(interpolator, physPt, initial_density,
-                                 evec[0], sheetMax, increment);
+                                 evec[2], sheetMax, increment);
    double t2 = length_of_density(interpolator, physPt, initial_density,
                                  evec[1], sheetMax, increment);
    double t3 = length_of_density(interpolator, physPt, initial_density,
-                                 evec[2], sheetMax, increment);
+                                 evec[0], sheetMax, increment);
 
-// cout << sheetMin << " <=? " << t1 << " <=? " << sheetMax << " ?" << endl;
-// cout << "t1: " << t1 << "; t2: " << t2 << "; t3: " << t3 << endl;
+// cout << sheetMin << " <=? " << " (t1) " << t1 << " <=? " << sheetMax << " ?"
+//      << endl;
+// cout << "t1: " << t1 << "; t2: " << t2 << "; t3: " << t3
+//      << endl;
 // cout << "std::max(t1 / t2, t1 / t3) < std::min(t2 / t3, t3 / t2)\n"
 //      << "\t" << std::max(t1 / t2, t1 / t3) << "\t\t"
-//      << std::min(t2 / t3, t3 / t2) << endl;
+//      << std::min(t2 / t3, t3 / t2)
+//      << endl;
 
    bool isBeta =
       sheetMin <= t1 and t1 <= sheetMax and
