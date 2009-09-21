@@ -1,4 +1,3 @@
-//#include <vnl/vnl_matrix.h>
 #include <vector>
 #include <iostream>
 #include <assert.h>
@@ -59,51 +58,13 @@ void fill_3D_gaussian(int n, double sigma,
       for (int y = 0; y < n; ++y) {
          for (int x = 0; x < n; ++x) {
             gaussian_mask->at(x, y, z) = factor *
+               // &&& The compiler had /better/ move computations outside the loop!
                ::exp(- (x-ctr)*(x-ctr) + (y-ctr)*(y-ctr) + (z-ctr)*(z-ctr) ) /
                      two_sigma_squared;
          }
       }
    }
 }
-
-// void fill_gaussian_matrix(unsigned n, vnl_matrix<double>& g)
-// {
-//    g.set_size(n, n);
-//    vnl_matrix<double> r(1,n);
-//    binomial_row(n, r);
-//    vnl_matrix<double> rt = r.transpose();
-//
-//    g = rt * r;
-// }
-
-// double apply_gaussian(image::Pointer image, Index idxCtr, unsigned n)
-// {
-//    vector<double> gauss_row = make_row_gauss(n);
-
-//    // to normalize the gaussian row
-//    double sum = 0.0;
-//    sum *= Dimension;
-
-//    double convolved = 0.0;
-//    // gaussian is separable (ie, can do each dim separately
-//    // and sum them) so, we do 1D gaussian over each axis.
-//    NeighborhoodIteratorType::RadiusType radius;
-//    for (unsigned dim = 0; dim < Dimension; ++dim) {
-//       radius.Fill(1);
-//       radius[dim] = n;
-//       typedef ConstNeighborhoodIterator<ImageType> Nit;
-//       Nit nit(radius, image, image->GetRequestedRegion());
-//       // &&& slow but safe; for debugging
-//       nit.NeedToUseBoundaryConditionOn();
-
-//       for (unsigned i = 0; i < n; ++i) {
-//          convolved += nit.GetPixel(i) * gauss_row[i];
-//       }
-//    }
-//    convolved /= sum;
-
-//    return convolved;
-// }
 
 
 unsigned factorial(unsigned n)

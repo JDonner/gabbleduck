@@ -117,7 +117,7 @@ void FindBetaNodes(ImageType::Pointer image,
             }
 
             // dominant eigenvector
-            VectorType normal = evecs[0];
+            VectorType normal = evecs[2];
 
             Points intersections;
             planes_intersection_with_box(normal, physPt,
