@@ -84,10 +84,6 @@ public:
    /** Type for input image. */
    typedef TInputImage       InputImageType;
 
-//   /** Type for output image: Skelenton of the object.  */
-//   typedef TEValuesImage     EValuesImageType;
-//   typedef TEVectorsImage    EVectorsImageType;
-
    /** Type for the region of the input image. */
    typedef typename InputImageType::RegionType   RegionType;
 
@@ -106,10 +102,6 @@ public:
    /** Pointer Type for the output image. */
    typedef typename TEValuesImage::Pointer EValuesImagePointer;
    typedef typename TEVectorsImage::Pointer EVectorsImagePointer;
-
-   // // &&& Why not const?
-   // EValuesImageType* GetEigenValuesImage();
-   // EVectorsImageType* GetEigenVectorsImage();
 
    typename TEValuesImage::Pointer GetEigenValuesImage();
    typename TEVectorsImage::Pointer GetEigenVectorsImage();

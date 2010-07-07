@@ -22,27 +22,13 @@ unsigned row_col[6][2] = {
 
 
 BetaPipeline::BetaPipeline(ImageType::Pointer fullImage,
-                           PointType const& physCenter,
-                           // In cells. no point in fractional cells
-                           // (I believe)
-                           int region_width)
+                           PointType const& physCenter)
   : eigenSystemAnalyzer_(Dimension)
   , bStructureTensorUpdated_(false)
 {
-   (void)region_width;
-//cout << "input: " << endl;
-//fullImage->Print(cout, 2);
-
    ImageType::IndexType index;
    bool isWithin = fullImage->TransformPhysicalPointToIndex(physCenter, index);
    assert(isWithin);
-
-// ImageRegion region;
-// region.SetIndex(index);
-// // add 'size'. Don't know what units these are, physical or pixel.
-// // The '+ 1' to compensate for the phys -> index truncation
-// // And another '+ 1' to deal with our fractional translation
-// region.PadByRadius(region_width + 1 + 1);
 
    // It's a filter, so, we want to set requested region on the input image,
    // and then a 'shift' transform of a fraction of a cell, right?
@@ -86,26 +72,10 @@ BetaPipeline::BetaPipeline(ImageType::Pointer fullImage,
       // &&& should handle different spacings.. wait, doesn't it already?
       // physical ('world') coordinates
       gaussian_functions_[i]->SetSigma(constants::SigmaOfFeatureGaussian);
-
-//gaussian_functions_[i]->Print(cout, 3);
    }
 
    // was once, OrderByValue, OrderByMagnitude
    eigenSystemAnalyzer_.SetOrderEigenValues(EigenSystemAnalyzerType::OrderByMagnitude);
-}
-
-
-ImageIndexType center_index_of_region(ImageRegionType const& region)
-{
-   ImageRegionType::SizeType size = region.GetSize();
-
-   ImageIndexType idxCenter;
-   for (unsigned i = 0; i < Dimension; ++i) {
-      // Must be odd
-      assert(size[i] % 2 == 1);
-      idxCenter[i] = size[i] / 2;
-   }
-   return idxCenter;
 }
 
 
@@ -153,44 +123,6 @@ void BetaPipeline::set_up_resampler(ImageType::Pointer fullImage,
    // We don't need to Update up front like this (later stages will
    // 'pull' from earlier ones), it just makes tracing through easier
    resampler_->Update();
-
-ImageType::Pointer resampled = resampler_->GetOutput();
-ImageType::RegionType region = resampled->GetRequestedRegion();
-assert(region.GetSize()[0] == sizeSample[0] and
-       region.GetSize()[1] == sizeSample[1] and
-       region.GetSize()[2] == sizeSample[2]);
-// ImageType::PointType physResampledCenter;
-// physResampledCenter[0] = resampled->GetOrigin()[0] + region.GetSize()[0] * region.GetSpacing()[0];
-// physResampledCenter[1] = resampled->GetOrigin()[1] + region.GetSize()[1] * region.GetSpacing()[1];
-// physResampledCenter[2] = resampled->GetOrigin()[2] + region.GetSize()[2] * region.GetSpacing()[2];
-
-ImageType::IndexType idxCenter;
-idxCenter[0] = region.GetSize()[0] / 2;
-idxCenter[1] = region.GetSize()[1] / 2;
-idxCenter[2] = region.GetSize()[2] / 2;
-
-
-// ImageType::PointType physAlsoCenter;
-// resampled->TransformIndexToPhysicalPoint(idxCenter, physAlsoCenter);
-// cout
-//     << physCenter[0] << " "
-//     << physCenter[1] << " "
-//     << physCenter[2] << " "
-//     << "original phys center:\n"
-//     << physAlsoCenter[0] << " "
-//     << physAlsoCenter[1] << " "
-//     << physAlsoCenter[2] << " "
-//     << "sampled phys center: " << resampled->GetPixel(idxCenter) << "\n";
-
-// ImageIndexType originalIndex;
-// fullImage->TransformPhysicalPointToIndex(physCenter, originalIndex);
-
-// cout << "original: "
-//      << fullImage->GetPixel(originalIndex)
-//      << endl;
-
-//cout << "resampler (before update): " << endl;
-//resampler_->Print(cout, 2);
 }
 
 // IN_PROGRESS
@@ -236,12 +168,6 @@ void BetaPipeline::multiply_derivative_components()
       itDerived[i].GoToBegin();
    }
 
-// debugging - see a sample of the derivative values
-//for (; not itDerived[0].IsAtEnd(); ++itDerived[0]) {
-//cout << itDerived[0].Value() << " ";
-//}
-//itDerived[0].GoToBegin();
-
    // Allocate a TensorType
 
    typedef itk::ImageRegionIterator<TensorImageType> TensorIteratorType;
@@ -254,10 +180,6 @@ void BetaPipeline::multiply_derivative_components()
       for (unsigned i = 0; i < 6; ++i) {
          unsigned row = row_col[i][0];
          unsigned col = row_col[i][1];
-
-//cout << "drv[" << row << "]:" << itDerived[row].Value()
-//     << "; drv[" << col << "]:" << itDerived[col].Value()
-//     << endl;
 
          // row and col are indexes to dimension
          itGradientTensor.Value()[i] = itDerived[row].Value() * itDerived[col].Value();
@@ -273,30 +195,8 @@ void BetaPipeline::multiply_derivative_components()
 }
 
 
-// &&& Couldn't get this to work
-// void BetaPipeline::TakeITKGaussiansAtOriginalPoint()
-// {
-//    ImageIndexType idxCenter = center_index_of_region(
-//       resampler_->GetOutput()->GetLargestPossibleRegion());
-//    for (unsigned i = 0; i < 6; ++i) {
-// double gauss_value = gaussian_functions_[i]->EvaluateAtIndex(idxCenter);
-// double derv_derv = tensor_image_->GetPixel(idxCenter)[i];
-//       point_structure_tensor_[i] =
-//          gaussian_functions_[i]->EvaluateAtIndex(idxCenter) *
-//          tensor_image_->GetPixel(idxCenter)[i];
-// cout << "sz tensor image: " << tensor_image_->GetBufferedRegion().GetSize() << endl;
-// cout << i << " derv_derv: " << derv_derv
-//      << " gauss: " << gauss_value
-//      << " pst: " << point_structure_tensor_[i]
-//      << endl;
-//    }
-// }
-
 void BetaPipeline::TakeGaussiansAtOriginalPoint()
 {
-    ImageIndexType idxCenter = center_index_of_region(
-       resampler_->GetOutput()->GetLargestPossibleRegion());
-
 ImageSizeType tensorSize = tensor_image_->GetBufferedRegion().GetSize();
 
 unsigned size = g_GaussianMask->size;
@@ -322,17 +222,6 @@ assert(tensorSize[2] == size);
       }
 
       point_structure_tensor_[i] = gaussian_of_center;
-
-//        point_structure_tensor_[i] =
-//           gaussian_functions_[i]->EvaluateAtIndex(idxCenter) *
-//           tensor_image_->GetPixel(idxCenter)[i];
-//double gauss_value = gaussian_functions_[i]->EvaluateAtIndex(idxCenter);
-//double derv_derv = tensor_image_->GetPixel(idxCenter)[i];
-//       cout << "sz tensor image: " << tensor_image_->GetBufferedRegion().GetSize() << endl;
-//       cout << i << " derv_derv: " << derv_derv
-//            << " gauss: " << gaussian_of_center
-//            << " pst: " << point_structure_tensor_[i]
-//            << endl;
    }
 }
 
@@ -343,18 +232,10 @@ void BetaPipeline::CalcEigenSystemAtOriginalPoint() throw (FailedEigenAnalysis)
    // &&& (wait, what would negative eigenvalues mean?)
    // <OrderByValue> is also possible, not sure what it'd mean though.
 
-// for (int k = 0; k < 6; ++k) {
-//    cout << "k: " << k << " "
-//            << point_structure_tensor_[k]
-//            << endl;
-// }
-
    int n = eigenSystemAnalyzer_.ComputeEigenValuesAndVectors(
       point_structure_tensor_,
       eigenValues_,
       eigenVectors_);
-
-//cout << "n: " << n << endl;
 
    // index of first failed eigenvalue
    if (0 < n) {
@@ -379,19 +260,19 @@ EigenVectorsType const& BetaPipeline::eigenVectors()
    return eigenVectors_;
 }
 
-static
-// Given <row>, <col>, find corresponding index into symmetric tensor's
-// straight array storage.
-unsigned flat_index_into_symmetric_storage(unsigned row, unsigned col)
-{
-   unsigned k;
-   if ( row < col )
-   {
-      k = row * Dimension + col - row * ( row + 1 ) / 2;
-   }
-   else
-   {
-      k = col * Dimension + row - col * ( col + 1 ) / 2;
-   }
-   return k;
-}
+// static
+// // Given <row>, <col>, find corresponding index into symmetric tensor's
+// // straight array storage.
+// unsigned flat_index_into_symmetric_storage(unsigned row, unsigned col)
+// {
+//    unsigned k;
+//    if ( row < col )
+//    {
+//       k = row * Dimension + col - row * ( row + 1 ) / 2;
+//    }
+//    else
+//    {
+//       k = col * Dimension + row - col * ( col + 1 ) / 2;
+//    }
+//    return k;
+// }

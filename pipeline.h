@@ -25,9 +25,7 @@ struct FailedEigenAnalysis {
 struct BetaPipeline
 {
    BetaPipeline(ImageType::Pointer image,
-                PointType const& center,
-                // In cells. no point in fractional cells (I believe)
-                int region_width);
+                PointType const& center);
 
    EigenValuesType const& eigenValues();
    EigenVectorsType const& eigenVectors();

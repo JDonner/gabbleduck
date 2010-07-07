@@ -52,7 +52,6 @@ void MakeTriangles(VectorType const& /*normal*/,
 
    // We arbitrarily pick the first point as the axis against which
    // to measure the other pts' angles.
-   PointType first = planar_points[0];
    VectorType v0 = planar_points[0] - ctr;
    InternalPrecisionType v0Norm = v0.GetNorm();
 
@@ -87,8 +86,8 @@ void MakeTriangles(VectorType const& /*normal*/,
 // ax + by + cz = d
 // where d = axp + byp + czp
 
-static
 // Macros, better perhaps
+static
 double x_intersect(double d, double a, double b, double y, double c, double z)
 {
    double x = (d - b * y - c * z) / a;
@@ -236,25 +235,3 @@ VectorType
    }
    return shift;
 }
-
-// void pt_shift(PointType const& physPt,
-//               ImageType::SpacingType const& physSpacing,
-//               VectorType& outShift)
-// {
-//    outShift = transform_shift(physPt, physSpacing);
-//    // for (unsigned i = 0; i < Dimension; ++i) {
-//    //    double bounded = fmod(pt[i], spacing[i]);
-//    //    double unitted = bounded / spacing[i];
-//    //    // should be 0 or 1
-//    //    double refcoord = trunc(unitted + 0.5);
-
-//    //    assert(0.0 == refcoord or refcoord == 1.0);
-
-//    //    outShift[i] = (unitted - refcoord);
-//    //    if (not (-0.5 <= outShift[i] and outShift[i] <= 0.5)) {
-//    //       cout << "shift fails (" << i << "th): " << outShift[i] << endl;
-//    //       assert(false);
-//    //    }
-//    //    outShift *= spacing[i];
-//    // }
-// }

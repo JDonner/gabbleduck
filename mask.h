@@ -14,7 +14,7 @@ struct Mask_T
       allocate();
    }
 
-   ~ Mask_T() { delete[] this->data; }
+  ~Mask_T() { delete[] this->data; }
 
    void allocate() { this->data = new T[this->size * this->size * this->size]; }
 
@@ -32,8 +32,11 @@ struct Mask_T
    T& at(int x, int y, int z)
    { return this->data[this->z_stride * z + this->y_stride * y + x]; }
 
+public:
    // We assume that it's always a cube
-   int size;
+   const int size;
+
+private:
    int y_stride;
    int z_stride;
 

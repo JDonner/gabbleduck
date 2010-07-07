@@ -142,7 +142,7 @@ void fully_explore(InputNit itIn,
 ++g_n_explored;
    unsigned ctr = nNbrs / 2;
    InputImageType::PixelType ctrVal = itIn.GetCenterPixel();
-   bool need_tie_pass = false;
+//   bool need_tie_pass = false;
    bool killing_ties = false;
 
    for (unsigned i = 0; i < nNbrs; ++i) {
@@ -155,12 +155,12 @@ void fully_explore(InputNit itIn,
             // pixel is beaten, ie no longer candidate for local maximum
             itBt.SetCenterPixel(false);
 ++g_n_snuffed;
-            need_tie_pass = true;
+//            need_tie_pass = true;
             // if we're beaten, every neighbor to which we're equal
             // is beaten, too.
             killing_ties = true;
          }
-         else if (ctrVal > nbrVal or killing_ties) {
+         else if (nbrVal < ctrVal or killing_ties) {
             itBt.SetPixel(i, false);
 ++g_n_snuffed;
             InputImageType::IndexType nbrIdx = itIn.GetIndex(i);

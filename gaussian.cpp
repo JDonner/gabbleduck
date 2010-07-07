@@ -8,6 +8,8 @@ using namespace std;
 
 typedef vector<int> Row;
 
+GaussianMaskType* g_GaussianMask;
+
 
 void fill_3D_gaussian(int n, double sigma,
                       GaussianMaskType* gaussian_mask);
@@ -27,8 +29,6 @@ unsigned support_of_sigma(double sigma)
    return support;
 }
 
-GaussianMaskType* g_GaussianMask;
-
 // There's just one per run of the program
 void init_gaussian_mask(int n, double sigma)
 {
@@ -40,14 +40,14 @@ void init_gaussian_mask(int n, double sigma)
 
 // Texts say just to sample the gaussian at our discrete points of interest.
 
-// n and sigma should match each other, roughly;
-// Note sure how to do that yet. Isn't it
+// <n> and <sigma> should match each other, roughly;
+// Not sure how to do that yet. Isn't it
 // Note that this assumes that 1 pixel == 1 physical unit! (ok for us but
 // bad in general).
 void fill_3D_gaussian(int n, double sigma,
                       GaussianMaskType* gaussian_mask)
 {
-   // odd only, for no good reason
+   // odd only, for convenience
    assert(n % 2 == 1);
    // 2 PI ^ 3/2
    double factor = 1.0 / pow(2 * M_PI, 1.5);
@@ -66,7 +66,8 @@ void fill_3D_gaussian(int n, double sigma,
    }
 }
 
-
+#ifdef TESTING
+static
 unsigned factorial(unsigned n)
 {
    unsigned fact = 1;
@@ -77,6 +78,7 @@ unsigned factorial(unsigned n)
 }
 
 
+static
 unsigned num_combinations(unsigned n, unsigned k)
 {
    unsigned prod = 1;
@@ -88,6 +90,7 @@ unsigned num_combinations(unsigned n, unsigned k)
    return prod;
 }
 
+static
 void fill_binomial_row(unsigned n, Row& row)
 {
    row.clear();
@@ -101,6 +104,7 @@ void fill_binomial_row(unsigned n, Row& row)
    assert(row.size() % 2 == 1);
 }
 
+static
 void print_row(Row& row)
 {
    cout << "row: ";
@@ -111,7 +115,6 @@ void print_row(Row& row)
 }
 
 
-#ifdef TESTING
 int main()
 {
    cout << "running tests.." << endl;

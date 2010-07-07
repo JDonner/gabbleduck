@@ -95,23 +95,4 @@ private:
    unsigned m_EigenIdx;
 };
 
-#if 0
-// // Functor to get trace of the hessian matrix (laplacian of the image )
-// namespace Functor {
-
-// template< typename TInput, typename TOutput >
-//    class HessianToLaplacianFunction
-// {
-// public:
-//    typedef typename TInput::RealValueType  RealValueType;
-//    HessianToLaplacianFunction() {}
-//    ~HessianToLaplacianFunction() {}
-
-//    inline TOutput operator()( const TInput & x ) const
-//    {
-//       return static_cast< TOutput >( x(0,0) + x(1,1) + x(2,2) );
-//    }
-// };
-#endif // 0
-
 #endif // __PixelAccessors_h

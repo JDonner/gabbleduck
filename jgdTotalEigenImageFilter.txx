@@ -32,7 +32,6 @@ template <class TInputImage,class TEValuesImage, class TEVectorsImage>
    TotalEigenImageFilter<TInputImage,TEValuesImage, TEVectorsImage>
    ::TotalEigenImageFilter()
 {
-
    this->SetNumberOfRequiredOutputs( 2 );
 
    EValuesImagePointer evalImage = TEValuesImage::New();
@@ -40,15 +39,12 @@ template <class TInputImage,class TEValuesImage, class TEVectorsImage>
 
    EVectorsImagePointer evectorImage = TEVectorsImage::New();
    this->SetNthOutput( 1, evectorImage.GetPointer() );
-
 }
 
 /**
  *  Return the thinning Image pointer
  */
-// &&& was '*'
 template <class TInputImage,class TEValuesImage, class TEVectorsImage>
-//   typename TotalEigenImageFilter<TInputImage, TEValuesImage, TEVectorsImage>::
    typename TEValuesImage::Pointer
    TotalEigenImageFilter<TInputImage, TEValuesImage, TEVectorsImage>
    ::GetEigenValuesImage()
@@ -56,11 +52,6 @@ template <class TInputImage,class TEValuesImage, class TEVectorsImage>
    typename TEValuesImage::Pointer p(
       dynamic_cast<TEValuesImage*>(
          this->ProcessObject::GetOutput(0)));
-
-   // return SmartPointer<TEValuesImage>(
-
-   //    dynamic_cast<TEValuesImage*>(
-   //       this->ProcessObject::GetOutput(0)));
 
    return p;
 }
@@ -79,10 +70,6 @@ template <class TInputImage, class TEValuesImage, class TEVectorsImage>
          (this->ProcessObject::GetOutput(1))));
 
    return p;
-
-   // return TEVectorsImage::ConstPointer(
-   //    dynamic_cast<TEVectorsImage const*>(
-   //       (this->ProcessObject::GetOutput(1))));
 }
 
 /**
@@ -108,35 +95,6 @@ template <class TInputImage, class TEValuesImage, class TEVectorsImage>
    evecImage->SetBufferedRegion( evecImage->GetRequestedRegion() );
    evecImage->Allocate();
 
-   // typename EValuesImageType::RegionType region  = evalImage->GetRequestedRegion();
-
-
-   // ImageRegionConstIterator< TInputImage >  it( inputImage,  region );
-   // ImageRegionIterator< TEValuesImage >  otVal( evalImage,  region );
-   // ImageRegionIterator< TEVectorsImage > otVec( evecImage,  region );
-
-   // it.GoToBegin();
-   // otVal.GoToBegin();
-   // otVec.GoToBegin();
-
-   // itkDebugMacro(<< "PrepareData: Copy input to output");
-
-   // // Copy the input to the output, changing all foreground pixels to
-   // // have value 1 in the process.
-   // typedef typename EValuesImageType::PixelType OutputImagePixelType;
-   // while( !otVal.IsAtEnd() )
-   //     {
-   //     if ( it.Get() )
-   //       {
-   //       ot.Set( NumericTraits<OutputImagePixelType>::One );
-   //       }
-   //     else
-   //       {
-   //       ot.Set( NumericTraits<OutputImagePixelType>::Zero );
-   //       }
-   //     ++it;
-   //     ++ot;
-   //     }
    itkDebugMacro(<< "PrepareData End");
 }
 
@@ -175,7 +133,6 @@ template <class TInputImage,class TEValuesImage, class TEVectorsImage>
          m_Calculator.ComputeEigenValuesAndVectors(it.Value(), evals, evecs);
 
       (void)bad_eigen_index;
-      //    m_Functor( inputIt.Get(), one, two );
       otVal.Set(evals);
       otVec.Set(evecs);
 

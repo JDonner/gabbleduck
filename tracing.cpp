@@ -26,8 +26,7 @@ bool MeetsBetaCondition(PointType const& physPt,
 
 static SpatialHash s_hash;
 
-// Arg, I think this wants to be an object
-// non-recursive version
+// Highest, paper-level meat of the algorithm.
 void FindBetaNodes(ImageType::Pointer image,
                    Seeds const& seeds,
                    Nodes& outNodes)
@@ -56,9 +55,7 @@ void FindBetaNodes(ImageType::Pointer image,
    typedef queue<PointType> PointQueue;
    PointQueue possible_beta_points;
 
-//cout << "image origin: " << image->GetOrigin() << endl;
-
-   // Load possible betas
+   // Load possible beta points
    for (Seeds::const_iterator it = seeds.begin(), end = seeds.end();
         it != end; ++it) {
       PointType physPt;
@@ -78,6 +75,7 @@ void FindBetaNodes(ImageType::Pointer image,
       PointType physPt = possible_beta_points.front();
       possible_beta_points.pop();
 
+      // For performance; don't waste time on tightly-packed points
       bool bTooNearAnotherPoint = s_hash.isWithinDistanceOfAnything(
          physPt, constants::RequiredNewPointSeparation);
 
@@ -108,7 +106,7 @@ void FindBetaNodes(ImageType::Pointer image,
             // we don't need the machinery anymore, the point is enough
             PointType loCell, hiCell;
 
-            // point is at center of cell
+            // points are at center of cell
             for (unsigned i = 0; i < Dimension; ++i) {
                // Inefficient but looks cleaner
                ImageType::SpacingType spacing = image->GetSpacing();
@@ -143,27 +141,25 @@ maybe_snap_image(n_beta_nodes, outNodes);
 void CalcEigenStuff(ImageType::Pointer fullImage, PointType const& physPt,
                     EigenValuesType& outEVals, EigenVectorsType& outEVecs)
 {
-   // &&& <width> needs to be enough to 'support' the sigma of the gaussian
-   unsigned width = 0;
-
    // &&& Ultimately this could be a single, fixed, static item, with
    // a bit of resetting for speed.
    // Pipeline does resampling
-   BetaPipeline pipeline(fullImage, physPt, width);
+   BetaPipeline pipeline(fullImage, physPt);
 
    outEVals = pipeline.eigenValues();
    outEVecs = pipeline.eigenVectors();
 }
 
-// Seeds are in pixels, no sense in anything else.
-// We want to resample (for a new image) against the original image,
-// for fidelity's sake. The shift is in physical coords.
-// This offset is: pt loc (in whichever coords) fmod(pt.X, imagespace.X)
-// Intersections will be in whatever coords we start with.
-// (Can we keep from accumulating error?)
-// We can't, as long as we calculate via a long chain of moves, which
-// we must. We can resample wrt to the original image which is good, but
-// location, we can't avoid multiple offsets.
+// Seeds are in pixels, no sense in anything else.  We want to
+// resample (for a new image) against the original image, for
+// fidelity's sake. The shift is in physical coords.  This offset is:
+// pt loc (in whichever coords) fmod(pt.X, imagespace.X) Intersections
+// will be in whatever coords we start with.
+//
+// (Can we keep from accumulating error?  We can't, as long as we
+// calculate via a long chain of moves, which we must. We can resample
+// wrt to the original image which is good, but changing location, we
+// can't avoid multiple offsets.)
 
 
 // initial, and drop-off - doesn't ITK have such a thing already?
@@ -175,7 +171,7 @@ double length_of_density(InterpolatorType::Pointer interpolator,
                          double increment)
 {
    double density;
-   VectorType vec = direction;
+//   VectorType vec = direction;
 
 if (initial_density < constants::SeedDensityThreshold) {
    // Shouldn't happen at this point in the processing
@@ -218,11 +214,11 @@ if (0 < length_of_comparable_density) {
 }
 
 
-// The /whole/ condition
+// Used to classify the seeds - the whole condition.
+//
 // <physPt> is in pixels.(???) Hrm; the problem with that is that when we shift
 // the image around slightly, we'll have to convert those. Ie,
 // we'll require the nodes to remember their offsets... Hm.
-// Used to classify the seeds
 bool MeetsBetaCondition(PointType const& physPt,
                         EigenValuesType const& /* evals */,
                         EigenVectorsType const& evec,
@@ -250,15 +246,6 @@ cout << "yep it's spline, order: " << GabbleSplineOrder << endl;
                                  evec[1], sheetMax, increment);
    double t3 = length_of_density(interpolator, physPt, initial_density,
                                  evec[0], sheetMax, increment);
-
-// cout << sheetMin << " <=? " << " (t1) " << t1 << " <=? " << sheetMax << " ?"
-//      << endl;
-// cout << "t1: " << t1 << "; t2: " << t2 << "; t3: " << t3
-//      << endl;
-// cout << "std::max(t1 / t2, t1 / t3) < std::min(t2 / t3, t3 / t2)\n"
-//      << "\t" << std::max(t1 / t2, t1 / t3) << "\t\t"
-//      << std::min(t2 / t3, t3 / t2)
-//      << endl;
 
    bool isBeta =
       sheetMin <= t1 and t1 <= sheetMax and

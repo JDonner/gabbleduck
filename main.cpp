@@ -128,13 +128,13 @@ g_log << "safe seeds: " << trueMaxSeeds.size()
 #endif
 
    Nodes betaNodes;
-   bool bExhaustedNaturally = true;
+//   bool bExhaustedNaturally = true;
    try {
       FindBetaNodes(image, trueMaxSeeds, betaNodes);
    }
    catch (LongEnoughException const& long_enough) {
       g_log << "... quitting at user-defined limit (not exhaustion)" << endl;
-      bExhaustedNaturally = false;
+//      bExhaustedNaturally = false;
    }
 
 #if WANT_SNAPSHOTS
@@ -159,8 +159,6 @@ g_log << "safe seeds: " << trueMaxSeeds.size()
    string final_logname = final_basepath + ".log";
    ::rename(temp_logname.c_str(), final_logname.c_str());
    give_wide_permissions(final_logname.c_str());
-
-//cout << "found: " << betaNodes.size() << " beta nodes" << endl;
 
 dump_instrument_vars(g_log);
 
